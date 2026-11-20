@@ -19,8 +19,8 @@ function gszWebUpgrade(PDO $pdo,array $config,int $admin,string $password,array 
  if(!$owner||!gszLoginAttempt('update:'.$owner['email'],$ip)||!password_verify($password,$owner['password_hash']))throw new RuntimeException('Passwort nicht bestätigt (oder zu viele Versuche – bitte 15 Minuten warten).');
  if(gszReleaseIntegrity()['status']!=='PASS')throw new RuntimeException('Programmdateien unvollständig hochgeladen. Bitte das komplette Paket erneut hochladen.');
  gszAudit($pdo,$admin,'web_upgrade_requested',['from'=>$before['version'],'target'=>380,'backup_sha256'=>$backup['sha256'],'backup_file'=>$backup['file']]);
- $after=gszSetupMigrate($pdo);$files=gszRemoveObsoleteFiles380();$keys=gszPurgeObsoleteConfig380();
- gszAudit($pdo,$admin,'web_upgrade_finished',['target'=>380,'obsolete_files_removed'=>count($files['removed']),'obsolete_files_failed'=>$files['failed'],'obsolete_settings_removed'=>$keys]);
+ $after=gszSetupMigrate($pdo);$files=gszRemoveObsoleteFiles380();$keys=gszPurgeObsoleteConfig380();require_once __DIR__.'/mail_credentials.php';try{$mailMoved=gszMailCredentialMigrate($config);}catch(Throwable $e){$mailMoved=false;}
+ gszAudit($pdo,$admin,'web_upgrade_finished',['target'=>380,'obsolete_files_removed'=>count($files['removed']),'obsolete_files_failed'=>$files['failed'],'obsolete_settings_removed'=>$keys,'mail_password_moved_to_vault'=>$mailMoved]);
  gszLoginAttempt('update:'.$owner['email'],$ip,true);
  return ['status'=>$after['status'],'files_failed'=>$files['failed']];
 }

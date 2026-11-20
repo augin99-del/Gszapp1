@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__.'/mail_engine.php';
+require_once __DIR__.'/mail_engine.php';require_once __DIR__.'/mail_credentials.php';
 /** Validated settings only; caller performs protected atomic storage outside the webroot. */
 function gszSetupMailValidate(array $input,array $existing=[]):array {
  $text=static function(string $key,int $max,string $fallback='')use($input):string {$v=$input[$key]??$fallback;if(!is_string($v)||strlen($v)>$max||str_contains($v,"\0")||!mb_check_encoding($v,'UTF-8'))throw new InvalidArgumentException('E-Mail-Einrichtung: Eingabe ungültig.');return $v;};
@@ -28,9 +28,16 @@ function gszSetupMailSmtpProbe(array $config):void {
 function gszSetupMailProbe(array $config,?callable $imapFactory=null,?callable $smtpProbe=null):array {
  $out=['status'=>'BLOCKED','imap'=>['status'=>'NOT TESTED'],'smtp'=>['status'=>'NOT TESTED'],'folders'=>[],'recommended_folders'=>['mail_sent_folder'=>'','mail_trash_folder'=>'','mail_archive_folder'=>''],'message_sent'=>false];
  if(!filter_var($config['mail_enabled']??false,FILTER_VALIDATE_BOOLEAN)){$out['imap']=['status'=>'BLOCKED','error_code'=>'GSZ_MAIL_DISABLED','message'=>'E-Mail ist nicht verbunden. Einrichtung bei Bedarf aktivieren.'];return $out;}
- try{$remote=($imapFactory??'gszMailRemote')($config);if(!$remote instanceof GszMailRemote)throw new RuntimeException('IMAP-Adapter ungültig.');$folders=$remote->folders();if(!in_array('INBOX',$folders,true)||$remote->validity('INBOX')<1)throw new RuntimeException('IMAP-Posteingang nicht bestätigt.');$out['imap']=['status'=>'PASS','adapter'=>$remote instanceof GszEngineImapRemote?'imapengine':'native-or-test','folder_count'=>count($folders)];$out['folders']=$folders;
+ try{$remote=$imapFactory?$imapFactory($config):gszMailRemote($config,true);if(!$remote instanceof GszMailRemote)throw new RuntimeException('IMAP-Adapter ungültig.');$folders=$remote->folders();if(!in_array('INBOX',$folders,true)||$remote->validity('INBOX')<1)throw new RuntimeException('IMAP-Posteingang nicht bestätigt.');$out['imap']=['status'=>'PASS','adapter'=>$remote instanceof GszEngineImapRemote?'imapengine':'native-or-test','folder_count'=>count($folders)];$out['folders']=$folders;
   $names=['mail_sent_folder'=>['sent','sent messages','gesendet','gesendete elemente'],'mail_trash_folder'=>['trash','deleted messages','papierkorb','gelöschte elemente'],'mail_archive_folder'=>['archive','archives','archiv']];foreach($names as $key=>$aliases)foreach($folders as $folder){$tail=mb_strtolower(preg_replace('~^.*[/.]~','',$folder));if(in_array($tail,$aliases,true)){$out['recommended_folders'][$key]=$folder;break;}}
  }catch(Throwable $e){$out['imap']=gszSetupMailError($e,'IMAP');}
- try{($smtpProbe??'gszSetupMailSmtpProbe')($config);$out['smtp']=['status'=>'PASS','authentication_only'=>true];}catch(Throwable $e){$out['smtp']=gszSetupMailError($e,'SMTP');}
+ try{($smtpProbe??'gszSetupMailSmtpProbe')($config);$out['smtp']=['status'=>'PASS','authentication_only'=>true];if(!$smtpProbe)gszMailAuthResult(null,'smtp');}catch(Throwable $e){$out['smtp']=gszSetupMailError($e,'SMTP');if(!$smtpProbe)gszMailAuthResult($e,'smtp');}
  $out['status']=$out['imap']['status']==='PASS'&&$out['smtp']['status']==='PASS'?'PASS':'BLOCKED';return $out;
+}
+/** Saves the mailbox settings: password and address into the secret vault, everything else into the managed config. */
+function gszSetupMailSave(array $input,array $config):array {
+ $values=gszSetupMailValidate($input,$config);$password=(string)$values['mail_pass'];unset($values['mail_pass']);
+ if($password!=='')gszMailCredentialSave((string)$values['mail_user'],$password);
+ if(array_key_exists('allow_mail_send',$values)&&!empty($config['allow_mail_send'])&&(string)($config['mail_user']??'')===(string)$values['mail_user'])$values['allow_mail_send']=true;
+ gszManagedSave($values);return $values;
 }

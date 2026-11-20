@@ -21,6 +21,9 @@ function gszLoadConfig(): array {
         if ($value!==false) $config[$key]=$value;
     }
     $config=array_replace($config,$managed);
+    // Postfachzugang aus dem Secret-Vault (einmal in der Oberfläche eingetragen) gilt für IMAP, SMTP und Cron.
+    require_once __DIR__.'/mail_credentials.php';
+    try{$mail=gszMailCredentialLoad();if($mail){$config['mail_pass']=$mail['mail_pass'];if($mail['mail_user']!=='')$config['mail_user']=$mail['mail_user'];$config['mail_credential_source']='vault';}}catch(Throwable $e){$config['mail_pass']='';$config['mail_credential_source']='damaged';}
     $config['allow_mail_send']=filter_var($config['allow_mail_send']??false,FILTER_VALIDATE_BOOLEAN);
     return $config;
 }

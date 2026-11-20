@@ -97,7 +97,8 @@ final class GszSmtpSender implements GszMailSender {
  public function send(array $recipients,string $raw):void {
   $transport=(string)($this->config['smtp_transport']??'phpmailer');
   if(!in_array($transport,['phpmailer','native'],true))throw new GszMailSendException('SMTP-Transport unbekannt.',false);
+  require_once __DIR__.'/mail_credentials.php';gszMailAuthGuard();
   $sender=$transport==='native'?new GszNativeSmtpSender($this->config):new GszPhpMailerSender($this->config);
-  $sender->send($recipients,$raw);
+  try{$sender->send($recipients,$raw);}catch(Throwable $e){gszMailAuthResult($e,'smtp');throw $e;}gszMailAuthResult(null,'smtp');
  }
 }
