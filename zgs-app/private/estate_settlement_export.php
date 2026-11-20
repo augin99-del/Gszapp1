@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__.'/estate_settlement_store.php';require_once __DIR__.'/finance_export_service.php';
+require_once __DIR__.'/estate_settlement_store.php';require_once __DIR__.'/export_core.php';
 /** Private owner/advisor bundle, never automatically deliver to a tenant. */
 function estateSettlementBundle(PDO $pdo,int $id):array {
  $s=estateSettlementRead($pdo,$id);$snapshot=$s['snapshot'];$files=['snapshot.json'=>$s['snapshot_json'],'HINWEISE.txt'=>"Privates Eigentümer-/Beraterpaket. Enthält sämtliche Mieterdaten des Gebäudes. Nicht ungeprüft als Mieterpaket weitergeben. Keine DATEV-/Anlage-V-/Rechtskonformitätszusage. Einzelne Mieter erhalten ausschließlich ihre eigene Abrechnung. Originale und Snapshot unverändert, SHA256-Prüfliste beigefügt.\n"];$total=array_sum(array_map('strlen',$files));$docs=$snapshot['state']['documents'];$q=$pdo->prepare('SELECT * FROM estate_settlement_documents WHERE settlement_id=? ORDER BY lease_id');$q->execute([$id]);$pdfs=$q->fetchAll();if(count($docs)+count($pdfs)+3>200)throw new RuntimeException('Archivlimit200 Dateien; Einzelbelege getrennt herunterladen.');

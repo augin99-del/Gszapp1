@@ -2,7 +2,7 @@
 declare(strict_types=1);
 /** Explicit HTML route registry: never wrap downloads, JSON, PDFs or unauthenticated login. */
 function gszModules():array {return [
- ['Heute / Dashboard','index.php'],['Tagesplanung','planner.php'],['Wochenplanung','planner.php?view=week'],['Aufgaben','index.php#aufgaben'],['Kunden','customers.php'],['Objekte','index.php#objekte'],['Termine','appointments.php'],['Regelaufgaben / Leistungen','recurring.php'],['Müllkalender','waste.php'],['Route','route.php'],['Arbeitsnachweise','worklogs.php'],['Zuordnungen','workers.php'],['E-Mail','mail.php'],['Dokumente','documents.php'],['Angebote','offers.php'],['Rechnungen','invoices.php'],['Buchhaltung','accounting.php'],['Bank','bank.php'],['Bankverbindungen','bank_connections.php'],['Dienste einrichten','connections.php'],['Offene Posten','receivables.php'],['Finanzvorlagen','finance_recurrences.php'],['Kasse / Anlagen','cash_assets.php'],['Meine Immobilien','estate.php'],['Volksbank-Konten','estate_bank.php'],['Nebenkosten','estate_settlements.php'],['Einstellungen','settings.php'],['SEO-Monitor','seo.php'],['Geschütztes Update','update.php'],['Systemcheck','system_check.php']];}
+ ['Heute / Dashboard','index.php'],['Tagesplanung','planner.php'],['Wochenplanung','planner.php?view=week'],['Aufgaben','index.php#aufgaben'],['Kunden','customers.php'],['Objekte','index.php#objekte'],['Termine','appointments.php'],['Regelaufgaben / Leistungen','recurring.php'],['Müllkalender','waste.php'],['Route','route.php'],['Arbeitsnachweise','worklogs.php'],['Zuordnungen','workers.php'],['E-Mail','mail.php'],['Dokumente','documents.php'],['Dienste einrichten','connections.php'],['Meine Immobilien','estate.php'],['Volksbank-Konten','estate_bank.php'],['Nebenkosten','estate_settlements.php'],['Einstellungen','settings.php'],['SEO-Monitor','seo.php'],['Geschütztes Update','update.php'],['Systemcheck','system_check.php']];}
 function gszModuleGrid():string {$s='<section class="module-grid">';foreach(gszModules() as [$title,$url])$s.='<a class="surface module-link" href="'.e($url).'">'.e($title).'</a>';return $s.'</section>';}
 function gszNavIcon(string $name): string
 {
@@ -41,13 +41,6 @@ function gszLayoutDocument(string $html,string $page,string $csrf,?array $respon
     ]],
     ['waste', 'Mülltonnenservice', 'waste.php', []],
     ['mail', 'E-Mail', 'mail.php', []],
-    ['invoices', 'Angebote und Rechnungen', 'invoices.php', [
-        ['Angebote', 'offers.php'], ['Offene Posten', 'receivables.php'],
-    ]],
-    ['accounting', 'Buchhaltung', 'accounting.php', [
-        ['Bank', 'bank.php'], ['Bankverbindungen', 'bank_connections.php'],
-        ['Finanzvorlagen', 'finance_recurrences.php'], ['Kasse / Anlagen', 'cash_assets.php'],
-    ]],
     ['documents', 'Dokumente', 'documents.php', []],
     ['property', 'Meine Immobilien', 'estate.php', [
         ['Volksbank', 'estate_bank.php'], ['Nebenkosten', 'estate_settlements.php'],

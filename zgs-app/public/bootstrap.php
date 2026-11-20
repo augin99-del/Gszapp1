@@ -20,9 +20,11 @@ function csrf(): string { if(empty($_SESSION['csrf'])) $_SESSION['csrf']=bin2hex
 function checkCsrf(): void { if(!hash_equals(csrf(), (string)($_POST['csrf'] ?? ''))) {http_response_code(403);exit('Ungueltige Anfrage.');} }
 function redirect(string $url='index.php'): never {header('Location: '.$url, true, 303);exit;}
 
+// After uploading a new package over an older database: owner pages lead to the guided update first.
+if(!empty($_SESSION['admin_id'])&&!in_array(basename($_SERVER['SCRIPT_NAME']??''),['update.php','backup_download.php','index.php','setup.php'],true)){require_once dirname(__DIR__).'/private/web_update.php';if(!gszSchemaCurrent($pdo))redirect('update.php');}
 // Shared frame for authenticated HTML pages only; exports keep their exact bytes.
 if(!empty($_SESSION['admin_id'])){
  require_once dirname(__DIR__).'/private/layout.php';$page=basename($_SERVER['SCRIPT_NAME']??'');
- $htmlPages=['index.php','planner.php','recurring.php','customers.php','property.php','appointments.php','task.php','object_import.php','workers.php','worklogs.php','worklog_photos.php','mail.php','compose.php','documents.php','invoices.php','invoice.php','offers.php','accounting.php','bank.php','receivables.php','finance_recurrences.php','cash_assets.php','estate.php','estate_bank.php','estate_settlements.php','route.php','waste.php','waste_setup.php','settings.php','connections.php','bank_connections.php','system_check.php','seo.php','update.php'];
+ $htmlPages=['index.php','planner.php','recurring.php','customers.php','property.php','appointments.php','task.php','object_import.php','workers.php','worklogs.php','worklog_photos.php','mail.php','compose.php','documents.php','estate.php','estate_bank.php','estate_settlements.php','route.php','waste.php','waste_setup.php','settings.php','connections.php','system_check.php','seo.php','update.php'];
  if(in_array($page,$htmlPages,true)){$layoutCsrf=csrf();ob_start(static fn(string $html):string=>empty($_SESSION['admin_id'])?$html:gszLayoutDocument($html,$page,$layoutCsrf));}
 }

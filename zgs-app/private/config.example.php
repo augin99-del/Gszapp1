@@ -1,20 +1,12 @@
 <?php
 // All keys can be overridden by GSZ_<UPPERCASE_KEY> server environment variables.
 return [
-  'allow_unvalidated_xml' => false, // prototype, not a valid e-invoice
-  'allow_invoice_issue' => false, // explicit technical/fiscal release needed before issue/correction
   'audit_enabled' => true,
   'maintenance' => false,
-  'banking_enabled'=>false,
-  'banking_live_approved'=>false,
-  'banking_provider'=>'enablebanking',
-  'banking_app_id'=>'',
-  'banking_private_key'=>'',
-  'banking_redirect_uri'=>'',
   'allow_web_update' => false, // temporary, authenticated owner + reauthentication + backup evidence
   'automation_schedule_enabled' => false, // enable only after real hosting cron setup
   'automation_interval_minutes' => 30,
-  'automation_scheduled_jobs' => 'tasks,planning,bank,reminders', // mail only with --mail-sync; configured v360 property calendars also run in the base job
+  'automation_scheduled_jobs' => 'tasks,planning,reminders', // mail only with --mail-sync; configured v360 property calendars also run in the base job
   'seo_provider' => 'none', // no live ranking API enabled; verified CSV import works offline
 
   'session_idle_seconds' => 1800,
@@ -25,7 +17,6 @@ return [
   'mail_trash_folder' => '',
   'mail_archive_folder' => '',
   'mail_sync_limit' => 50,
-  'bank_import_max_rows' => 1000,
   'waste_sync_config_json' => '', // private explicit source-ID/HTTPS-host/URL/fraction mapping; no invented defaults
 
   'routing_cache_ttl' => 3600, // seconds, clamped 60..86400
@@ -49,13 +40,5 @@ return [
   'smtp_host' => 'smtp.strato.de', // STRATO SMTP-Hostname aus Kundenbereich
   'smtp_port' => 465, // SSL/TLS;587 STARTTLS nur bei bestätigtem Serverprofil
   'mail_from' => '', // Verifizierte Absenderadresse des Postfachs
-  // Vollständige Rechnungsstellerdaten vor Ausstellung konfigurieren.
-  'invoice_issuer_name' => '',
-  'invoice_issuer_address' => '', // Zeilenumbrüche erlaubt
-  'invoice_tax_id' => '',
-  'invoice_vat_id' => '',
-  'invoice_iban' => '',
-  'invoice_bic' => '',
-  'invoice_bank' => '',
   'setup_key' => 'HIER_EINEN_LANGEN_ZUFAELLIGEN_EINMALCODE_EINTRAGEN',
 ];

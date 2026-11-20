@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__.'/finance_core.php';
+require_once __DIR__.'/money.php';require_once __DIR__.'/planning_engine.php';
 function estateMonth(string $month):string {if(preg_match('/^\d{4}-\d{2}$/D',$month))$month.='-01';if(!zgsValidDate($month)||substr($month,8)!=='01')throw new InvalidArgumentException('Kalendermonat JJJJ-MM erforderlich.');return $month;}
 function estateDays(string $from,string $to):int {if(!zgsValidDate($from)||!zgsValidDate($to)||$from>$to)throw new InvalidArgumentException('Zeitraum ungültig.');return (int)(new DateTimeImmutable($from,new DateTimeZone('Europe/Berlin')))->diff(new DateTimeImmutable($to,new DateTimeZone('Europe/Berlin')))->days+1;}
 function estateRentMath(array $lease,array $terms,string $month):array {

@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-// Column/identity contract from the locally migration-tested v370 schema. No records.
+// Column/identity contract from the locally migration-tested v380 schema. No records.
 return array (
   'tables' => 
   array (
@@ -30,49 +30,6 @@ return array (
     array (
       0 => 'id',
     ),
-    'asset_events' => 
-    array (
-      0 => 'id',
-      1 => 'asset_id',
-      2 => 'admin_id',
-      3 => 'action',
-      4 => 'detail_json',
-      5 => 'created_at',
-    ),
-    'asset_plan_rows' => 
-    array (
-      0 => 'id',
-      1 => 'asset_id',
-      2 => 'year',
-      3 => 'amount_cents',
-    ),
-    'asset_register' => 
-    array (
-      0 => 'id',
-      1 => 'number',
-      2 => 'name',
-      3 => 'acquired_on',
-      4 => 'in_service_on',
-      5 => 'acquisition_cents',
-      6 => 'residual_cents',
-      7 => 'document_id',
-      8 => 'property_id',
-      9 => 'notes',
-      10 => 'status',
-      11 => 'review_reference',
-      12 => 'reviewed_by',
-      13 => 'reviewed_at',
-      14 => 'retired_on',
-      15 => 'retirement_reason',
-      16 => 'row_version',
-      17 => 'request_key',
-      18 => 'created_at',
-    ),
-    'asset_sequences' => 
-    array (
-      0 => 'year',
-      1 => 'last_number',
-    ),
     'automation_state' => 
     array (
       0 => 'job_key',
@@ -83,85 +40,6 @@ return array (
       5 => 'duration_ms',
       6 => 'result_json',
       7 => 'last_error_code',
-    ),
-    'bank_accounts' => 
-    array (
-      0 => 'id',
-      1 => 'name',
-      2 => 'currency',
-      3 => 'opening_balance_cents',
-      4 => 'opening_date',
-      5 => 'import_iban_hash',
-    ),
-    'bank_connections' => 
-    array (
-      0 => 'slot',
-      1 => 'admin_id',
-      2 => 'provider',
-      3 => 'institution',
-      4 => 'status',
-      5 => 'business_account_id',
-      6 => 'estate_account_id',
-      7 => 'iban_hash',
-      8 => 'state_hash',
-      9 => 'pending_until',
-      10 => 'payload',
-      11 => 'consent_until',
-      12 => 'last_attempt_at',
-      13 => 'last_success_at',
-      14 => 'last_error_code',
-      15 => 'balance_cents',
-      16 => 'balance_type',
-      17 => 'balance_at',
-    ),
-    'bank_imports' => 
-    array (
-      0 => 'token',
-      1 => 'account_id',
-      2 => 'admin_id',
-      3 => 'file_hash',
-      4 => 'payload',
-      5 => 'created_at',
-      6 => 'applied_at',
-    ),
-    'bank_transactions' => 
-    array (
-      0 => 'id',
-      1 => 'account_id',
-      2 => 'source_key',
-      3 => 'record_hash',
-      4 => 'external_id',
-      5 => 'booked_on',
-      6 => 'value_on',
-      7 => 'amount_cents',
-      8 => 'currency',
-      9 => 'purpose',
-      10 => 'counterparty',
-      11 => 'created_at',
-    ),
-    'cash_accounts' => 
-    array (
-      0 => 'id',
-      1 => 'name',
-      2 => 'opening_on',
-      3 => 'opening_cents',
-      4 => 'opening_note',
-      5 => 'initialized_by',
-      6 => 'initialized_at',
-    ),
-    'cash_entries' => 
-    array (
-      0 => 'id',
-      1 => 'account_id',
-      2 => 'occurred_on',
-      3 => 'kind',
-      4 => 'amount_cents',
-      5 => 'description',
-      6 => 'payment_id',
-      7 => 'reversal_of',
-      8 => 'request_key',
-      9 => 'admin_id',
-      10 => 'created_at',
     ),
     'customers' => 
     array (
@@ -213,6 +91,7 @@ return array (
       2 => 'reference',
       3 => 'row_version',
       4 => 'import_iban_hash',
+      5 => 'building_id',
     ),
     'estate_bank_transactions' => 
     array (
@@ -227,6 +106,22 @@ return array (
       8 => 'currency',
       9 => 'purpose',
       10 => 'counterparty',
+      11 => 'counterparty_iban_hash',
+    ),
+    'estate_bank_uploads' => 
+    array (
+      0 => 'id',
+      1 => 'account_id',
+      2 => 'admin_id',
+      3 => 'uploaded_on',
+      4 => 'uploaded_at',
+      5 => 'file_hash',
+      6 => 'format',
+      7 => 'period_from',
+      8 => 'period_to',
+      9 => 'rows_total',
+      10 => 'rows_new',
+      11 => 'rows_known',
     ),
     'estate_buildings' => 
     array (
@@ -367,6 +262,21 @@ return array (
       2 => 'landlord_address',
       3 => 'row_version',
     ),
+    'estate_settlements' => 
+    array (
+      0 => 'id',
+      1 => 'building_id',
+      2 => 'period_from',
+      3 => 'period_to',
+      4 => 'as_of',
+      5 => 'version',
+      6 => 'proposal_token',
+      7 => 'snapshot_json',
+      8 => 'snapshot_hash',
+      9 => 'supersedes_id',
+      10 => 'created_by',
+      11 => 'created_at',
+    ),
     'estate_settlement_documents' => 
     array (
       0 => 'id',
@@ -385,21 +295,6 @@ return array (
       5 => 'created_at',
       6 => 'applied_id',
     ),
-    'estate_settlements' => 
-    array (
-      0 => 'id',
-      1 => 'building_id',
-      2 => 'period_from',
-      3 => 'period_to',
-      4 => 'as_of',
-      5 => 'version',
-      6 => 'proposal_token',
-      7 => 'snapshot_json',
-      8 => 'snapshot_hash',
-      9 => 'supersedes_id',
-      10 => 'created_by',
-      11 => 'created_at',
-    ),
     'estate_tenants' => 
     array (
       0 => 'id',
@@ -410,6 +305,8 @@ return array (
       5 => 'notes',
       6 => 'row_version',
       7 => 'created_at',
+      8 => 'payer_names',
+      9 => 'iban_hash',
     ),
     'estate_terms' => 
     array (
@@ -440,192 +337,10 @@ return array (
       4 => 'notes',
       5 => 'row_version',
     ),
-    'finance_payments' => 
-    array (
-      0 => 'id',
-      1 => 'receipt_id',
-      2 => 'invoice_id',
-      3 => 'bank_transaction_id',
-      4 => 'allocation_key',
-      5 => 'paid_on',
-      6 => 'amount_cents',
-      7 => 'tax_cents',
-      8 => 'request_key',
-      9 => 'reversal_of',
-      10 => 'reason',
-      11 => 'admin_id',
-      12 => 'created_at',
-    ),
-    'finance_receipts' => 
-    array (
-      0 => 'id',
-      1 => 'document_id',
-      2 => 'number',
-      3 => 'status',
-      4 => 'merchant',
-      5 => 'receipt_date',
-      6 => 'direction',
-      7 => 'gross_cents',
-      8 => 'net_cents',
-      9 => 'tax_cents',
-      10 => 'tax_rate',
-      11 => 'category',
-      12 => 'payment_method',
-      13 => 'property_id',
-      14 => 'predecessor_id',
-      15 => 'correction_reason',
-      16 => 'version',
-      17 => 'mail_attachment_id',
-      18 => 'created_at',
-    ),
-    'finance_recurrence_occurrences' => 
-    array (
-      0 => 'id',
-      1 => 'recurrence_id',
-      2 => 'scheduled_for',
-      3 => 'invoice_id',
-      4 => 'task_id',
-      5 => 'created_at',
-    ),
-    'finance_recurrence_proposals' => 
-    array (
-      0 => 'token',
-      1 => 'admin_id',
-      2 => 'recurrence_id',
-      3 => 'fingerprint',
-      4 => 'payload',
-      5 => 'created_at',
-      6 => 'applied_at',
-    ),
-    'finance_recurrence_revisions' => 
-    array (
-      0 => 'id',
-      1 => 'recurrence_id',
-      2 => 'admin_id',
-      3 => 'old_json',
-      4 => 'new_json',
-      5 => 'created_at',
-    ),
-    'finance_recurrences' => 
-    array (
-      0 => 'id',
-      1 => 'kind',
-      2 => 'title',
-      3 => 'source_invoice_id',
-      4 => 'property_id',
-      5 => 'frequency',
-      6 => 'next_due_date',
-      7 => 'anchor_day',
-      8 => 'due_days',
-      9 => 'expected_cents',
-      10 => 'notes',
-      11 => 'active',
-      12 => 'row_version',
-      13 => 'created_at',
-    ),
-    'invoice_events' => 
-    array (
-      0 => 'id',
-      1 => 'invoice_id',
-      2 => 'admin_id',
-      3 => 'event_type',
-      4 => 'detail',
-      5 => 'created_at',
-    ),
-    'invoice_items' => 
-    array (
-      0 => 'id',
-      1 => 'invoice_id',
-      2 => 'position',
-      3 => 'description',
-      4 => 'quantity',
-      5 => 'unit',
-      6 => 'unit_price',
-      7 => 'tax_rate',
-      8 => 'net_amount',
-      9 => 'tax_amount',
-      10 => 'gross_amount',
-    ),
-    'invoice_reminder_proposals' => 
-    array (
-      0 => 'token',
-      1 => 'admin_id',
-      2 => 'invoice_id',
-      3 => 'fingerprint',
-      4 => 'payload',
-      5 => 'created_at',
-      6 => 'applied_id',
-    ),
-    'invoice_reminders' => 
-    array (
-      0 => 'id',
-      1 => 'invoice_id',
-      2 => 'stage',
-      3 => 'issued_on',
-      4 => 'due_on',
-      5 => 'outstanding_cents',
-      6 => 'body',
-      7 => 'pdf_sha256',
-      8 => 'pdf_size',
-      9 => 'created_by',
-      10 => 'created_at',
-    ),
-    'invoice_sequences' => 
-    array (
-      0 => 'year',
-      1 => 'last_number',
-    ),
-    'invoices' => 
-    array (
-      0 => 'id',
-      1 => 'customer_id',
-      2 => 'property_id',
-      3 => 'number',
-      4 => 'status',
-      5 => 'invoice_date',
-      6 => 'service_date',
-      7 => 'due_date',
-      8 => 'recipient_name',
-      9 => 'recipient_address',
-      10 => 'recipient_email',
-      11 => 'issuer_name',
-      12 => 'issuer_address',
-      13 => 'issuer_tax_id',
-      14 => 'issuer_vat_id',
-      15 => 'issuer_iban',
-      16 => 'issuer_bic',
-      17 => 'issuer_bank',
-      18 => 'currency',
-      19 => 'notes',
-      20 => 'net_total',
-      21 => 'tax_total',
-      22 => 'gross_total',
-      23 => 'issued_at',
-      24 => 'paid_at',
-      25 => 'cancelled_at',
-      26 => 'created_at',
-      27 => 'updated_at',
-      28 => 'document_kind',
-      29 => 'source_document_id',
-      30 => 'correction_document_id',
-      31 => 'archived_pdf_sha256',
-      32 => 'archived_pdf_size',
-      33 => 'archived_pdf_at',
-    ),
     'mail_attachments' => 
     array (
       0 => 'id',
       1 => 'message_id',
-      2 => 'original_name',
-      3 => 'mime_type',
-      4 => 'stored_name',
-      5 => 'size_bytes',
-      6 => 'sha256',
-    ),
-    'mail_draft_attachments' => 
-    array (
-      0 => 'id',
-      1 => 'draft_id',
       2 => 'original_name',
       3 => 'mime_type',
       4 => 'stored_name',
@@ -654,6 +369,16 @@ return array (
       17 => 'sent_copy_uid',
       18 => 'sent_copy_uncertain',
       19 => 'bcc_address',
+    ),
+    'mail_draft_attachments' => 
+    array (
+      0 => 'id',
+      1 => 'draft_id',
+      2 => 'original_name',
+      3 => 'mime_type',
+      4 => 'stored_name',
+      5 => 'size_bytes',
+      6 => 'sha256',
     ),
     'mail_folders' => 
     array (
@@ -694,11 +419,6 @@ return array (
       1 => 'sender_pattern',
       2 => 'important',
       3 => 'active',
-    ),
-    'offer_sequences' => 
-    array (
-      0 => 'year',
-      1 => 'last_number',
     ),
     'operations_events' => 
     array (
@@ -777,11 +497,6 @@ return array (
       10 => 'row_version',
       11 => 'waste_out_offset',
       12 => 'waste_in_offset',
-    ),
-    'receipt_sequences' => 
-    array (
-      0 => 'year',
-      1 => 'last_number',
     ),
     'recurring_completions' => 
     array (
@@ -981,17 +696,6 @@ return array (
       1 => 'direction',
       2 => 'task_id',
     ),
-    'work_log_photos' => 
-    array (
-      0 => 'id',
-      1 => 'work_log_id',
-      2 => 'stored_name',
-      3 => 'original_name',
-      4 => 'mime_type',
-      5 => 'size_bytes',
-      6 => 'label',
-      7 => 'created_at',
-    ),
     'work_logs' => 
     array (
       0 => 'id',
@@ -1003,30 +707,25 @@ return array (
       6 => 'notes',
       7 => 'created_at',
     ),
+    'work_log_photos' => 
+    array (
+      0 => 'id',
+      1 => 'work_log_id',
+      2 => 'stored_name',
+      3 => 'original_name',
+      4 => 'mime_type',
+      5 => 'size_bytes',
+      6 => 'label',
+      7 => 'created_at',
+    ),
   ),
   'unique_keys' => 
   array (
-    'bank_accounts' => 
-    array (
-      0 => 'id',
-      1 => 'name',
-      2 => 'import_iban_hash',
-    ),
-    'bank_connections' => 
-    array (
-      0 => 'slot',
-      1 => 'iban_hash',
-      2 => 'state_hash',
-    ),
-    'bank_transactions' => 
-    array (
-      0 => 'id',
-      1 => 'account_id,source_key',
-    ),
     'estate_bank_accounts' => 
     array (
       0 => 'id',
       1 => 'import_iban_hash',
+      2 => 'building_id',
     ),
     'estate_bank_transactions' => 
     array (
@@ -1115,5 +814,6 @@ return array (
     15 => '350_final',
     16 => '360_waste_connections',
     17 => '370_bank_connections',
+    18 => '380_zentrale',
   ),
 );

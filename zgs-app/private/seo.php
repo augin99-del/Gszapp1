@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__.'/finance_core.php';
+require_once __DIR__.'/money.php';require_once __DIR__.'/planning_engine.php';
 interface GszSeoProvider {public function collect(array $keyword):array;}
 final class GszSeoDisconnected implements GszSeoProvider {public function collect(array $keyword):array{throw new RuntimeException('BLOCKED: Keine autorisierte Rankingquelle eingerichtet. Eigene belegbare Messdaten als CSV importieren.');}}
 function seoText(string $s,int $max):string {$s=trim($s);if($s===''||mb_strlen($s)>$max||!mb_check_encoding($s,'UTF-8')||preg_match('/[\x00-\x1f\x7f]/',$s))throw new InvalidArgumentException('SEO-Text fehlt/ungültig.');return $s;}
