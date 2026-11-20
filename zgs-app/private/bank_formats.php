@@ -39,3 +39,60 @@ function bankPossibleDuplicates(PDO $pdo,string $table,int $account,array $rows,
  if(!$check||!$rows)return [];if($table!=='estate_bank_transactions')throw new InvalidArgumentException('Umsatztabelle ungültig.');$dates=array_column($rows,'booked_on');$q=$pdo->prepare('SELECT id,source_key,external_id,booked_on,amount_cents,currency FROM '.$table.' WHERE account_id=? AND booked_on BETWEEN ? AND ? ORDER BY id LIMIT 5001');$q->execute([$account,min($dates),max($dates)]);$existing=$q->fetchAll(PDO::FETCH_ASSOC);if(count($existing)>5000)throw new RuntimeException('Dublettenprüfung: Importzeitraum auf weniger als5000Bestandsumsätze begrenzen.');$keys=array_column($existing,null,'source_key');$groups=[];foreach($existing as $e)$groups[$e['booked_on'].':'.$e['amount_cents'].':'.$e['currency']][]=$e;$out=[];foreach($rows as $r){if(isset($keys[$r['source_key']]))continue;foreach($groups[$r['booked_on'].':'.$r['amount_cents'].':'.$r['currency']]??[] as $e){$out[]=['incoming_external'=>$r['external_id'],'existing_id'=>(int)$e['id'],'existing_external'=>$e['external_id']];if(count($out)>2000)throw new RuntimeException('Mehr als2000mögliche Dubletten: Zeitraum eingrenzen.');}}return $out;
 }
 function bankReviewPossible(array $preview,array $current,bool $acknowledged):void {if($current!==$preview)throw new RuntimeException('Ähnliche Umsätze seit Vorschau geändert. Neue Vorschau erforderlich.');if($current&&!$acknowledged)throw new RuntimeException('Ähnliche Umsätze mit gleicher Buchung/Betrag bei CAMT-/CSV-Wechsel ausdrücklich auf unterschiedliche Bankreferenzen prüfen.');}
+/**
+ * Volksbank/Raiffeisenbank (Atruvia „VR Banking“) Umsatz-CSV. Robust gegenüber Kopfzeilen-Varianten, Vorspann,
+ * Windows-1252, deutschem Datum/Betrag und S/H-Kennzeichen. Kein echter Export lag bei der Entwicklung vor.
+ * Da diese CSV keine Bank-Transaktions-ID enthält, wird eine stabile Kennung aus den Buchungsdaten gebildet
+ * (inkl. „Saldo nach Buchung“, falls vorhanden) plus laufender Nummer für völlig identische Zeilen desselben Tages.
+ * So erkennen überlappende Exporte dieselben Umsätze wieder, ohne echte gleichartige Zahlungen zu verschlucken.
+ */
+const BANK_VB_COLUMNS=[
+ 'booked_on'=>['buchungstag','buchungsdatum','buchung'],
+ 'value_on'=>['valutadatum','valuta','wertstellung','wertstellungsdatum'],
+ 'amount'=>['betrag','umsatz','betrag (eur)','betrag in eur','betrag eur'],
+ 'currency'=>['waehrung','währung','whrg','wkz'],
+ 'counterparty'=>['name zahlungsbeteiligter','empfänger/zahlungspflichtiger','empfaenger/zahlungspflichtiger','auftraggeber/empfänger','auftraggeber/empfaenger','zahlungsempfänger','zahlungspflichtiger','beguenstigter/zahlungspflichtiger','begünstigter/zahlungspflichtiger','name'],
+ 'counterparty_iban'=>['iban zahlungsbeteiligter','iban','kontonummer/iban','iban/kontonummer'],
+ 'purpose'=>['verwendungszweck','vorgang/verwendungszweck','zweck'],
+ 'booking_text'=>['buchungstext','umsatzart','vorgang'],
+ 'balance'=>['saldo nach buchung','saldo'],
+ 'own_iban'=>['iban auftragskonto','iban auftraggeberkonto','auftragskonto iban','iban kontoinhaber'],
+ 'sign'=>['soll/haben','s/h','soll-haben'],
+];
+function bankVbDate(string $raw):string {
+ $raw=trim($raw);if(zgsValidDate($raw))return $raw;if(!preg_match('/^(\d{1,2})\.(\d{1,2})\.(\d{2}|\d{4})$/D',$raw,$m))throw new InvalidArgumentException('Datum im Kontoexport nicht lesbar: '.mb_substr($raw,0,20));
+ $y=strlen($m[3])===2?2000+(int)$m[3]:(int)$m[3];$iso=sprintf('%04d-%02d-%02d',$y,(int)$m[2],(int)$m[1]);if(!zgsValidDate($iso))throw new InvalidArgumentException('Ungültiges Datum im Kontoexport.');return $iso;
+}
+function bankVbAmount(string $raw):int {
+ $raw=str_replace(["\u{00A0}",' ','EUR','€'],'',trim($raw));if($raw==='')throw new InvalidArgumentException('Betrag fehlt.');if(preg_match('/^[+-]?\d+(\.\d{1,2})?$/D',$raw)&&!str_contains($raw,','))return financeCents($raw,'iso');return financeCents($raw,'de');
+}
+function bankVbNorm(string $s):string {return mb_strtolower(trim(preg_replace('/\s+/u',' ',str_replace(["\u{00A0}",'"'],' ',$s))));}
+function bankLooksLikeCamt(string $raw):bool {$head=substr(ltrim($raw,"\xEF\xBB\xBF\r\n\t "),0,4096);return str_starts_with($head,'<?xml')||str_contains($head,'<Document')||str_contains($head,'camt.05');}
+function bankCamtFirstIban(string $raw):string {if(!preg_match('~<(?:\w+:)?Acct>\s*<(?:\w+:)?Id>\s*<(?:\w+:)?IBAN>\s*([A-Z0-9 ]{15,40})\s*</~',$raw,$m))throw new InvalidArgumentException('Im CAMT-Auszug wurde keine Konto-IBAN gefunden.');return bankIban($m[1]);}
+/** @return array{rows:array,own_iban:?string,period:array} */
+function bankParseVolksbankCsv(string $raw,int $maxRows=5000):array {
+ if(strlen($raw)>4*1024*1024||str_contains($raw,"\0"))throw new InvalidArgumentException('Kontoexport zu groß (maximal 4 MB) oder keine Textdatei.');
+ $raw=preg_replace('/^\xEF\xBB\xBF/','',$raw);if(!mb_check_encoding($raw,'UTF-8'))$raw=mb_convert_encoding($raw,'UTF-8','Windows-1252');
+ $lines=preg_split('/\r\n|\n|\r/',$raw);$headerAt=null;$delimiter=';';
+ foreach(array_slice($lines,0,40,true) as $i=>$line){$low=mb_strtolower($line);if((str_contains($low,'buchungstag')||str_contains($low,'buchungsdatum'))&&(str_contains($low,'betrag')||str_contains($low,'umsatz'))){$headerAt=$i;$delimiter=substr_count($line,';')>=substr_count($line,',')?';':',';break;}}
+ if($headerAt===null)throw new InvalidArgumentException('Keine Kopfzeile mit „Buchungstag“ und „Betrag“ gefunden. Bitte den CSV-Umsatzexport der Volksbank verwenden.');
+ $f=fopen('php://temp','w+');fwrite($f,implode("\n",array_slice($lines,$headerAt)));rewind($f);$header=array_map('bankVbNorm',fgetcsv($f,0,$delimiter,'"','')?:[]);
+ $col=[];foreach(BANK_VB_COLUMNS as $key=>$names){foreach($names as $name){$at=array_search($name,$header,true);if($at!==false){$col[$key]=$at;break;}}}
+ foreach(['booked_on','amount'] as $need)if(!isset($col[$need]))throw new InvalidArgumentException('Spalte fehlt im Kontoexport: '.($need==='amount'?'Betrag':'Buchungstag').'.');
+ if(isset($col['counterparty'],$col['own_iban'])&&$col['counterparty']===$col['own_iban'])unset($col['own_iban']);
+ $out=[];$seen=[];$own=null;
+ while(($row=fgetcsv($f,0,$delimiter,'"',''))!==false){if($row===[null]||!array_filter($row,fn($v)=>trim((string)$v)!==''))continue;$get=fn(string $k)=>isset($col[$k])?trim((string)($row[$col[$k]]??'')):'';
+  if($get('booked_on')===''||preg_match('/^(summe|saldo|anfangssaldo|endsaldo|kontostand)/i',$get('booked_on')))continue;
+  $booked=bankVbDate($get('booked_on'));$value=$get('value_on')!==''?bankVbDate($get('value_on')):$booked;$amount=bankVbAmount($get('amount'));$sign=mb_strtoupper($get('sign'));if($sign==='S'&&$amount>0)$amount=-$amount;
+  $currency=$get('currency')!==''?mb_strtoupper($get('currency')):'EUR';if($currency!=='EUR')throw new InvalidArgumentException('Nur EUR-Konten werden unterstützt.');
+  if($get('own_iban')!==''){$iban=bankIban($get('own_iban'));if($own!==null&&$own!==$iban)throw new InvalidArgumentException('Die Datei enthält Umsätze mehrerer Konten. Bitte je Konto einzeln exportieren.');$own=$iban;}
+  $cpIban='';if($get('counterparty_iban')!==''){try{$cpIban=bankIban($get('counterparty_iban'));}catch(Throwable $e){$cpIban='';}}
+  $purpose=mb_substr($get('purpose'),0,2000);$counterparty=mb_substr($get('counterparty'),0,500);
+  $identity=json_encode([$own,$booked,$value,$amount,$counterparty,$cpIban,$purpose,$get('booking_text'),$get('balance')],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);$seen[$identity]=($seen[$identity]??0)+1;
+  $external='vb-'.substr(hash('sha256',$identity),0,40).'-'.$seen[$identity];
+  $item=['external_id'=>$external,'booked_on'=>$booked,'value_on'=>$value,'amount_cents'=>$amount,'currency'=>'EUR','purpose'=>$purpose,'counterparty'=>$counterparty];
+  $item['record_hash']=hash('sha256',json_encode($item,JSON_THROW_ON_ERROR));$item['source_key']=hash('sha256',$external);$item['counterparty_iban_hash']=$cpIban!==''?hash('sha256',$cpIban):null;$out[]=$item;
+  if(count($out)>$maxRows)throw new RuntimeException('Mehr als '.$maxRows.' Umsätze in einer Datei. Bitte kürzeren Zeitraum exportieren.');}
+ fclose($f);if(!$out)throw new InvalidArgumentException('Der Kontoexport enthält keine gebuchten Umsätze.');
+ $dates=array_column($out,'booked_on');return ['rows'=>$out,'own_iban'=>$own,'period'=>[min($dates),max($dates)]];
+}
