@@ -1,20 +1,34 @@
-# Hintergrundläufe, Sperren und manueller Ersatz
+# Cronjobs (STRATO)
 
-STRATO-Tarif/SSH/Cron-Funktionen sind vor Ort zu prüfen. Keine öffentliche Gratis-Cron-URL und kein geheimer Token in URL. CLI-Dateien bleiben unter private/, HTTP-Aufrufe verweigert. CLI-PHP muss dieselbe Version/Extensions und sichere Konfiguration wie Web-PHP verwenden. Absolute Pfade und Rechte prüfen.
+Ob und wie oft Cronjobs laufen dürfen, hängt vom STRATO-Tarif ab – vor Ort im Kundenbereich prüfen.
+Alle Einstiege liegen in `private/` und verweigern Aufrufe über HTTP. Absolute Pfade verwenden.
 
-Basislauf, z.B. alle30 Minuten (Intervall im tatsächlich vorhandenen STRATO-Cronbereich einstellen):
+## Grundlauf (empfohlen alle 30–60 Minuten)
 
 ```sh
 /ABSOLUTER/PFAD/php /ABSOLUTER/PFAD/zgs-app/private/cron_gesamt.php
 ```
 
-Erzeugt fällige Aufgaben idempotent und einen unapplizierten Wochenvorschlag. Keine automatische Planübernahme, keine Mail, kein Bankabruf. Bestehender cron_scheduler.php ist ein kompatibler Einstieg für dieselbe Automation340. Datenbankspezifische Advisory-Sperre verhindert gleichzeitige Läufe; letzter Start/Erfolg/Fehler/Dauer steht in automation_state und im Systemcheck. Exit2 bei blockiertem Job, Exit0 bei Erfolg/parallel bereits laufend. Abgebrochene running-Läufe werden beim nächsten exklusiven Lauf als unterbrochen markiert.
+Legt fällige Regelaufgaben an (ohne Dubletten), bereitet einen Wochenvorschlag vor (wird nicht ungefragt übernommen),
+zählt Erinnerungen und gleicht – falls eingerichtet – die Abfallkalender ab (inkl. Neuzusammensetzen der Tonnen-Blöcke
+bei Terminverschiebungen). Kein Bankabruf mehr (entfernt).
 
-Nur nach eingerichteten und freigegebenen Quellen/Postfach:
+## Mit Mailabruf
 
 ```sh
-/ABSOLUTER/PFAD/php /ABSOLUTER/PFAD/zgs-app/private/cron_gesamt.php --calendar-sync
 /ABSOLUTER/PFAD/php /ABSOLUTER/PFAD/zgs-app/private/cron_gesamt.php --mail-sync
 ```
 
-Optional beide Flags. Mail-Sync liest Posteingang begrenzt und versendet nichts. Kalender erzeugt ohne auto_apply ausschließlich eine sichtbare Prüfung; Bestätigung bleibt erforderlich. Lokaler Test kann keine tatsächliche STRATO-Ausführung beweisen. Protokolle privat speichern/rotieren, keine Konfiguration/SMTP-Transkripte/Bankdaten loggen. Bei Wartungsmodus verweigern CLI-Einstiege den Lauf. Ohne verifizierten Cron im Systemcheck angemeldet „Fällige Regelaufgaben aktualisieren“ verwenden; das ist ein manueller POST mit CSRF, keine vorgetäuschte Automatik.
+Nutzt denselben gespeicherten Postfachzugang wie die Oberfläche (verschlüsselt in `private/secrets/`).
+Hat das Postfach das Passwort abgelehnt, bricht der Lauf **ohne Anmeldeversuch** ab, bis das Passwort in der
+Oberfläche neu eingetragen ist. Versendet nie eine Mail.
+
+`--calendar-sync` erzwingt den Kalenderabgleich zusätzlich. Beide Flags sind kombinierbar.
+
+## Kontrolle
+
+Mehr → Einstellungen → Systemstatus → „Hintergrundaufgaben (Cron)“: letzter erfolgreicher Lauf je Aufgabe.
+Ein Lauf von Hand („Hintergrundaufgaben jetzt ausführen“) beweist nicht, dass der STRATO-Cron eingerichtet ist.
+Exit-Code 0 = in Ordnung, 2 = eine Aufgabe blockiert (Details im Systemstatus, keine Zugangsdaten in der Ausgabe).
+
+Nicht mehr vorhanden: der Job „bank“ (Bankimport-Prüfliste) – wurde mit Migration 380 entfernt.

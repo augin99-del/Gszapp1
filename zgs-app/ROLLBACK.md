@@ -1,11 +1,39 @@
-# Rückfallplan Version1.0 / Schema340
+# Rollback 380 → 370
 
-Vor Upgrade: konsistente Datenbank UND vollständiger privater Dateibestand (Konfiguration, Vault, Originale/Uploads), alter Programmstand, Domainzuordnung/PHP-Konfiguration sichern. Sicherungen vertraulich außerhalb Webroot, verschlüsselt aufbewahren; Rücksicherung auf separater Testkopie nachweisen. Begleitend Dateihashes/Tabellenanzahl/Fremdschlüssel/Zeitraum festhalten, keine Kontodaten im Prüfbericht.
+Nur nötig, wenn nach dem Update etwas grundlegend nicht funktioniert. Das Update entfernt die Finanztabellen
+endgültig; zurück geht es **nur** über die Sicherung aus „Sicherung und Update“ (Schritt 3 der Installation).
 
-Schema340 ist additiv. Es gibt absichtlich keine produktive DROP-/Downmigration: nach Nutzung vorhandene neue Abschluss-/BCC-/Automationsdaten nicht löschen. Bei DDL-Fehler keine Behauptung einer automatischen Transaktionsrücknahme; Teilstruktur untersuchen. Protokollierter Schritt wird nicht blind wiederholt. Sichere Wiederholung nur des noch nicht protokollierten Schritts nach Ursachenprüfung. Kein Fresh auf Bestandsdatenbank.
+## Was du brauchst
 
-Fehler vor Schreibfreigabe: Testinstanz stoppen, neuen Code isolieren, konsistente Sicherung in separate DB/Dateikopie wiederherstellen, prüfen, dann kontrolliert umschalten. Ein Code-Rollback allein ersetzt keinen getesteten DB-/Datei-Restore; v331-Systemcheck erwartet älteren Strukturvertrag. Nicht einzelne neue Spalten löschen, um Warnungen zu unterdrücken.
+- die heruntergeladene Datei `gsz-sicherung-JJJJMMTT-HHMMSS-xxxxxxxx.sql.gz` (vor dem Update erstellt),
+- das alte Paket `GSZ-ZENTRALE-KOMPLETT-STRATO-370.zip`.
 
-Fehler nach neuen Geschäftseingaben: zuerst Schreibzugriffe/Cron pausieren und den fehlerhaften neuesten Stand zusätzlich vertraulich sichern. Änderungen seit Backup erfassen und gemeinsam geordnet nachführen; eine alte Sicherung darf keine neuen Kunden-/Beleg-/Abschlussdaten heimlich verlieren. Umschaltung/Rücksicherung produktiv nur nach ausdrücklicher Freigabe. Keine automatische produktive Wiederherstellung durch diese Lieferung.
+## Weg 1: ohne SSH (phpMyAdmin im STRATO-Kundenbereich)
 
-Lokale Testdatenbank+Privatdatei-Restoreprobe ist bestanden (TESTSTATUS.md); sie beweist nicht die Verfügbarkeit oder Wiederherstellungsdauer des STRATO-Tarifs. Vor Produktivbetrieb tatsächliche RPO/RTO/Backupaufbewahrung vor Ort festlegen und testen.
+1. STRATO-Kundenbereich → Datenbanken → phpMyAdmin für die Zentrale-Datenbank öffnen.
+2. Die Datenbank auswählen → Reiter **Importieren** → die `.sql.gz`-Datei wählen → Ausführen.
+   Die Sicherung löscht zuerst jede gesicherte Tabelle und legt sie neu an; zusätzlich entfernt sie die erst mit
+   380 entstandene Tabelle `estate_bank_uploads`. Ergebnis: exakt der Datenbankstand vor dem Update.
+3. Die Programmdateien aus dem 370-Paket wieder hochladen (`public/` und `private/` ersetzen).
+   Zusätzliche 380-Dateien dürfen liegen bleiben; sie werden von 370 nicht benutzt.
+4. Anmelden und Systemcheck öffnen.
+
+## Weg 2: mit SSH
+
+```sh
+cd zgs-app
+php private/db_restore_cli.php gsz-sicherung-JJJJMMTT-HHMMSS-xxxxxxxx.sql.gz --bestaetigt
+```
+
+Ohne Dateiname zeigt der Befehl die vorhandenen Sicherungen in `private/backups/`. Danach wie oben die 370-Dateien hochladen.
+
+## Was lokal nachgewiesen ist
+
+Die Testsuite `tests/test_final_upgrade.php` erstellt eine Sicherung, aktualisiert 370 → 380 (und 340 → 380),
+spielt die Sicherung in eine zweite leere Datenbank zurück und vergleicht Tabellenstruktur und alle Zeilen:
+**identisch**. Ein Import über STRATO-phpMyAdmin wurde nicht real ausprobiert (siehe OFFENE-PUNKTE.md).
+
+## Mail-Passwort und Einstellungen
+
+Das Mail-Passwort liegt nach dem Update in `private/secrets/` (Vault). 370 liest diesen Speicher nicht; nach einem
+Rollback das Mail-Passwort in 370 wie früher unter „Dienste einrichten“ eintragen.

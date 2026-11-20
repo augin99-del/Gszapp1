@@ -1,30 +1,34 @@
-# GSZ-Zentrale auf STRATO einrichten
+# GSZ-Zentrale 380 – Start hier
 
-Du brauchst nur **GSZ-ZENTRALE-KOMPLETT-STRATO.zip**. Kein Patch, kein Composer, kein SSH und keine SQL-Befehle erforderlich. Das Paket ist ein lokal geprüfter Installationskandidat; der echte STRATO-Betrieb und externe Konten müssen noch abgenommen werden.
+Interne Software des Gebäudeservice Zentrum für genau einen Nutzer (den Inhaber). PHP/MariaDB auf STRATO Shared Hosting.
+Webroot ist ausschließlich `zgs-app/public/`, alles Private liegt in `zgs-app/private/` (außerhalb des Webroots).
 
-1. **Sicherung behalten.** Bestehende Webspace-Dateien und Datenbank sichern. Die vorhandene STRATO-Testdatenbank verwenden, in die deine Sicherung importiert wurde. Die ursprüngliche Datenbank nicht auswählen. Die Sicherung vorher in einer separaten Testdatenbank wiederherstellen und prüfen. Den SHA-256-Wert der geprüften Datenbanksicherung bereithalten (z.B. grafisches Prüfsummenprogramm). Der Assistent ersetzt keinen echten Sicherungsnachweis.
-2. **ZIP hochladen und entpacken.** In einen neuen, leeren STRATO-Testordner entpacken. Keine privaten Konfigurationen oder Belege aus der alten Installation überschreiben. Bei Bestandsübernahme vorhandene private Originalablagen geschützt übernehmen; das Release enthält absichtlich keine Belege oder Zugangsdaten. Ein Dateiupload allein übernimmt keine fehlenden Originaldateien.
-3. **Domainziel einstellen.** Die Testdomain direkt auf `zgs-app/public/` richten, beispielsweise `/GSZ-TEST/zgs-app/public/`. HTTPS aktivieren. `private/` und `tests/` dürfen über keine Domain oder zusätzliche Webspace-Adresse öffentlich erreichbar sein. Eine reine Browserweiterleitung genügt nicht. Meldet der Assistent eine falsche Webwurzel, zuerst die STRATO-Domainzuordnung berichtigen.
-4. **Geschützt starten.** `https://DEINE-TESTDOMAIN/setup.php` öffnen. Der Assistent erzeugt einen zufälligen Code, zeigt ihn aber nicht an. Im STRATO-Dateimanager `zgs-app/private/runtime-setup/access-code.txt` öffnen und den Code ausschließlich in das HTTPS-Formular kopieren. Niemand kann den ersten öffentlichen Seitenaufruf zur Übernahme benutzen. Keine PHP-Datei bearbeiten und keine Passwörter im Chat senden.
-5. **Datenbank verbinden.** Host, Datenbankname, Benutzer und Passwort aus der STRATO-Datenbankverwaltung eingeben. Normalerweise Port3306. Kein `https://` vor den Datenbankhost setzen. Bei defekter alter PHP-Konfiguration nach Prüfung das bewusste Übergehen auswählen. Die alte Datei bleibt erhalten. Der Verbindungstest aktiviert noch keine neue Konfiguration und startet keine Migration. Fehlermeldungen unterscheiden fehlende Treiber, Syntax-/Pfadfehler, DNS, Erreichbarkeit, Anmeldung und Datenbankrechte, ohne Geheimnisse anzuzeigen.
-6. **Bestand übernehmen.** Bei vorhandener Datenbank das bisherige Inhaberpasswort bestätigen. Der Assistent erkennt die Struktur einschließlich Versionshistorie;76Tabellen können320 oder330 bedeuten. Sicherung, Restoreprüfung, Testumgebung/Wartungsfenster und Übernahme ausdrücklich bestätigen. Ziel ist Schema370 mit85Tabellen. Bei unbekannter oder teilweise migrierter Struktur stoppt der Assistent. Nicht neu installieren, Tabellen löschen oder alte SQL-Dateien wiederholen. Bei leerer Datenbank wird die vollständige Anwendung neu eingerichtet; ein individuelles Inhaberpasswort mit mindestens14Zeichen anlegen. Bestehende Inhaber werden nicht ersetzt.
-7. **Postfach und Dienste.** Optional `info@gebaeudeservice-zentrum.de` mit dem Postfachpasswort einrichten. IMAP993/SMTP465 sind fest mit TLS vorbereitet, einschließlich gebündeltem IMAP-Ersatz ohne native PHP-IMAP-Erweiterung. Der Test authentifiziert nur und sendet keine E-Mail. Anschließend unter Einstellungen → Dienste einrichten Ordner/Signatur prüfen; Versand gesondert freigeben und jede Nachricht bestätigen. Keine Bank-PIN/TAN eingeben. Die Bankanbindung benötigt zunächst einen genehmigten Anbieterzugang; sie ist nicht kostenlos oder live verbunden zugesichert. CSV/CAMT funktioniert unabhängig davon.
-8. **Abschließen.** Systemblocker beheben, dann Einrichtung abschließen. Dadurch wird der Wartungsmodus beendet und der Installationszugang gesperrt; der einmalige Code verfällt. Danach normal mit dem Inhaberpasswort anmelden. Zugangsdaten werden verschlüsselt mit separatem privatem Schlüssel gespeichert. Das Verzeichnis `private/server-config/` deshalb stets gemeinsam mit Daten/Dateien geschützt sichern.
+## Was in 380 neu ist
 
-## Einmalige Alltagstests
+| Bereich | Kurz |
+|---|---|
+| Finanzbereich entfernt | Angebote, Rechnungen, Offene Posten/Mahnungen, EÜR, Finanzvorlagen, Kasse/Anlagen, Sparkasse und Live-Bankanbindung sind raus. Buchhaltung läuft in Lexware Office. |
+| Mietabgleich | Zwei Volksbank-Vermieterkonten, Konto = Haus. Monatlicher Upload, Dubletten werden erkannt, Monatsübersicht je Haus, Zuordnen mit einem Tipp. |
+| Abfall | Ein Block je Objekt und Tag („Restmüll und Biotonne rausstellen“), getrennt für Rausstellen und Zurückstellen. |
+| E-Mail | Postfach-Passwort einmal eintragen; verschlüsselt gespeichert; Schutz vor wiederholten Fehlanmeldungen. |
+| Oberfläche | Ruhige, mobile Oberfläche: Heute, Woche, Objekte, Immobilien, Mail, Mehr. |
+| Sicherung | „Sicherung und Update“ erzeugt eine vollständige Datenbanksicherung zum Herunterladen; das Update ist ohne frische Sicherung nicht möglich. |
 
-Anmelden → Dashboard → Objekte prüfen → Aufgabe abschließen/verschieben → neu anmelden → Speicherung prüfen. Dokument hoch-/herunterladen und Rechnungs-PDF prüfen. Rechnungsstellerdaten und echte Ausstellungsfreigabe unter „Dienste einrichten“ erst nach fachlicher/PDF-Prüfung setzen. In jeder Objektakte den Abfallkalender öffnen, vollständige Adresse und betreute Behälter bestätigen. Den Knopf für nativen PHP-HTTPS-Abruf auf STRATO benutzen. Nicht erreichbare Kalender bleiben als Fehler sichtbar; ICS/CSV-Import bleibt möglich.
+## Welches Dokument wofür
 
-STRATO-Cron ist tarifabhängig und noch nicht nachgewiesen. Falls vorhanden, den im Paket enthaltenen privaten CLI-Job `private/cron_gesamt.php` über die geschützte STRATO-Aufgabenverwaltung einplanen; der genaue vollständige Serverpfad wird vom Hosting vorgegeben. Ohne diese Möglichkeit geschützte manuelle Aktualisierung im Systembereich benutzen. Keine öffentliche ungeschützte Cron-URL einrichten.
+| Dokument | Inhalt |
+|---|---|
+| [INSTALLATION-STRATO.md](INSTALLATION-STRATO.md) | Update 370 → 380 über die bestehende Installation (Schritt für Schritt) und Neuinstallation |
+| [ROLLBACK.md](ROLLBACK.md) | Zurück auf 370, falls etwas schiefgeht |
+| [TAEGLICHE-NUTZUNG.md](TAEGLICHE-NUTZUNG.md) | Alltag: Tag abarbeiten, Kontoauszug am 10., Mail, Abfall |
+| [MODULE-STATUS.md](MODULE-STATUS.md) | Was es gibt, was getestet ist, was nicht |
+| [OFFENE-PUNKTE.md](OFFENE-PUNKTE.md) | Was noch real auf STRATO/iPhone/mit echten Daten geprüft werden muss |
+| [CRONJOBS.md](CRONJOBS.md) | Automatische Hintergrundaufgaben bei STRATO |
+| [SICHERHEIT.md](SICHERHEIT.md) | Login, Verschlüsselung, Ablage der Geheimnisse |
+| [CHANGELOG.md](CHANGELOG.md) | Änderungen 370 → 380 |
+| `docs/` | Testbericht, Liste entfernter Dateien/Tabellen, Annahmen, Screenshots; `docs/archiv/` = alte Dokumente (Historie) |
 
-## Bankverbindung
+## Ehrlicher Stand
 
-Unter Bankverbindungen gibt es drei getrennte Plätze: Sparkasse Geschäft, Volksbank Immobilien1 und2. Der vorbereitete Enable-Banking-AIS-Adapter unterstützt Bankweiterleitung, Kontenauswahl und manuelles „Umsätze abrufen“/„Alle Konten aktualisieren“. **Ein Anbieterzugang, tatsächliche Bankunterstützung, Preis-/Vertragsprüfung und Freigabe fehlen noch.** Keinen kostenpflichtigen Vertrag allein aufgrund dieser Anleitung abschließen. Unter Dienste einrichten kann ein geschütztes Anbieterschlüsselpaar ohne Terminal erzeugt werden; nur der öffentliche Schlüssel gehört ins Anbieterportal. Private Schlüssel bleiben verschlüsselt auf dem Server. Live-Abrufe bleiben standardmäßig gesperrt. Mehr dazu BANKING-ANBINDUNG.md.
-
-## Wiederherstellung und Hilfe
-
-Bei einer fehlgeschlagenen Migration nicht blind erneut SQL ausführen. Dateien und Datenbank aus einer gemeinsam geprüften Sicherung in einer separaten Testumgebung wiederherstellen. Vor Rücksetzen zuerst den aktuellen Stand sichern; spätere Geschäftseinträge nicht durch alte Dumps verlieren. MariaDB-DDL ist nicht vollständig transaktional.
-
-Bei später notwendiger Einrichtungsreparatur im privaten Dateimanager `private/runtime-setup/complete.json` sichern und entfernen. Der nächste HTTPS-Aufruf erzeugt einen neuen privaten Code; das bisherige Inhaberpasswort bleibt bei vorhandener Datenbank erforderlich. Nicht bloß die Schlüsseldatei löschen: Ohne passenden Schlüssel lassen sich gespeicherte Geheimnisse nicht wiederherstellen.
-
-Produktive Migration, echte Mailtests, Livebanking und eventuelle Kosten benötigen weiterhin ausdrückliche Freigabe. Ein erfolgreicher lokaler Test ersetzt keine STRATO-Abnahme. Tatsächliche Ergebnisse: TESTSTATUS-FINAL.md; Grenzen und Module: MODULE-FINAL.md.
+Alles hier wurde **lokal** mit synthetischen Daten geprüft (PHP 8.3, MariaDB 10.11, Chromium). **Nicht** geprüft:
+echte STRATO-Umgebung, echter Volksbank-Export, echtes Postfach, echte iPhone/iPad/Mac-Geräte. Siehe OFFENE-PUNKTE.md.

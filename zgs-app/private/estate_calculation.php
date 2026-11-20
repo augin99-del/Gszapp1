@@ -200,7 +200,7 @@ function estateCalcExplicit(array $basis, array $recipients, array $cost, string
     return $result;
 }
 
-/** See ARCHITEKTUR_NEBENKOSTEN_KERN.md for the versioned JSON-compatible contract. */
+/** See docs/archiv/ARCHITEKTUR_NEBENKOSTEN_KERN.md for the versioned JSON-compatible contract. */
 function estateCalculateSettlement(array $input): array
 {
     if (PHP_INT_SIZE < 8) estateCalcInvalid('runtime', '64-Bit-PHP erforderlich');

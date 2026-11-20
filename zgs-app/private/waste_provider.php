@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__.'/waste_sync.php';
-/** Only municipal links verified in QUELLEN_ABFALL.md. Not a Germany-wide directory. */
+/** Only municipal links verified in docs/archiv/QUELLEN_ABFALL.md. Not a Germany-wide directory. */
 function wasteProviderRegistry():array {return [
  'gutersloh'=>['city'=>'Gütersloh','provider'=>'regioit_krwaf','evidence'=>'https://www.guetersloh.de/de/rathaus/fachbereiche-und-einrichtungen/umweltschutz/abfallberatung/abfallnavi.php'],
  'rhedawiedenbruck'=>['city'=>'Rheda-Wiedenbrück','provider'=>'regioit_krwaf','evidence'=>'https://www.rheda-wiedenbrueck.de/umwelt-bauen-verkehr/umwelt-klima/umwelt-abfall/abfall-muellabfuhr/']
