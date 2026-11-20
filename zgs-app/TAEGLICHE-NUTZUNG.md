@@ -71,4 +71,5 @@ Nebenkostenabrechnung, SEO und **Einstellungen** (E-Mail einrichten, Sicherung u
 ## Sicherung
 
 Mehr → Einstellungen → Sicherung und Update → „Sicherung jetzt erstellen“ → herunterladen. Empfehlung: einmal im Monat
-und vor jedem Update.
+und vor jedem Update. Die Sicherung umfasst die Datenbank; hochgeladene Originale (`private/uploads/`) bei Bedarf
+zusätzlich per SFTP sichern.

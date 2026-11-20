@@ -33,6 +33,12 @@ Die Testsuite `tests/test_final_upgrade.php` erstellt eine Sicherung, aktualisie
 spielt die Sicherung in eine zweite leere Datenbank zurück und vergleicht Tabellenstruktur und alle Zeilen:
 **identisch**. Ein Import über STRATO-phpMyAdmin wurde nicht real ausprobiert (siehe OFFENE-PUNKTE.md).
 
+## Hochgeladene Dateien
+
+Die Sicherung enthält die **Datenbank**. Hochgeladene Originale (Dokumente, Fotos, Immobilienbelege in
+`private/uploads/`) verändert das Update nicht; sie bleiben bei einem Rollback einfach liegen. Für eine vollständige
+Notfallsicherung zusätzlich `private/uploads/` gelegentlich per SFTP herunterladen.
+
 ## Mail-Passwort und Einstellungen
 
 Das Mail-Passwort liegt nach dem Update in `private/secrets/` (Vault). 370 liest diesen Speicher nicht; nach einem
