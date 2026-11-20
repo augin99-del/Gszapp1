@@ -24,7 +24,7 @@ function gszRenderDay(PDO $pdo,string $day,string $return):string {
  $b=gszDayBlocks($pdo,$day);$html='';
  if($b['appointments']){$html.='<div class="blocks">';foreach($b['appointments'] as $a)$html.='<article class="block is-appointment"><div class="what"><span class="obj">'.e($a['title']).'</span><span class="act"><span class="when">'.e(substr($a['start_time'],0,5).'–'.substr($a['end_time'],0,5)).'</span>Termin</span></div></article>';$html.='</div>';}
  if($b['open']){$html.='<div class="blocks">';foreach($b['open'] as $t)$html.=gszRenderBlock($t,$return);$html.='</div>';}
- elseif(!$b['appointments'])$html.='<div class="empty"><strong>'.($b['done']?'Für '.($day===date('Y-m-d')?'heute':'diesen Tag').' ist alles erledigt.':'Nichts geplant.').'</strong>'.($b['done']?'Gute Arbeit.':'Für diesen Tag stehen keine Aufgaben an.').'</div>';
+ elseif($b['done']||!$b['appointments'])$html.='<div class="empty"><strong>'.($b['done']?'Für '.($day===date('Y-m-d')?'heute':'diesen Tag').' ist alles erledigt.':'Nichts geplant.').'</strong>'.($b['done']?'Gute Arbeit.':'Für diesen Tag stehen keine Aufgaben an.').'</div>';
  if($b['done']){$html.='<details class="card"><summary>Erledigt ('.count($b['done']).')</summary><div class="blocks">';foreach($b['done'] as $t)$html.=gszRenderBlock($t,$return);$html.='</div></details>';}
  return $html;
 }

@@ -19,6 +19,7 @@ for f in tests/test_*.php; do
     env=(GSZ_TEST_DSN="mysql:unix_socket=$SOCK;dbname=$db")
   fi
   out=$(env "${env[@]}" GSZ_TEST_PHP="$PHP" ${GSZ_TEST_SOURCE_SCHEMA:+GSZ_TEST_SOURCE_SCHEMA=$GSZ_TEST_SOURCE_SCHEMA} timeout 300 "$PHP" "$f" 2>&1); rc=$?
+  if [ $rc -eq 0 ] && [ "$name" = test_estate_database ]; then out2=$(GSZ_TEST_DSN="mysql:unix_socket=$SOCK;dbname=$db" GSZ_TEST_PHP="$PHP" timeout 300 node tests/test_estate_concurrency.cjs 2>&1); rc2=$?; if [ $rc2 -eq 0 ]; then pass=$((pass+1)); echo "PASS test_estate_concurrency :: $(echo "$out2" | tail -1 | cut -c1-160)"; else fail=$((fail+1)); failed+=(test_estate_concurrency); echo "FAIL test_estate_concurrency :: $(echo "$out2" | tail -3 | tr '\n' ' ' | cut -c1-300)"; fi; fi
   [ -n "$prefix" ] && mysql -uroot -S "$SOCK" -e "DROP DATABASE IF EXISTS \`$db\`"
   if [ $rc -eq 0 ]; then pass=$((pass+1)); echo "PASS $name :: $(echo "$out" | tail -1 | cut -c1-160)";
   else fail=$((fail+1)); failed+=("$name"); echo "FAIL $name :: $(echo "$out" | tail -3 | tr '\n' ' ' | cut -c1-400)"; fi

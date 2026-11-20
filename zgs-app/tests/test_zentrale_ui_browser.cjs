@@ -1,0 +1,36 @@
+const {chromium}=require('playwright');
+// Teil F: Navigation und Tagesansicht in den Breiten 390 (iPhone), 820/1180 (iPad hoch/quer) und 1440 (MacBook).
+// Synthetische Vorführdaten (tests/dev/screens_fixture.php). Ersetzt keinen Test auf echten Geräten.
+(async()=>{const base=process.env.GSZ_TEST_URL;if(!base||!/^https:\/\/127\.0\.0\.1:/.test(base))throw Error('Loopback fixture only');let n=0;const ok=(v,s)=>{n++;if(!v)throw Error(s)};
+const b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});const errors=[];
+try{
+ const login=async(p)=>{await p.goto(base+'/index.php');await p.locator('[name=email]').fill('owner@example.invalid');await p.locator('[name=password]').fill('Local-Test-Only-2026!');await p.getByRole('button',{name:/^Anmelden$/}).click();};
+ const addressBits=['33378','33330','Rheda-Wiedenbrück','Lindenweg 7'];
+ for(const [w,h] of [[390,844],[820,1180],[1180,820],[1440,900]]){
+  const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:w,height:h}});const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));
+  await p.goto(base+'/index.php');ok(await p.locator('[name=email]').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)>=16),'login field 16px (no iOS zoom) '+w);ok(await p.getByRole('button',{name:/^Anmelden$/}).evaluate(e=>e.getBoundingClientRect().height>=44),'login button tap target '+w);
+  await login(p);
+  const side=w>=1024;ok(await p.locator(side?'.side-nav':'.tabbar').isVisible(),(side?'sidebar':'tab bar')+' visible '+w);ok(!await p.locator(side?'.tabbar':'.side-nav').isVisible(),'only one navigation form '+w);
+  const nav=p.locator(side?'.side-nav a':'.tabbar a');ok(await nav.count()===6,'six main points '+w);ok(JSON.stringify(await nav.allTextContents()).replace(/\d/g,'').includes('Heute')&&(await nav.allTextContents()).join('|').replace(/\d+/g,'').split('|').join(',')==='Heute,Woche,Objekte,Immobilien,Mail,Mehr','order Heute, Woche, Objekte, Immobilien, Mail, Mehr '+w);
+  for(const page of ['index.php','planner.php?view=week','objects.php','estate_bank.php','mail.php','more.php','property.php?id=1','settings.php','connections.php']){const r=await p.goto(base+'/'+page);ok(r.status()===200,'loads '+page+' '+w);ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no horizontal scroll '+page+' '+w);ok(await p.locator((side?'.side-nav':'.tabbar')+' a[aria-current="page"]').count()===1,'exactly one current main point '+page+' '+w);}
+  // Heute: Blöcke, nur Objektnamen, keine Kennzahlen-Kacheln
+  await p.goto(base+'/index.php');const main=await p.textContent('main');
+  ok(await p.locator('article.block').count()>=3,'day blocks shown '+w);ok(!addressBits.some(x=>main.includes(x)),'no address under object names on Heute '+w);ok(!/Verbleibende Planarbeit|Geschätztes Ende|Fahrtpuffer|UTC|Diagnose/.test(main),'no KPI tiles or technical status on Heute '+w);
+  ok(await p.locator('article.block').filter({hasText:'Heiligenhäuschenweg 2–4'}).filter({hasText:'Restmüll und Biotonne rausstellen'}).count()===1,'one waste block for object and day naming all bins '+w);
+  ok(await p.locator('article.block .check').first().evaluate(e=>{const r=e.getBoundingClientRect();return r.width>=44&&r.height>=44}),'done button at least 44×44 '+w);
+  ok(await p.locator('.obj').first().evaluate(e=>parseFloat(getComputedStyle(e).fontSize))>await p.locator('.act').first().evaluate(e=>parseFloat(getComputedStyle(e).fontSize)),'object name larger than activity '+w);
+  ok(main.includes('Braucht Aufmerksamkeit')&&main.includes('neue Mails'),'attention section with new mails '+w);
+  await p.goto(base+'/planner.php?view=week');const week=await p.textContent('main');ok(await p.locator('section.week-day h2 a').count()===7,'week shows seven days '+w);ok(!addressBits.some(x=>week.includes(x)),'no address in week '+w);
+  await p.goto(base+'/objects.php');const objs=await p.textContent('main');ok(!addressBits.some(x=>objs.includes(x)),'object list shows names only '+w);
+  await p.goto(base+'/property.php?id=1');ok((await p.textContent('main')).includes('33378'),'address visible on object detail page '+w);
+  await c.close();}
+ // Bedienung mit einem Tipp (iPhone)
+ const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await login(p);
+ await Promise.all([p.waitForNavigation(),p.locator('article.block').filter({hasText:'Fröbelstraße 19'}).locator('button.check').tap()]);ok(await p.locator('details').filter({hasText:'Erledigt'}).locator('article.block').filter({hasText:'Fröbelstraße 19'}).count()===1,'one tap marks the block as done');
+ let blk=p.locator('article.block').filter({hasText:'Berliner Straße 45'}).filter({hasText:'Außenanlage pflegen'});await blk.locator('summary').tap();await Promise.all([p.waitForNavigation(),blk.getByRole('button',{name:'Auf morgen'}).tap()]);ok((await p.textContent('main')).includes('verschoben auf Morgen'),'move to tomorrow with two taps');ok(await p.locator('article.block').filter({hasText:'Außenanlage pflegen'}).count()===0,'moved block left today');
+ await p.goto(base+'/planner.php?date='+new Date(Date.now()+86400000).toLocaleDateString('sv-SE',{timeZone:'Europe/Berlin'}));ok(await p.locator('article.block').filter({hasText:'Außenanlage pflegen'}).count()===1,'moved block appears tomorrow');
+ blk=p.locator('article.block').filter({hasText:'Heiligenhäuschenweg 2–4'}).filter({hasText:'zurückstellen'});ok(await blk.count()===1,'return block is separate from the out block');
+ await p.goto(base+'/planner.php?date=2030-01-15');ok((await p.textContent('main')).includes('Nichts geplant.')&&await p.locator('table').count()===0,'friendly empty state, no empty table');
+ await p.goto(base+'/index.php');while(await p.locator('.blocks:not(details .blocks) article.block:not(.is-done) button.check').count()){await Promise.all([p.waitForNavigation(),p.locator('.blocks:not(details .blocks) article.block:not(.is-done) button.check').first().tap()]);}ok((await p.textContent('main')).includes('Für heute ist alles erledigt.'),'friendly message when the day is done');
+ ok(errors.length===0,'no JavaScript errors');console.log(`Zentrale UI browser PASS (${n} checks; 390/820/1180/1440, synthetic data, no real device test).`);
+}finally{await b.close()}})().catch(e=>{console.error(e);process.exit(1)});

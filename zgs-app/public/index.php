@@ -41,7 +41,7 @@ try{require_once dirname(__DIR__).'/private/mail_credentials.php';if(gszMailAuth
 try{$q=$pdo->prepare('SELECT COUNT(*) FROM tasks WHERE done=0 AND due_date<?');$q->execute([$today]);$late=(int)$q->fetchColumn();if($late)$attention[]=['planner.php?view=week',$late===1?'1 Aufgabe von einem Vortag ist noch offen':$late.' Aufgaben von Vortagen sind noch offen'];
  $q=$pdo->prepare('SELECT COUNT(*) FROM waste_imports WHERE admin_id=? AND applied_at IS NULL AND created_at>=UTC_TIMESTAMP()-INTERVAL 1 DAY');$q->execute([(int)$_SESSION['admin_id']]);if((int)$q->fetchColumn())$attention[]=['waste.php','Neue Abfuhrtermine bestätigen'];}catch(Throwable $e){}
 ?><!doctype html><html lang="de"><head><meta charset="utf-8"><title>Heute</title></head><body><main>
-<?php if($error):?><p class="error flash" role="alert"><?=e($error)?></p><?php endif?>
+<?php $planError=$_SESSION['plan_error']??'';$planNotice=$_SESSION['plan_notice']??'';unset($_SESSION['plan_error'],$_SESSION['plan_notice']);if($error||$planError):?><p class="error flash" role="alert"><?=e($error?:$planError)?></p><?php endif?><?php if($planNotice):?><p class="notice flash" role="status"><?=e($planNotice)?></p><?php endif?>
 <div class="page-head"><div><h1>Heute</h1><p class="sub"><?=e(gszDayLabel($today,true))?></p></div></div>
 <?=gszRenderDay($pdo,$today,'index.php')?>
 <?php if($attention):?><h2 class="section-title">Braucht Aufmerksamkeit</h2><div class="attention"><?php foreach($attention as [$href,$text]):?><a class="att" href="<?=e($href)?>"><span><?=e($text)?></span></a><?php endforeach?></div><?php endif?>

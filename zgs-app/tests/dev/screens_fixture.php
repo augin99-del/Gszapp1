@@ -41,4 +41,5 @@ foreach($tx as $i=>[$a,$day,$amt,$pur,$cp]){$day=min($day,$today->format('Y-m-d'
 // Eine bereits zugeordnete Miete (vollständig) als Beispiel
 $p->exec("INSERT INTO estate_payments(bank_transaction_id,paid_on,amount_cents,description,request_key,created_by) SELECT id,booked_on,amount_cents,'Miete Anna Beispiel','".str_repeat('a',64)."',1 FROM estate_bank_transactions WHERE external_id='fx0'");
 $pay=(int)$p->lastInsertId();foreach([['rent',52000],['operating',11000],['heating',6000]] as $k=>[$comp,$amt])$p->prepare('INSERT INTO estate_allocations(payment_id,lease_id,charge_id,component,amount_cents,allocation_from,allocation_to,request_key,created_by) VALUES(?,?,?,?,?,?,?,?,1)')->execute([$pay,1,1,$comp,$amt,$comp==='rent'?null:$month,$comp==='rent'?null:$today->format('Y-m-t'),hash('sha256','fa'.$k)]);
+if(is_file($root.'/private/waste_blocks.php')){require_once $root.'/private/waste_blocks.php';$p->beginTransaction();wasteMergeOpenBlocks($p,1);$p->commit();}
 echo "Screen fixture ready.\n";
