@@ -1,0 +1,16 @@
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0e1419;color:#edf2f5;font:16px system-ui,-apple-system,sans-serif}main{max-width:1000px;margin:auto;padding:24px}header{display:flex;justify-content:space-between;align-items:center;gap:16px}h1{font-size:clamp(28px,5vw,40px)}h2{font-size:22px;margin-top:0}.brand{font-size:27px;font-weight:800}.brand b{color:#36c9aa}.muted,small{color:#a6b4c0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}.card{background:#1a252e;border:1px solid #30414b;border-radius:16px;padding:20px;margin:18px 0}input,select,textarea,button{font:inherit;border-radius:9px;padding:11px;width:100%;margin:6px 0 10px}input,select,textarea{background:#0f1920;border:1px solid #40535f;color:white}button{background:#39c7aa;color:#082019;border:0;font-weight:700;cursor:pointer}.ghost{background:transparent;color:#c8d3db;border:1px solid #40535f}.item{padding:12px 0;border-bottom:1px solid #30414b}.item:last-child{border-bottom:0}form.inline{display:inline}form.inline button{width:auto;padding:5px 10px}.done{text-decoration:line-through;color:#8b9ba6}.error{color:#ffb5b5}a{color:#68e1c8}
+.brand span{color:#36c9aa}
+
+/* GSZ branding – company identity */
+:root{--gsz-green:#43832c;--gsz-green-hover:#559c39}
+.brand{display:flex;align-items:center;min-width:0;font-size:0!important;line-height:1}
+.brand-logo{display:block;width:clamp(190px,34vw,275px);max-width:100%;height:auto;padding:7px 12px;background:#fff;border-radius:12px}
+header{flex-wrap:wrap;gap:12px}
+button:not(.ghost){background:var(--gsz-green);color:#fff}
+button:not(.ghost):hover{background:var(--gsz-green-hover)}
+a{color:#8fcf72}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid #91c97b;outline-offset:2px}
+@media(max-width:540px){main{padding:16px}.brand-logo{width:220px;padding:6px 10px}header{align-items:center}}
+
+/* Mobile field sizing avoids automatic iOS input zoom; preserve user pinch zoom. */
+@media(max-width:540px){input,select,textarea{font-size:16px}button{min-height:44px}}

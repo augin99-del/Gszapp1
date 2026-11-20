@@ -1,0 +1,79 @@
+<?php
+declare(strict_types=1);
+/** Read-only diagnostics. No credentials, filesystem paths, business rows or network probes in output. */
+function gszIniBytes(string $value):int {
+ $value=trim($value);if($value==='-1')return PHP_INT_MAX;
+ if(!preg_match('/^(\d+)([KMG]?)$/iD',$value,$m))return 0;
+ $factor=match(strtoupper($m[2])){'G'=>1073741824,'M'=>1048576,'K'=>1024,default=>1};
+ return (int)min(PHP_INT_MAX,(int)$m[1]*$factor);
+}
+function gszCheckPathInside(string $path,string $parent):bool {
+ return $path===$parent||str_starts_with($path,rtrim($parent,DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR);
+}
+/** Recognize direct schema/global grants; inherited roles need an actual write test. */
+function gszDmlGrantStatus(array $grants,string $database):string {
+ $allowed=[];$indirect=false;
+ foreach($grants as $grant){
+  if(!preg_match('/^GRANT (.+?) ON (.+?) TO /i',(string)$grant,$m)){if(str_starts_with(strtoupper((string)$grant),'GRANT '))$indirect=true;continue;}
+  $scope=str_replace('`','',$m[2]);if($scope!=='*.*'&&$scope!==$database.'.*'){$indirect=true;continue;}
+  foreach(explode(',',$m[1]) as $permission){$permission=strtoupper(trim($permission));if($permission==='ALL PRIVILEGES')return 'ok';$allowed[$permission]=true;}
+ }
+ foreach(['SELECT','INSERT','UPDATE','DELETE'] as $required)if(!isset($allowed[$required]))return $indirect?'warn':'block';
+ return 'ok';
+}
+function gszSystemCheck(array $config,?PDO $pdo,array $context=[]):array {
+ $rows=[];$add=static function(string $id,string $label,string $status,string $detail)use(&$rows):void{$rows[]=['id'=>$id,'label'=>$label,'status'=>$status,'detail'=>$detail];};
+ $root=dirname(__DIR__);$private=realpath(__DIR__);$public=realpath($root.'/public');$web=PHP_SAPI!=='cli';
+ $add('php','PHP und 64-Bit-Ganzzahlen',PHP_VERSION_ID>=80200&&PHP_INT_SIZE===8?'ok':'block','PHP '.PHP_VERSION.'; mindestens PHP8.2 und64Bit benötigt. Lokal Referenz8.4; andere Versionen vor Ort testen.');
+ foreach(['pdo','pdo_mysql','mbstring','iconv','fileinfo','zlib','session','ctype','filter','hash','json'] as $extension)$add('ext_'.$extension,'PHP-Erweiterung '.$extension,extension_loaded($extension)?'ok':'block',extension_loaded($extension)?'Verfügbar.':'Fehlt in dieser PHP-Laufzeit.');
+ foreach(['random_bytes','password_hash','password_verify','hash_equals'] as $function)$add('fn_'.$function,'Sicherheitsfunktion '.$function,is_callable($function)?'ok':'block',is_callable($function)?'Verfügbar.':'Fehlt oder deaktiviert.');
+ $zone=new DateTimeZone('Europe/Berlin');$add('timezone','Zeitzone Europe/Berlin','ok','Zeitzonendaten verfügbar; Anwendung setzt Europe/Berlin, Datenbank UTC.');
+ $docroot=realpath((string)($context['web_root']??($_SERVER['DOCUMENT_ROOT']??'')));
+ $add('document_root','Webwurzel schützt private Daten',$docroot&&$docroot===$public?'ok':(($docroot||$web||isset($context['web_root']))?'block':'warn'),'Webwurzel muss exakt public sein. CLI ohne --web-root kann Serverzuordnung nicht bestätigen.');
+ $add('private_outside','Privates Verzeichnis außerhalb Webwurzel',$docroot&&!gszCheckPathInside($private,$docroot)?'ok':($docroot?'block':'warn'),'Keine Konfiguration, Originale, Berichte oder Tests öffentlich bereitstellen.');
+ $upload=__DIR__.'/uploads';$base=is_dir($upload)?$upload:__DIR__;$safe=!is_link($upload)&&is_writable($base);$real=realpath($base);
+ if($docroot&&$real&&gszCheckPathInside($real,$docroot))$safe=false;
+ foreach(['security','documents','worklog_photos','pdf_fonts','mail','receipts','invoices','estate'] as $area){$p=$upload.'/'.$area;if(is_link($p)||(is_dir($p)&&!is_writable($p)))$safe=false;}
+ $add('storage','Private Dateiablage und Login-Bremse',$safe?'ok':'block',$safe?'Vorhandene Ablagen bzw. privates Elternverzeichnis schreibbar; keine Datei angelegt.':'Schreibrechte, Symlinks und sichere Webwurzel prüfen.');
+ $sessionPath=explode(';',(string)ini_get('session.save_path'));$sessionPath=end($sessionPath);$sessionPath=$sessionPath?:sys_get_temp_dir();$sessionReal=realpath($sessionPath);
+ $sessionOk=ini_get('session.save_handler')!=='files'||($sessionReal&&is_dir($sessionReal)&&is_writable($sessionReal)&&!is_link($sessionPath)&&(!$docroot||!gszCheckPathInside($sessionReal,$docroot)));
+ $add('session_storage','Sitzungsspeicher',$sessionOk?(ini_get('session.save_handler')==='files'?'ok':'warn'):'block','Dateibasierte Sitzungen benötigen beschreibbare Ablage außerhalb public; andere Handler separat prüfen.');
+ if($web){$https=(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off')||(($_SERVER['SERVER_PORT']??'')==='443');$cookie=session_get_cookie_params();$secure=$https&&session_status()===PHP_SESSION_ACTIVE&&!empty($cookie['secure'])&&!empty($cookie['httponly'])&&strtolower((string)($cookie['samesite']??''))==='strict'&&(bool)ini_get('session.use_strict_mode')&&(bool)ini_get('session.use_only_cookies');$add('https_session','HTTPS und Sitzungscookie',$secure?'ok':'block','HTTPS/Secure/HttpOnly/SameSite=Strict und aktive strikte Sitzung geprüft. Zertifikatvertrauen zusätzlich auf iPhone/Computer prüfen.');}
+ else $add('https_session','HTTPS und Sitzungscookie','warn','CLI kann TLS/Zertifikat und Web-Sitzung nicht prüfen; nach Anmeldung Systemcheck im Browser öffnen.');
+ $add('error_display','Keine PHP-Fehler im Browser',filter_var(ini_get('display_errors'),FILTER_VALIDATE_BOOLEAN)?($web?'block':'warn'):'ok','display_errors muss im Webbetrieb deaktiviert sein.');
+ $add('error_logging','PHP-Fehlerprotokoll',filter_var(ini_get('log_errors'),FILTER_VALIDATE_BOOLEAN)?'ok':'warn','log_errors aktivieren; tatsächlichen privaten Hosting-Logpfad und Zugriff vor Ort prüfen. Keine Secrets protokollieren.');
+ $add('memory','PHP-Speicherlimit',gszIniBytes((string)ini_get('memory_limit'))>=128*1048576?'ok':'warn','Für PDF und Exporte mindestens128MB empfohlen; tatsächliche Last testen.');
+ $uploads=filter_var(ini_get('file_uploads'),FILTER_VALIDATE_BOOLEAN);$limits=$uploads&&gszIniBytes((string)ini_get('upload_max_filesize'))>=10*1048576&&gszIniBytes((string)ini_get('post_max_size'))>=12*1048576;
+ $add('upload_limits','Kalender- und Dokumentenupload',$limits?'ok':($uploads?'warn':'block'),'Dateiupload aktiv; für volle Originalgröße upload_max_filesize≥10M und post_max_size≥12M. Kleinere Limits beschränken Uploads.');
+ foreach(['db_host','db_name','db_user','db_pass'] as $key){$value=(string)($config[$key]??'');$placeholder=$value===''||str_starts_with($value,'DATENBANK');if($key==='db_host'&&!empty($config['db_socket']))$placeholder=false;$add('config_'.$key,'Datenbank-Konfiguration '.$key,$placeholder?'block':'ok',$placeholder?'Fehlt oder enthält Beispielwert.':'Gesetzt; Wert wird nicht ausgegeben.');}
+ require_once __DIR__.'/config_security.php';$managedFile=__DIR__.'/server-config/managed.json';if(is_file($managedFile)){$ok=gszConfigSecurity($managedFile)['safe']&&gszConfigSecurity(__DIR__.'/server-config/managed.key')['safe'];$add('managed_config','Verschlüsselte Assistentenkonfiguration',$ok?'ok':'block','Getrennter privater Schlüssel und verschlüsselte Datei müssen außerhalb public und restriktiv lesbar sein.');}$local=empty($config['managed_ignore_legacy'])?gszConfigPath():__DIR__.'/config.php';if($local!==''&&(is_file($local)||is_link($local))){$mode=fileperms($local);$ok=gszConfigSecurity($local)['safe'];$add('config_permissions','Private Konfigurationsdatei',$ok?'ok':'block','Kein Symlink, keine Rechte für sonstige Benutzer;0600 bevorzugt, Hostinggruppe ggf.0640.');}
+ $externalPath=getenv('GSZ_CONFIG_FILE');if($externalPath!==false&&$externalPath!==''&&!str_contains($externalPath,"\0")&&(is_file($externalPath)||is_link($externalPath))){$safeExternal=gszConfigSecurity($externalPath)['safe'];$add('external_config_private','Bekannte externe Alt-Konfiguration geschützt',$safeExternal?'ok':'block','Auch eine nicht mehr aktive GSZ_CONFIG_FILE-Datei darf nicht öffentlich oder unsicher lesbar bleiben. Gegebenenfalls im STRATO-Dateimanager geschützt sichern und aus dem Webbereich entfernen.');}
+ $vault=isset($_SERVER['GSZ_SECRETS_FILE'])||getenv('GSZ_SECRETS_FILE')!==false;$add('vault','Optionale verschlüsselte Konfiguration',!$vault||extension_loaded('sodium')?'ok':'block',$vault?'Konfiguration nutzt Vault; libsodium und getrennte private Schlüsselablage erforderlich.':'Nicht aktiviert. Private Serverkonfiguration weiterhin möglich.');
+ if(!$pdo)$add('database','Datenbankverbindung','block','Nicht verbunden. Serverkonfiguration/Extensions/Zugang auf Testsystem prüfen.');
+ else try{
+  $version=(string)$pdo->query('SELECT VERSION()')->fetchColumn();preg_match('/(?:5\.5\.5-)?(\d+\.\d+\.\d+)/',$version,$match);$compatible=str_contains(strtolower($version),'mariadb')&&isset($match[1])&&version_compare($match[1],'10.6.0','>=');$add('database','MariaDB-Kompatibilität',$compatible?'ok':'block',$compatible?'MariaDB-Version erfüllt Mindestprüfung10.6; Referenztest11.8.6.':'MariaDB≥10.6 erforderlich; MySQL oder ältere Version nicht freigegeben.');
+  $database=(string)$pdo->query('SELECT DATABASE()')->fetchColumn();$permissionStatus=gszDmlGrantStatus($pdo->query('SHOW GRANTS FOR CURRENT_USER')->fetchAll(PDO::FETCH_COLUMN),$database);$add('db_permissions','Datenbank-Lese-/Schreibrechte',$permissionStatus,$permissionStatus==='ok'?'Direkte Schema-/Globalrechte für SELECT/INSERT/UPDATE/DELETE vorhanden. Tatsächlichen Praxisablauf trotzdem prüfen.':($permissionStatus==='block'?'Erforderliche direkte Schreibrechte fehlen. Kein Grant/keine Rechteänderung ausgeführt.':'Rollen-/Einzeltabellenrechte nicht vollständig auswertbar; tatsächlichen Schreibtest vor Freigabe nachweisen.'));
+  $charset=(string)$pdo->query('SELECT @@character_set_database')->fetchColumn();$add('db_charset','Datenbank-Zeichensatz',$charset==='utf8mb4'?'ok':'block','Datenbank muss utf8mb4 verwenden; keine automatische Konvertierung.');
+  $contract=require __DIR__.'/schema_requirements.php';$present=$pdo->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN);$missing=[];$engine=true;
+  foreach($contract['tables'] as $table=>$columns){if(!in_array($table,$present,true)){$missing[]=$table;continue;}$actual=$pdo->query('SHOW COLUMNS FROM `'.$table.'`')->fetchAll(PDO::FETCH_COLUMN);foreach($columns as $column)if(!in_array($column,$actual,true))$missing[]=$table.'.'.$column;}
+  $add('schema','Vollständiges bestehendes Schema v370',$missing?'block':'ok',$missing?'Fehlende Tabellen/Spalten: '.implode(', ',array_slice($missing,0,12)).(count($missing)>12?' …':''):'Alle erwarteten Tabellen mit erforderlichen Spalten vorhanden. Kein DDL ausgeführt.');
+  $q=$pdo->query("SELECT TABLE_NAME,ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE'");foreach($q->fetchAll(PDO::FETCH_ASSOC) as $table)if(isset($contract['tables'][$table['TABLE_NAME']])&&$table['ENGINE']!=='InnoDB')$engine=false;$add('engines','Transaktionsfähige Tabellen',$engine?'ok':'block','Bestehende Anwendungstabellen müssen InnoDB verwenden.');
+  $migrations=in_array('app_migrations',$present,true)?$pdo->query('SELECT version FROM app_migrations')->fetchAll(PDO::FETCH_COLUMN):[];$missingVersions=array_diff($contract['migrations'],$migrations);$add('migrations','Migrationsledger200–370',$missingVersions?'block':'ok',$missingVersions?'Fehlende Versionen: '.implode(', ',$missingVersions):'Vollständig. Installationsstand zusätzlich durch Spalten/Schlüssel geprüft.');
+  $unique=true;foreach($contract['unique_keys'] as $table=>$keys){if(!in_array($table,$present,true)){$unique=false;continue;}$indexes=[];foreach($pdo->query('SHOW INDEX FROM `'.$table.'`')->fetchAll(PDO::FETCH_ASSOC) as $index)if(!(int)$index['Non_unique'])$indexes[$index['Key_name']][(int)$index['Seq_in_index']]=$index['Column_name'];$actual=[];foreach($indexes as $columns){ksort($columns);$actual[]=implode(',',array_values($columns));}foreach($keys as $key)if(!in_array($key,$actual,true))$unique=false;}$add('identity_keys','Dubletten- und Herkunftsschutz',$unique?'ok':'block','Eindeutige Identitätsschlüssel für Regel-/Abfall-/Planungs-/Importdaten geprüft.');
+  $admins=in_array('admins',$present,true)?(int)$pdo->query('SELECT COUNT(*) FROM admins')->fetchColumn():0;$add('admin','Vorhandener Inhaberzugang',$admins>0?'ok':'block',$admins>0?'Vorhanden; kein Konto geändert.':'Ersten Zugang mit privatem CLI-Setup anlegen; keine Standardkennwörter.');
+ }catch(Throwable $e){$add('db_check_error','Schema-/Datenbankprüfung','block','Prüfung nicht vollständig ausführbar. Rechte/Teilmigration prüfen; keine SQL-/Zugangsdaten ausgegeben.');}
+ require_once __DIR__.'/release_integrity.php';try{$integrity=gszReleaseIntegrity();$add('release_integrity','Vollständigkeit der Release-Dateien',$integrity['status']==='PASS'?'ok':'block','Code/Assets gegen gebündeltes SHA256-Manifest geprüft; private Konfiguration/Originale bewusst ausgeschlossen. Bei Abweichung Upload abschließen bzw. eigene Anpassungen prüfen.');}catch(Throwable $e){$add('release_integrity','Vollständigkeit der Release-Dateien','block','Manifest nicht sicher prüfbar.');}
+ $add('camt_dom','Optionaler CAMT-Import',class_exists('DOMDocument')?'ok':'warn','CAMT benötigt PHP-DOM; CSV bleibt ohne diese Erweiterung verfügbar. Reale Bankexportprofile separat prüfen.');
+ $add('web_update','Geschützter Browser-Updateweg',filter_var($config['allow_web_update']??false,FILTER_VALIDATE_BOOLEAN)?'warn':'ok','Serverflag nur für kontrolliertes Bestandsupdate mit erneuter Anmeldung und Sicherungsnachweis aktivieren, danach deaktivieren. Keine anonyme Neuinstallation.');
+ $add('cron','Automatische Hintergrundaufgaben','warn','Tarif/Cronausführung hier nicht nachgewiesen. Ohne Cron täglich „Fällige Regelaufgaben aktualisieren“ ausführen, dann Planvorschau bestätigen. Keine externen Erinnerungen zugesagt.');
+ $mail=filter_var($config['mail_enabled']??false,FILTER_VALIDATE_BOOLEAN);$add('mail','Optionale E-Mail-Verbindung',$mail&&(function_exists('imap_open')||is_file(__DIR__.'/vendor/imapengine/vendor/autoload.php'))&&!empty($config['mail_user'])&&!empty($config['mail_pass'])?'ok':'warn',$mail?'Aktiv konfiguriert; native IMAP-Erweiterung oder gebündelten TLS-Adapter, Hosts und Testpostfach gesondert prüfen. Keine Verbindung ausgelöst.':'Nicht verbunden. E-Mail-Abnahme für Version1.0 steht aus.');
+ $add('external_actions','Externe Aktionen',(filter_var($config['allow_mail_send']??false,FILTER_VALIDATE_BOOLEAN)||filter_var($config['routing_enabled']??false,FILTER_VALIDATE_BOOLEAN))?'warn':'ok','Echter Mailversand/Online-Routing nur nach gesonderter Freigabe; hier keine externen Aufrufe. Bank online nicht verbunden.');
+ $blocks=count(array_filter($rows,fn($r)=>$r['status']==='block'));$warnings=count(array_filter($rows,fn($r)=>$r['status']==='warn'));
+ return ['release'=>'1.0-candidate','schema'=>'370','checked_at'=>gmdate('c'),'ready_for_local_installation_test'=>$blocks===0,'production_approved'=>false,'blocks'=>$blocks,'warnings'=>$warnings,'checks'=>$rows];
+}
+/** Explicit CLI probe only; no business records touched. */
+function gszStorageProbe():bool {
+ $directory=__DIR__.'/uploads';if(is_link($directory))return false;if(!is_dir($directory)&&!@mkdir($directory,0700,true)&&!is_dir($directory))return false;
+ $file=$directory.'/.system-check-'.bin2hex(random_bytes(16));$bytes=random_bytes(32);$handle=@fopen($file,'x');if(!$handle)return false;
+ try{@chmod($file,0600);$written=fwrite($handle,$bytes);fclose($handle);$handle=null;return $written===32&&hash_equals(hash('sha256',$bytes),(string)@hash_file('sha256',$file));}finally{if(is_resource($handle))fclose($handle);@unlink($file);}
+}

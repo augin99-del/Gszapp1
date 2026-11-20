@@ -1,0 +1,4 @@
+Options -Indexes
+<FilesMatch "^(config|schema|\.env|composer\.).*">
+Require all denied
+</FilesMatch>

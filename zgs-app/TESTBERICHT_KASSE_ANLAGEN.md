@@ -1,0 +1,5 @@
+# Kasse/Anlagen v300 – gesicherter Teilstand
+
+Implementiert: ergänzendes Kassenregister mit eindeutigem Bezug auf vorhandene finance_payments, gezähltem Anfangsbestand, Einlage/Entnahme, transaktionalem Kontolock, chronologischer Negativbestandsprüfung, idempotenten Anfragen und Gegenzeilen. Keine doppelte EÜR-/Zahlungsbuchung. Getrenntes Anlagenregister mit Originalbelegbezug, manuellen Jahresbeträgen, ausdrücklicher Prüfung, Freigabesicherung und dokumentiertem Abgang. Keine erfundenen AfA-Sätze oder automatischen Steuerbuchungen.
+
+Additive migration_v300.sql ergänzt sechs Tabellen. Teiltests Unit16/DB39/Browser21 sowie Konkurrenztest bestanden; letzter erweiterter Browserlauf nicht abschließend protokolliert (Nutzerstopp). Siehe TESTBERICHT_SICHERUNGSSTAND.md. Gesamtregression und Fachabnahme noch offen. Anlagenbezogene Finanzzahlungen sind in der Arbeitsauswertung ausdrücklich als steuerlich ungeklärt gekennzeichnet; Abschreibungsplan und Anschaffung dürfen nicht doppelt als Aufwand behandelt werden.

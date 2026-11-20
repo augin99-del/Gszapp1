@@ -1,0 +1,4 @@
+<?php
+declare(strict_types=1);
+$https=(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off')||(($_SERVER['SERVER_PORT']??'')==='443');if(!$https){http_response_code(403);exit('HTTPS ist erforderlich. Bitte zuerst SSL fuer die Subdomain aktivieren.');}
+header('X-Content-Type-Options: nosniff');header('X-Frame-Options: DENY');header('Referrer-Policy: no-referrer');header('Cache-Control: no-store');header('Strict-Transport-Security: max-age=31536000');ini_set('display_errors','0');ini_set('zend.exception_ignore_args','1');ini_set('session.use_strict_mode','1');ini_set('session.use_only_cookies','1');session_name(defined('GSZ_SETUP_HTTP')?'GSZSETUPSESSID':'ZGSSESSID');session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Strict']);if(!session_start()){http_response_code(503);exit('Sitzungsspeicher nicht verfügbar. Private PHP-Sessionablage im Hosting prüfen.');}date_default_timezone_set('Europe/Berlin');

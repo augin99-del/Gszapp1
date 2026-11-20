@@ -1,0 +1,28 @@
+-- Additive operational workflows; preserve all existing identity/status fields.
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS billing_address VARCHAR(2000) NOT NULL DEFAULT '',
+ ADD COLUMN IF NOT EXISTS row_version INT UNSIGNED NOT NULL DEFAULT 0,
+ ADD COLUMN IF NOT EXISTS archived_at DATETIME NULL;
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS row_version INT UNSIGNED NOT NULL DEFAULT 0;
+CREATE TABLE IF NOT EXISTS operations_workers (
+ id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, name VARCHAR(190) NOT NULL,
+ kind ENUM('employee','subcontractor') NOT NULL, email VARCHAR(190) NOT NULL DEFAULT '',
+ phone VARCHAR(80) NOT NULL DEFAULT '', notes TEXT NULL, active TINYINT NOT NULL DEFAULT 1,
+ row_version INT UNSIGNED NOT NULL DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS assigned_worker_id INT UNSIGNED NULL,
+ ADD COLUMN IF NOT EXISTS completed_at DATETIME NULL,
+ ADD COLUMN IF NOT EXISTS row_version INT UNSIGNED NOT NULL DEFAULT 0;
+CREATE INDEX IF NOT EXISTS idx_tasks_worker_day ON tasks(assigned_worker_id,due_date,done);
+ALTER TABLE planning_appointments ADD COLUMN IF NOT EXISTS notes TEXT NULL,
+ ADD COLUMN IF NOT EXISTS reminder_minutes SMALLINT UNSIGNED NOT NULL DEFAULT 30,
+ ADD COLUMN IF NOT EXISTS cancelled_at DATETIME NULL,
+ ADD COLUMN IF NOT EXISTS row_version INT UNSIGNED NOT NULL DEFAULT 0;
+CREATE TABLE IF NOT EXISTS operations_events (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ entity_type ENUM('customer','property','task','appointment','worker') NOT NULL,
+ entity_id INT UNSIGNED NOT NULL, admin_id INT UNSIGNED NOT NULL,
+ action VARCHAR(40) NOT NULL, changes_json MEDIUMTEXT NOT NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ INDEX idx_operations_entity(entity_type,entity_id,id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+INSERT IGNORE INTO app_migrations(version) VALUES('270_operations');

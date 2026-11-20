@@ -1,0 +1,38 @@
+# Lesende Bankverbindungen – tatsächlicher Stand13.11.2026
+
+## Vorhanden und weiterverwendet
+
+Geschäftliche bank_accounts/bank_transactions/bank_imports und getrennte estate_bank_accounts/estate_bank_transactions/estate_proposals. Genau zwei Immobilienkonto-Slots bleiben erhalten. Neutrale CSV und begrenzte CAMT053/054-Importe bleiben bedienbar. Keine Zahlungsauslösung oder automatische Buchung. Kontoidentitäten werden über geprüfte IBAN-Hashes gegen Verwechslung zwischen Geschäft und Immobilien geschützt.
+
+## Neue technisch vorbereitete Verbindung
+
+Eine neue additive Tabelle bank_connections speichert nur3Verbindungs-Slots, Ablauf/Status/Mappings und verschlüsselte Autorisierungsdaten, keine zweite Umsatzdatenbank. Migration370 ist im Gesamtinstaller auszuführen, keine manuellen SQL-Befehle im Betrieb. Oberfläche bank_connections.php: tatsächliche Anbieter-Bankliste laden, bankseitig freigeben, zurückkehren, bewusst freigegebenes Konto zuordnen, „Umsätze abrufen“/„Alle Konten aktualisieren“. Fehlende Anbieter-/Vertrags-/Kostenfreigabe ergibt sichtbar „Nicht verbunden“. Weder ein leeres Formular noch eine CSV-Datei ist eine Livebankverbindung.
+
+Optionaler eigener EnableBanking-AIS-Adapter auf Basis tatsächlich gelesener offizieller API-Dokumentation. Feste API/Autorisierungshosts, RS256, TLS1.2/1.3 samt CA-/Hostprüfung, keine Redirects im Backend, strikte Pfadfreigabe ausschließlich AIS, maximal12Anfragen/25Sekunden je Client sowie8Transaktionsseiten/1000Umsätze. Kein Payment-API-Code. Gewünschter Zeitraum max366Tage, keine erfundenen fehlenden Bankreferenzen; nur gebuchte EUR-Bewegungen, Vorzeichen aus CRDT/DBIT. Vorzeichen, Teilseiten, Dubletten und Beträge synthetisch getestet. Neue Umsätze werden durch bestehende Importservices übernommen; ähnliche Altimporte/abweichende Referenzen bleiben als normale Importvorschläge zur Bestätigung. Kontostand nur bei eindeutig geliefertem gebuchtem Saldotyp, Quelle/Abrufstand sichtbar. „Alle“ zeigt Ergebnisse je Konto, bei Limits können Teilabrufe erfolgreich sein; keine pauschale Erfolgsmeldung.
+
+## Sichere Konfiguration, keine PIN/TAN in GSZ
+
+Privat und außerhalb des Webroots einrichten: banking_enabled, banking_live_approved (beide standardmäßigfalse), banking_app_id, banking_private_key, banking_redirect_uri. Die letzten drei Werte gehören zur registrierten Anbieteranwendung, nicht zum Banklogin. Callback muss dem im Anbieterportal registrierten exakten HTTPS-Pfad public/bank_callback.php entsprechen. Benutzername/PIN/TAN werden weder abgefragt noch gespeichert. Der private Signaturschlüssel gelangt nie in HTML/JS/Logs/ZIP. Die Laufzeit erzeugt Token-Verschlüsselungsschlüssel ausschließlich bei bewusster Erstautorisierung als0600-Datei unter private/secrets/bank-connections.key; verschlüsselte AES256-GCM-Payloads liegen in der DB. Bei fehlendem Schlüssel nach Restore wird nicht still ein neuer Schlüssel angelegt. Private Schlüsseldatei und DB müssen gemeinsam gesichert werden.
+
+Bankcallback startet bewusst keine App-Session und ersetzt keine SameSiteStrict-Inhabercookies: einmaliger zufälliger DB-state mit10Minuten Ablauf wird geprüft, Rückgabecode nur verschlüsselt für5Minuten abgelegt, noch kein Providerabruf/keine Kontobindung. Bewusster Klick zurück zur GSZ sendet wieder gleichseitig die Inhabercookies. Erst erneuter Inhaber-POST/CSRF tauscht den Code gegen eine tatsächliche Sitzung; eine weitere bewusste Auswahl ordnet ein reales freigegebenes Konto zu. Callback-Replay/falscherstate/fremderInhaber wird abgewiesen. Der standardmäßige Anbieter-Callback enthält einen kurzlebigen Autorisierungscode in der URL; die Anwendung protokolliert ihn nicht. Hosting-Zugriffslogs müssen vor Livefreigabe hinsichtlich Query-Unterdrückung, Schutz und Aufbewahrung separat geprüft werden; kein unbelegtes Versprechen über STRATO-Serverlogs. Ein Protokollcallback ist keine ungeschützte Kontoeinrichtung. Lokal trennen entfernt die lokale Autorisierung, niemals alte Umsätze; Anbieter-/Bankfreigabe gegebenenfalls zusätzlich dort widerrufen.
+
+## Anbieter-/Lizenz-/Kostenprüfung
+
+Primärquellen am13.11.2026 recherchiert. Keine Verträge/Konten angelegt, kein kostenpflichtiger API-Aufruf oder echter Banklogin. Keine Bankunterstützung aus allgemeinen Marketingtexten abgeleitet.
+
+| Lösung | Nachgewiesene Bedingungen / Preise | Entscheidung |
+|---|---|---|
+| nemiah/phpFinTS | MIT,4.1.0 vom10.05.2026 laut aktuellem Packagist;PHP>=8.0,curl,mbstring,psr/log; gepflegte PHP-Bibliothek, vor Nutzung registrierte FinTS-Produktnummer erforderlich. Pro Bank zusätzlich tatsächlichen Server, TAN-Verfahren/Konto-Freigaben prüfen. Kein allgemeiner bankseitiger Tokenredirect; häufig PIN/TAN-Dialog und Dialogzustand erforderlich. | Recherchiert, kein ungeprüfter PIN-Workflow eingebaut, keine fremde Produktnummer übernommen. Eigene Banktarifkosten ungeklärt. |
+| finAPI | Offizielle Preisseite nennt für Eigenanwender mit max10Eigenkonten200€/Monat. Generische B2C/B2X-Einstiegspreise60/100€/Monat sind keine Zusage, dass die interne Eigenkonten-Nutzung darunter fällt. | Ohne ausdrückliche Kosten-/Vertragsfreigabe nicht aktiviert. |
+| EnableBanking | Offizielle Dokumentation erlaubt eingeschränkte Produktion nach Verknüpfung eigener Konten; volle Produktion nach Vertrag/KYB. FAQ nennt volumenabhängige Preise und Mindestfakturierung ohne öffentlich belastbaren Betrag. Daraus wird keine kostenlose Nutzung dieser3konkreten Konten zugesichert. | Technischer optionaler AIS-Adapter vorbereitet, standardmäßig deaktiviert. Anbieterzugang/Bedingungen/Kosten und exakte Banken müssen einmal bestätigt werden. |
+| GoCardless Bank Account Data | Offizieller Startzugang/Neuanmeldung aktuell zu prüfen; ältere freie Nordigen-Anleitungen sind keine Grundlage für einen verfügbaren Neuvertrag. | Keine verlässlich freischaltbare kostenfreie Neuanbindung behauptet oder eingebaut. |
+
+Quellen: https://github.com/nemiah/phpFinTS (README/Lizenz), https://repo.packagist.org/p2/nemiah/php-fints.json (aktuelle Paketmetadaten), https://www.fints.org/ (Produktregistrierung), https://www.finapi.io/preise/ (insbesondere Eigenanwender), https://enablebanking.com/docs/api/reference/ (AIS-/JWT-/Redirect-/Session-/Kontoschemata), https://enablebanking.com/docs/faq/ (Preise/Eigenkonten/KYB), https://bankaccountdata.gocardless.com/ (aktueller Portalzugang).
+
+Kein fremder Banking-Quellcode übernommen und keine neue Bankingbibliothek benötigt. Native vorhandene PHP/OpenSSL-/PDO-Komponenten, den vorhandenen GszReadOnlyBankAdapter-Vertrag und bestehende geprüfte Importservices wiederverwendet. Auf STRATO weiterhin kein Composer/Node/Python für diese Funktion erforderlich.
+
+## Nachgewiesen / offen
+
+PASS: tests/test_banking_connections.php,73synthetische Assertions, neue Tabellen wiederholt erstellt, echte RSA-Signatur lokal geprüft, AES-GCM-Manipulationsschutz, Session-/state-/Ownerbindung, alle3Konten getrennt, Vorzeichen/cent, Pagination, Wiederholungen, Quellenkonflikte, Rate-Limit, Fehler/Erhalt, Audit. Keine echten Bankdaten im Test. PASS: tests/test_banking_connections_browser.cjs mit36Prüfungen auf390/1440px, geschütztem Zugang, CSRF und unveränderter Owner-Session nach abgewiesenem Callback.
+
+BLOCKED: echte Provideranwendung, bestätigte nutzbare Konditionen, bankseitige Autorisierung und exakte Banken-/Kontotypunterstützung. Die genaue Volksbank wurde nicht mitgeteilt; keine Bankkennung erfunden. Sparkasse-Namen/Angebote können sich durch Fusionen ändern; tatsächlich geladene Liste und echte Freigabe maßgeblich. Live-TLS von STRATO und tatsächliche Daten-/Referenzqualität ebenfalls noch nicht nachgewiesen. CSV/CAMT und übrige GSZ funktionieren ohne diesen Zugang weiter. Keine GoBD-/Bank-/Produktivfreigabe behauptet.

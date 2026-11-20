@@ -1,0 +1,32 @@
+GSZ-ZENTRALE FINAL / SCHEMA350 – 12.11.2026
+
+Aktueller Einstieg: INSTALLATION-STRATO.md, TESTSTATUS-FINAL.md, MODULE-STATUS.md,
+CHANGELOG-FINAL.md und INTEGRATIONEN-FINAL.md. Vollpaket und Update sind bereinigt;
+keine tatsächlichen Zugangsdaten oder privaten Originale enthalten.
+
+Schema350 hat82Tabellen. Bestehende330/340-Datenbanken nur nach verifizierter
+Sicherung auf Testkopie über den geprüften Upgrade-Runner aktualisieren.
+Fresh verweigert nichtleere Datenbanken. Keine alten SQL-/Setupanleitungen
+nachfolgend erneut auf Bestandsdaten ausführen. Kein ungeschützter Webinstaller.
+
+Das Dashboard erzeugt keine Aufgaben allein durch Öffnen. Expliziter sicherer
+Owner-POST oder tatsächlich eingerichteter CLI-Cron erzeugt Aufgaben und einen
+unbestätigten Wochenvorschlag. Produktivdeployment und echte Testmails separat
+freigeben. Die tatsächliche STRATO-/Postfachabnahme steht aus.
+
+Die folgenden älteren Inhalte bleiben ausschließlich als Historie erhalten.
+
+---------------- HISTORIE ----------------
+
+GSZ-APP – EINMALIGER UPLOAD (TESTVERSION)
+
+1. Alten /zgs-app/zgs-app Ordner vorher sichern und umbenennen (z.B. zgs-app-alt).
+2. Leeren /zgs-app/zgs-app Ordner anlegen.
+3. DIESE ZIP dort hochladen und dort entpacken. Die ZIP enthaelt DIREKT public/ und private/.
+4. STRATO Domainziel muss /zgs-app/zgs-app/public sein.
+5. Dateirechte 644, Ordner 755 pruefen, .htaccess ebenfalls 644.
+6. https://gszintern.de testen. Datenbank NICHT erneut importieren.
+7. ZIP nach Entpacken VOM SERVER LOESCHEN, da private/config.php Zugangsdaten enthaelt!
+8. Bei Fehler alten Ordner wiederherstellen; bestehende Datenbank nicht veraendern.
+9. Zugangsdaten nach der Wiederherstellung vorsorglich rotieren.
+10. Noch nicht produktionsreif, keine echten Kunden-/Rechnungsdaten.

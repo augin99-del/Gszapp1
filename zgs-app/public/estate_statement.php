@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+require __DIR__.'/bootstrap.php';if(empty($_SESSION['admin_id'])){http_response_code(403);exit('Nicht angemeldet.');}require_once dirname(__DIR__).'/private/estate_settlement_store.php';
+$id=filter_input(INPUT_GET,'id',FILTER_VALIDATE_INT);if(!$id||$id<1){http_response_code(404);exit('Nicht gefunden.');}try{estateSettlementRequire($pdo);$q=$pdo->prepare('SELECT * FROM estate_settlement_documents WHERE id=?');$q->execute([$id]);$d=$q->fetch();if(!$d){http_response_code(404);exit('Nicht gefunden.');}estateSettlementRead($pdo,(int)$d['settlement_id']);$bytes=gszReadBytes('estate',$d['pdf_sha256'],$d['pdf_sha256']);if(strlen($bytes)!==(int)$d['pdf_size']||!str_starts_with($bytes,'%PDF-'))throw new RuntimeException();}catch(Throwable $e){http_response_code(422);exit('Abrechnungsoriginal nicht verfügbar. Integrität prüfen; keine Neuerzeugung.');}
+header('Content-Type: application/pdf');header('Content-Disposition: attachment; filename="nebenkosten-'.$d['settlement_id'].'-vertrag-'.$d['lease_id'].'.pdf"');header('Content-Length: '.strlen($bytes));echo $bytes;

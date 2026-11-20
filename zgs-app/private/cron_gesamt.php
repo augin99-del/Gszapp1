@@ -1,0 +1,4 @@
+<?php
+declare(strict_types=1);if(PHP_SAPI!=='cli'){http_response_code(403);exit;}
+require_once __DIR__.'/config_loader.php';require_once __DIR__.'/automation.php';
+try{foreach(array_slice($argv,1) as $arg)if(!in_array($arg,['--mail-sync','--calendar-sync'],true))throw new RuntimeException();$config=gszLoadConfig();if(filter_var($config['maintenance']??false,FILTER_VALIDATE_BOOLEAN))throw new RuntimeException();date_default_timezone_set('Europe/Berlin');$pdo=gszConnectDatabase($config);$r=gszRunAutomation($pdo,$config,in_array('--mail-sync',$argv,true),in_array('--calendar-sync',$argv,true));echo json_encode($r,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),"\n";exit($r['status']==='BLOCKED'?2:0);}catch(Throwable $e){fwrite(STDERR,"GSZ_CRON_BLOCKED: Serverkonfiguration, Schema oder Laufzeit prüfen. Keine vertraulichen Details ausgegeben.\n");exit(2);}
