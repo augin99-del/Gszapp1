@@ -26,3 +26,9 @@ private/invoice_archive.php
 private/invoice_lib.php
 private/invoice_pdf.php
 private/receivables.php
+public/assets.css
+public/planning.css
+public/gsz-dashboard.css
+public/gsz-dashboard.js
+public/app-unified.css
+private/waste_widget.php

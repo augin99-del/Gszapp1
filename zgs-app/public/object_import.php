@@ -14,7 +14,7 @@ try {
     $preview=gszImportPreview($pdo,$start);
 } catch (PDOException $ex) { $error='Datenbank nicht bereit oder Import fehlgeschlagen. Migration v200 prüfen; keine Zugangsdaten in Fehlermeldungen übernehmen.'; }
 catch (InvalidArgumentException|RuntimeException $ex) { $error=$ex->getMessage(); }
-?><!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Bestandsobjekte · GSZ</title><link rel="stylesheet" href="assets.css"></head><body><main>
+?><!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Bestandsobjekte · GSZ</title><link rel="stylesheet" href="zentrale.css"></head><body><main>
 <header><a href="index.php#objekte">← Objekte</a><a href="recurring.php">Wiederkehrende Leistungen</a></header><h1>Bestandsobjekte prüfen und importieren</h1>
 <p>Sieben Objekte aus dem Masterauftrag. Lippstädter Straße 5: Ort Rheda-Wiedenbrück am 09.11.2026 vom Inhaber bestätigt. Kundenzuordnungen bleiben offen.</p>
 <p>Bestehende Angaben werden beibehalten; nur die Importidentität wird ergänzt. Wiederholter Import legt keine weiteren Datensätze an. Bei abweichenden Bestandsleistungen ist eine Zuordnung erforderlich. Flexible Starttermine sind Vorschläge; Tonnenroutinen bleiben bis zum Kalenderabgleich pausiert. Gelbe Tonne Fontänenstraße: wöchentliche Sonderregel Mittwoch/Donnerstag.</p>

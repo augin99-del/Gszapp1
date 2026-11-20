@@ -12,7 +12,7 @@ const {chromium}=require('playwright');
     await page.goto(base+'/estate_settlements.php');
     await page.locator('[name=email]').fill('owner@example.invalid');
     await page.locator('[name=password]').fill('Local-Test-Only-2026!');
-    await page.getByRole('button',{name:/Sicher anmelden/}).click();
+    await page.getByRole('button',{name:/^Anmelden$/}).click();
     await page.goto(base+'/estate_settlements.php?building=1&from=2024-01-01&to=2024-12-31&as_of=2025-03-01&settlement=1');
     const link=page.getByRole('link',{name:'Privates Eigentümer-/Beraterpaket mit Originalen und Prüfsummen'});
     ok(await link.count()===1,'actual final settlement exposes owner-only export');

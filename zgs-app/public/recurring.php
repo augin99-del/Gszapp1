@@ -31,7 +31,7 @@ $form=$edit??['id'=>0,'title'=>'','property_id'=>null,'frequency'=>'weekly','not
 if ($error && $previous) $form=array_merge($form,array_intersect_key($previous,$form));
 $freq=['daily'=>'Täglich','weekly'=>'Wöchentlich','biweekly'=>'Alle 2 Wochen','monthly'=>'Monatlich','quarterly'=>'Vierteljährlich','seasonal'=>'Manuell / nach Bedarf'];
 $sources=['manual'=>'Manuelle Regel','routine_unverified'=>'Bisherige Tonnenroutine (ungeprüft, pausiert)','special_weekly'=>'Unabhängige wöchentliche Sonderregel'];
-?><!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Wiederkehrende Leistungen · GSZ</title><link rel="stylesheet" href="assets.css"></head><body><main>
+?><!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Wiederkehrende Leistungen · GSZ</title><link rel="stylesheet" href="zentrale.css"></head><body><main>
 <header><a href="index.php">← Zentrale</a><a href="object_import.php">Bestandsobjekte importieren</a></header><h1>Wiederkehrende Leistungen</h1>
 <p>Fällige Regeln erzeugen Aufgaben per eingerichtetem Cron oder über „Fällige Regelaufgaben aktualisieren“. Eine Planvorschau kann kommende Regelaufgaben vorschlagen; erst Bestätigen speichert sie. Termine und Dauern sind Schätzwerte und editierbar. Keine Foto- oder Nachweispflicht.</p>
 <p>Normale Tonnenroutinen erst nach Abgleich mit dem echten Abfallkalender bestätigen. Geprüfte ICS-/CSV-Dateien unter Müllkalender importieren. Saisonfenster begrenzen Termine; der Rhythmus läuft rechnerisch auch außerhalb weiter.</p>

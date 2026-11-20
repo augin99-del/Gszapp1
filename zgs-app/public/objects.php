@@ -1,0 +1,13 @@
+<?php
+declare(strict_types=1);
+require __DIR__.'/bootstrap.php';if(empty($_SESSION['admin_id']))redirect('index.php');require_once dirname(__DIR__).'/private/ui.php';require_once dirname(__DIR__).'/private/waste_store.php';
+$error=$_SESSION['operations_error']??'';unset($_SESSION['operations_error']);if($error)$_SESSION['app_error']=$error;
+$q=trim(mb_substr((string)($_GET['q']??''),0,80));$customers=$pdo->query('SELECT id,name FROM customers ORDER BY name LIMIT 500')->fetchAll();
+$s=$pdo->prepare("SELECT p.id,p.name,(SELECT COUNT(*) FROM tasks t WHERE t.property_id=p.id AND t.done=0 AND t.due_date<=CURDATE()) due FROM properties p WHERE ?='' OR p.name LIKE ? ORDER BY p.name LIMIT 500");$s->execute([$q,'%'.$q.'%']);$objects=$s->fetchAll();
+gszPageStart('Objekte');?>
+<form class="search" method="get" role="search"><label class="sr-only" for="q">Objekt suchen</label><input id="q" type="search" name="q" value="<?=e($q)?>" placeholder="Objekt suchen"></form>
+<?php if($objects):?><div class="list"><?php foreach($objects as $o):?><a href="property.php?id=<?=(int)$o['id']?>"><span class="name"><?=e($o['name'])?></span><?php if((int)$o['due']):?><span class="pill"><?=(int)$o['due']===1?'1 offen heute':(int)$o['due'].' offen heute'?></span><?php endif?></a><?php endforeach?></div>
+<?php else:?><div class="empty"><strong><?=$q!==''?'Kein Objekt gefunden.':'Noch keine Objekte.'?></strong><?=$q!==''?'Suchbegriff prüfen.':'Lege dein erstes Objekt an.'?></div><?php endif?>
+<details class="card"<?=$objects?'':' open'?>><summary>Neues Objekt</summary><form method="post" action="index.php"><?php gszFields('property');?><label>Objektname<input name="name" maxlength="190" required placeholder="z. B. Heiligenhäuschenweg 2–4"></label><label>Adresse<input name="address" maxlength="255" placeholder="Straße Hausnummer, PLZ Ort"></label><label>Kunde<select name="customer_id"><option value="">Ohne Kunde</option><?php foreach($customers as $c):?><option value="<?=(int)$c['id']?>"><?=e($c['name'])?></option><?php endforeach?></select></label><?php if(wasteAutoReady($pdo)):?><label><input type="checkbox" name="waste_service_enabled" value="1"> Tonnenservice: Abfuhrkalender automatisch suchen</label><?php endif?><button class="primary">Objekt anlegen</button></form></details>
+<p><a href="object_import.php">Bestandsobjekte übernehmen</a></p>
+<?php gszPageEnd();

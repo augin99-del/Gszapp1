@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-$root=sys_get_temp_dir().'/gsz-setup-config-'.bin2hex(random_bytes(8));mkdir($root,0700);mkdir($root.'/private',0700);mkdir($root.'/public',0700);foreach(['setup_core.php','config_loader.php','config_security.php','connection_diagnostics.php','managed_config.php','config.example.php'] as $file)copy(dirname(__DIR__).'/private/'.$file,$root.'/private/'.$file);
+$root=sys_get_temp_dir().'/gsz-setup-config-'.bin2hex(random_bytes(8));mkdir($root,0700);mkdir($root.'/private',0700);mkdir($root.'/public',0700);foreach(['setup_core.php','config_loader.php','config_security.php','connection_diagnostics.php','managed_config.php','config.example.php','mail_credentials.php','secret_vault.php'] as $file)copy(dirname(__DIR__).'/private/'.$file,$root.'/private/'.$file);
 $code= <<<'CODE'
 <?php
 set_error_handler(static function($s,$m,$f,$l){if(error_reporting()&$s)throw new ErrorException($m,0,$s,$f,$l);return false;});

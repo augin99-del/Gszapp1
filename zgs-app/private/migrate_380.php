@@ -24,11 +24,11 @@ function gszMigrate380(PDO $pdo):array {
 /** Removes known program files of the removed finance block left over from an upload over 370. Only exact listed regular files. */
 function gszRemoveObsoleteFiles380(?string $root=null):array {
  $root=realpath($root??dirname(__DIR__));$list=@file(__DIR__.'/obsolete_files_380.txt',FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)?:[];$removed=[];$failed=[];
- foreach($list as $rel){$rel=trim($rel);if(!preg_match('~^(public|private)/[a-z0-9_]+\.(php|css|js)$~D',$rel))continue;$path=$root.'/'.$rel;if(is_link($path)||!is_file($path))continue;if(@unlink($path))$removed[]=$rel;else $failed[]=$rel;}
+ foreach($list as $rel){$rel=trim($rel);if(!preg_match('~^(public|private)/[a-z0-9_-]+\.(php|css|js)$~D',$rel))continue;$path=$root.'/'.$rel;if(is_link($path)||!is_file($path))continue;if(@unlink($path))$removed[]=$rel;else $failed[]=$rel;}
  return ['removed'=>$removed,'failed'=>$failed];
 }
 function gszObsoleteFilesPresent380(?string $root=null):array {
- $root=realpath($root??dirname(__DIR__));$out=[];foreach(@file(__DIR__.'/obsolete_files_380.txt',FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)?:[] as $rel){$rel=trim($rel);if(preg_match('~^(public|private)/[a-z0-9_]+\.(php|css|js)$~D',$rel)&&is_file($root.'/'.$rel))$out[]=$rel;}return $out;
+ $root=realpath($root??dirname(__DIR__));$out=[];foreach(@file(__DIR__.'/obsolete_files_380.txt',FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)?:[] as $rel){$rel=trim($rel);if(preg_match('~^(public|private)/[a-z0-9_-]+\.(php|css|js)$~D',$rel)&&is_file($root.'/'.$rel))$out[]=$rel;}return $out;
 }
 /** Removes stored settings of the removed finance block (e.g. old provider key) from the encrypted managed config. */
 function gszPurgeObsoleteConfig380():int {require_once __DIR__.'/managed_config.php';try{return gszManagedRemove(GSZ_OBSOLETE_CONFIG_KEYS_380);}catch(Throwable $e){return 0;}}

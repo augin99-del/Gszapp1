@@ -4,7 +4,7 @@ require __DIR__.'/bootstrap.php';if(empty($_SESSION['admin_id'])){http_response_
 require_once dirname(__DIR__).'/private/web_update.php';require_once dirname(__DIR__).'/private/ui.php';
 if($_SERVER['REQUEST_METHOD']==='POST'){checkCsrf();$action=(string)($_POST['action']??'');
  try{
-  if($action==='backup'){$m=gszDatabaseBackup($pdo,'vor-update');gszAudit($pdo,(int)$_SESSION['admin_id'],'backup_created',['file'=>$m['file'],'sha256'=>$m['sha256']]);$_SESSION['backup_sha256']=$m['sha256'];$_SESSION['app_notice']='Sicherung erstellt. Bitte jetzt herunterladen und aufbewahren.';}
+  if($action==='backup'){$m=gszDatabaseBackup($pdo,gszSchemaCurrent($pdo)?'manuell':'vor-update');gszAudit($pdo,(int)$_SESSION['admin_id'],'backup_created',['file'=>$m['file'],'sha256'=>$m['sha256']]);$_SESSION['app_notice']='Sicherung erstellt. Bitte jetzt herunterladen und aufbewahren.';}
   elseif($action==='upgrade'){$r=gszWebUpgrade($pdo,$config,(int)$_SESSION['admin_id'],(string)($_POST['owner_password']??''),$_POST,(string)($_SERVER['REMOTE_ADDR']??''));$_SESSION['app_notice']=$r['status']==='current'?'Update abgeschlossen. Die Zentrale ist auf Stand 380.'.(!empty($r['files_failed'])?' Einige alte Programmdateien konnten nicht gelöscht werden – siehe Systemstatus.':''):'Update-Status prüfen.';}
   else throw new RuntimeException('Aktion unbekannt.');
  }catch(Throwable $e){$_SESSION['app_error']=str_starts_with($e->getMessage(),'GSZ_')?'Vorgang gestoppt. Es wurde nichts gelöscht. Bitte Systemstatus prüfen.':$e->getMessage();}
@@ -12,9 +12,9 @@ if($_SERVER['REQUEST_METHOD']==='POST'){checkCsrf();$action=(string)($_POST['act
 $inspection=['status'=>'blocked','code'=>'GSZ_SCHEMA_UNKNOWN','version'=>null];try{$inspection=gszSetupInspect($pdo);}catch(Throwable $e){}
 $backups=[];try{$backups=gszBackupList(5);}catch(Throwable $e){}
 $latest=$backups[0]??null;$fresh=$latest&&strtotime($latest['created_at'])>=time()-7200;
-gszPageStart('Update');
+gszPageStart('Sicherung und Update');
 if($inspection['status']==='current'):?>
-<section class="card"><h2>Alles aktuell</h2><p>Die Zentrale läuft auf dem aktuellen Stand. Es ist kein Update nötig.</p></section>
+<section class="card"><h2>Alles aktuell</h2><p>Die Zentrale läuft auf dem aktuellen Stand. Es ist kein Update nötig.</p></section><section class="card"><h2>Sicherung</h2><p>Komplette Datenbank sichern und auf Mac oder iPhone herunterladen.</p><form method="post"><?php gszFields('backup');?><button class="primary">Sicherung jetzt erstellen</button></form><?php foreach($backups as $b):?><p><a href="backup_download.php?file=<?=e(rawurlencode($b['file']))?>">Sicherung vom <?=e((new DateTimeImmutable($b['created_at']))->setTimezone(new DateTimeZone('Europe/Berlin'))->format('d.m.Y, H:i'))?> Uhr herunterladen</a></p><?php endforeach?></section>
 <?php elseif($inspection['status']==='upgrade'):?>
 <section class="card"><h2>Neue Version bereit</h2><p>Die Programmdateien sind neu, die Datenbank noch auf Stand <?=e((string)$inspection['version'])?>. Das Update entfernt den alten Finanzbereich (Rechnungen, Angebote, Buchhaltung, Sparkasse) und ergänzt Mietabgleich und Abfall-Blöcke. Alle anderen Daten bleiben erhalten.</p></section>
 <section class="card"><h2>1. Sicherung erstellen</h2><p>Die Sicherung enthält die komplette Datenbank und wird geschützt auf dem Server abgelegt. Lade sie zusätzlich auf deinen Mac oder dein iPhone herunter.</p>

@@ -90,9 +90,9 @@ function estateConfirmExpense(PDO $pdo,int $admin,int $transaction,string $categ
 }
 /** Hinweise für die Startseite: fehlender Monatsexport ab dem 10. und offene Mieten (nur entscheidungsrelevante Zahlen). */
 function estateAttention(PDO $pdo,?DateTimeImmutable $today=null):array {
- $today??=estateNow();$out=['missing_uploads'=>[],'missing_rents'=>0,'charges_missing'=>[]];try{if(!(int)$pdo->query("SELECT COUNT(*) FROM app_migrations WHERE version='380_zentrale'")->fetchColumn())return $out;}catch(PDOException $e){return $out;}
+ $today??=estateNow();$out=['missing_uploads'=>[],'missing_rents'=>0,'charges_missing'=>[],'unlinked_accounts'=>0];try{if(!(int)$pdo->query("SELECT COUNT(*) FROM app_migrations WHERE version='380_zentrale'")->fetchColumn())return $out;}catch(PDOException $e){return $out;}
  $first=$today->format('Y-m-01');$day=(int)$today->format('j');
- foreach(estateAccounts($pdo) as $a){if(!$a['building_id'])continue;if($day>=10){$q=$pdo->prepare('SELECT COUNT(*) FROM estate_bank_uploads WHERE account_id=? AND uploaded_on>=?');$q->execute([$a['id'],$first]);if(!(int)$q->fetchColumn())$out['missing_uploads'][]=['account_id'=>(int)$a['id'],'label'=>estateAccountLabel($a)];}
+ $houses=(int)$pdo->query('SELECT COUNT(*) FROM estate_buildings')->fetchColumn();foreach(estateAccounts($pdo) as $a){if(!$a['building_id']){if($houses)$out['unlinked_accounts']++;continue;}if($day>=10){$q=$pdo->prepare('SELECT COUNT(*) FROM estate_bank_uploads WHERE account_id=? AND uploaded_on>=?');$q->execute([$a['id'],$first]);if(!(int)$q->fetchColumn())$out['missing_uploads'][]=['account_id'=>(int)$a['id'],'label'=>estateAccountLabel($a)];}
   foreach(estateMonthOverview($pdo,(int)$a['building_id'],$first) as $r){if($r['status']==='missing'||$r['status']==='partial')$out['missing_rents']++;if($r['status']==='no_charge'&&$day>=(int)$r['due_day'])$out['charges_missing'][(int)$a['building_id']]=estateAccountLabel($a);}}
  $out['charges_missing']=array_values($out['charges_missing']);return $out;
 }
