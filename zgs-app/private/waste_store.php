@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__.'/waste_parser.php';
+require_once __DIR__.'/waste_parser.php';require_once __DIR__.'/waste_blocks.php';
 function wasteAutoReady(PDO $pdo):bool {return (bool)$pdo->query("SELECT COUNT(*) FROM app_migrations WHERE version='360_waste_connections'")->fetchColumn();}
 function wasteSource(PDO $pdo,int $id):array {$s=$pdo->prepare('SELECT s.*,p.address current_address,p.seed_key FROM waste_sources s JOIN properties p ON p.id=s.property_id WHERE s.id=?');$s->execute([$id]);$r=$s->fetch();if(!$r)throw new RuntimeException('Quelle nicht gefunden.');return $r;}
 function wasteSnapshot(PDO $pdo):string {
@@ -24,29 +24,15 @@ function wasteSavePreview(PDO $pdo,int $admin,int $sourceId,string $raw,string $
  $rows=$format==='ics'?wasteParseIcs($raw):wasteParseCsv($raw,$csvMap,$delimiter);$preview=wastePreview($pdo,$sourceId,$rows,$mapping);$token=bin2hex(random_bytes(32));
  $pdo->prepare('INSERT INTO waste_imports(token,admin_id,source_id,file_hash,fingerprint,payload) VALUES(?,?,?,?,?,?)')->execute([$token,$admin,$sourceId,hash('sha256',$raw),wasteSnapshot($pdo),json_encode($preview,JSON_THROW_ON_ERROR)]);return $token;
 }
-/** Always called inside the import/review transaction. Reuses special weekly identity. */
+/** Always called inside the import/review transaction. Groups all bins of a property/day/direction into one block ($bundle kept for compatibility). */
 function wasteCreateTasks(PDO $pdo,array $event,bool $bundle=false):void {
  if($event['status']!=='geprueft')return;
  if(wasteAutoReady($pdo)){$q=$pdo->prepare('SELECT c.*,p.address current_address FROM waste_connections c JOIN properties p ON p.id=c.property_id JOIN waste_sources source ON source.property_id=c.property_id AND source.auto_managed=1 JOIN waste_origins o ON o.source_id=source.id WHERE o.event_id=?');$q->execute([$event['id']]);foreach($q->fetchAll() as $c){$a=json_decode($c['address_json'],true);if(!$c['enabled']||!hash_equals($c['address_hash'],hash('sha256',$c['current_address']))||!in_array($event['fraction'],array_column(json_decode($c['bins_json'],true),'canonical'),true))return;}}
  $out=-1;$in=0;if(gszV1Ready($pdo)){$policy=$pdo->prepare('SELECT waste_out_offset,waste_in_offset FROM properties WHERE id=?');$policy->execute([$event['property_id']]);$days=$policy->fetch();$out=(int)$days['waste_out_offset'];$in=(int)$days['waste_in_offset'];}
  foreach(['raus'=>planDate($event['collection_date'],$out),'rein'=>planDate($event['collection_date'],$in)] as $direction=>$date){
   $s=$pdo->prepare('SELECT task_id FROM waste_task_links WHERE event_id=? AND direction=?');$s->execute([$event['id'],$direction]);if($s->fetchColumn())continue;
-  $s=$pdo->prepare("SELECT r.* FROM recurring_jobs r JOIN properties p ON p.id=r.property_id WHERE r.property_id=? AND p.seed_key='fontaenen29' AND r.rule_source='special_weekly' AND r.active=1 AND r.title=? ORDER BY r.id");$s->execute([$event['property_id'],'Gelbe Tonne '.($direction==='raus'?'rausstellen':'reinstellen')]);$special=$s->fetch();
-  $weekday=(int)(new DateTimeImmutable($date))->format('N');
-  if($event['fraction']==='Gelb'&&$special&&$weekday===($direction==='raus'?3:4)){
-   zgsInsertOccurrence($pdo,$special,$date);$s=$pdo->prepare('SELECT id FROM tasks WHERE recurring_job_id=? AND scheduled_for=?');$s->execute([$special['id'],$date]);$task=(int)$s->fetchColumn();
-  }else{
-   $key=$bundle?'waste:group:'.$event['property_id'].':'.$date.':'.$direction:'waste:'.$event['id'].':'.$direction;
-   $s=$pdo->prepare('SELECT * FROM tasks WHERE waste_key=? FOR UPDATE');$s->execute([$key]);$existing=$s->fetch();
-   if($existing){
-    // Never append a new fraction to a completed/edited existing visit.
-    if($existing['done']||$existing['plan_locked']||$existing['start_time']||(int)$existing['sort_order']>0||$existing['due_date']!==$date)throw new RuntimeException('Bündelaufgabe wurde erledigt/manuell geändert. Einzeltermine verwenden.');
-    $task=(int)$existing['id'];$title=$existing['title'];if(!str_contains($title,$event['fraction']))$pdo->prepare('UPDATE tasks SET title=? WHERE id=?')->execute([mb_substr($title.' + '.$event['fraction'],0,190),$task]);
-   }else{
-    $pdo->prepare('INSERT INTO tasks(property_id,title,due_date,duration_minutes,waste_key,window_start,window_end) VALUES(?,?,?,15,?,?,?)')->execute([$event['property_id'],'Tonnen '.$direction.'stellen: '.$event['fraction'],$date,$key,$date,$date]);$task=(int)$pdo->lastInsertId();
-   }
-  }
-  $pdo->prepare('INSERT INTO waste_task_links(event_id,direction,task_id) VALUES(?,?,?)')->execute([$event['id'],$direction,$task]);
+  // Ein Block je Objekt/Tag/Richtung; Tonnenarten bleiben über waste_task_links einzeln nachvollziehbar.
+  $task=wasteLinkToBlock($pdo,(int)$event['id'],(int)$event['property_id'],$date,$direction);
   if(wasteAutoReady($pdo)){$timing=$pdo->prepare('SELECT c.out_time,c.in_time FROM waste_connections c JOIN waste_sources source ON source.property_id=c.property_id AND source.auto_managed=1 JOIN waste_origins o ON o.source_id=source.id WHERE o.event_id=? AND c.enabled=1 LIMIT 1');$timing->execute([$event['id']]);$times=$timing->fetch();$time=$times[$direction==='raus'?'out_time':'in_time']??null;if($time)$pdo->prepare('UPDATE tasks SET start_time=?,plan_locked=1 WHERE id=? AND done=0 AND plan_locked=0 AND start_time IS NULL AND recurring_job_id IS NULL')->execute([$time,$task]);}
  }
 }

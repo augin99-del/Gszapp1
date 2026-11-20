@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__.'/waste_provider.php';
+require_once __DIR__.'/waste_provider.php';require_once __DIR__.'/waste_blocks.php';
 /** Add a reviewed adapter here and its municipality evidence to the registry. */
 function wasteProvider(PDO $pdo,string $key,bool $refresh=false):GszWasteProvider {return match($key){'regioit_krwaf'=>new GszRegioWasteProvider($pdo,null,$refresh),default=>throw new RuntimeException('Geprüfter Kalenderadapter fehlt. Manuellen Import verwenden.')};}
 function wasteConnection(PDO $pdo,int $id):?array {$q=$pdo->prepare('SELECT c.*,p.address current_address,p.name property_name FROM waste_connections c JOIN properties p ON p.id=c.property_id WHERE c.property_id=?');$q->execute([$id]);return $q->fetch()?:null;}
@@ -34,7 +34,7 @@ function wasteConfirmConnection(PDO $pdo,int $admin,int $id,string $token,bool $
 function wasteSyncConnection(PDO $pdo,int $admin,int $id,bool $auto=false,?GszWasteProvider $provider=null):array {
  return wasteConnectionLock($pdo,$id,function()use($pdo,$admin,$id,$auto,$provider){$c=wasteConnection($pdo,$id);if(!$c||!$c['enabled'])return ['status'=>'SKIPPED'];if(!hash_equals($c['address_hash'],hash('sha256',$c['current_address']))){$pdo->prepare("UPDATE waste_connections SET status='confirmation',error_code='GSZ_WASTE_ADDRESS_CHANGED',pending_token=NULL,next_sync_at=UTC_TIMESTAMP()+INTERVAL 1 DAY WHERE property_id=?")->execute([$id]);return ['status'=>'REVIEW'];}
  $pdo->prepare('UPDATE waste_connections SET last_attempt_at=UTC_TIMESTAMP(),next_sync_at=UTC_TIMESTAMP()+INTERVAL 6 HOUR WHERE property_id=?')->execute([$id]);
- try{$p=$provider??wasteProvider($pdo,$c['provider_key'],!$auto);$result=wasteAutoPreview($pdo,$admin,$c,$p);$oldChecked=false;if($c['source_id']){$q=$pdo->prepare('SELECT checked_at FROM waste_sources WHERE id=?');$q->execute([$c['source_id']]);$oldChecked=(bool)$q->fetchColumn();}
+ try{$p=$provider??wasteProvider($pdo,$c['provider_key'],!$auto);$result=wasteAutoPreview($pdo,$admin,$c,$p);if($auto&&$result['conflicts']&&in_array($c['status'],['connected','failed'],true)){$payloadRows=json_decode((string)$pdo->query('SELECT payload FROM waste_imports WHERE token='.$pdo->quote($result['token']))->fetchColumn(),true,512,JSON_THROW_ON_ERROR)['rows'];if(wasteAutoMoves($pdo,$admin,$c,$payloadRows)){$status=$c['status'];$c=wasteConnection($pdo,$id);$c['status']=$status;$result=wasteAutoPreview($pdo,$admin,$c,$p);}}$oldChecked=false;if($c['source_id']){$q=$pdo->prepare('SELECT checked_at FROM waste_sources WHERE id=?');$q->execute([$c['source_id']]);$oldChecked=(bool)$q->fetchColumn();}
  if($auto&&in_array($c['status'],['connected','failed'],true)&&$oldChecked&&(int)$c['source_id']===$result['source_id']&&!$result['conflicts']){wasteConfirmConnection($pdo,$admin,$id,$result['token']);return ['status'=>'PASS','rows'=>$result['rows']];}return ['status'=>'REVIEW',...$result];}
  catch(Throwable $e){$pdo->prepare("UPDATE waste_connections SET status='failed',error_code='GSZ_WASTE_SOURCE_FAILED',last_attempt_at=UTC_TIMESTAMP(),next_sync_at=UTC_TIMESTAMP()+INTERVAL 6 HOUR WHERE property_id=?")->execute([$id]);return ['status'=>'BLOCKED','error'=>'GSZ_WASTE_SOURCE_FAILED'];}
  });
@@ -43,20 +43,53 @@ function wasteSyncConnections(PDO $pdo,int $admin,?callable $providerFactory=nul
  $ids=$pdo->query("SELECT property_id FROM waste_connections WHERE enabled=1 AND provider_key<>'' AND bins_json<>'[]' AND (next_sync_at IS NULL OR next_sync_at<=UTC_TIMESTAMP()) ORDER BY COALESCE(next_sync_at,'2000-01-01'),property_id LIMIT 2")->fetchAll(PDO::FETCH_COLUMN);$results=[];foreach($ids as $id)$results[]=wasteSyncConnection($pdo,$admin,(int)$id,true,$providerFactory?$providerFactory((int)$id):null);return ['connections'=>count($results),'results'=>$results];
 }
 function wasteConnectionStatus(array $c):string {if(!$c['enabled'])return 'Deaktiviert';if(!hash_equals($c['address_hash'],hash('sha256',$c['current_address'])))return 'Bestätigung erforderlich';return ['connected'=>'Automatisch verbunden','confirmation'=>'Bestätigung erforderlich','manual'=>'Manueller Import erforderlich','failed'=>'Synchronisierung fehlgeschlagen','disabled'=>'Deaktiviert'][$c['status']]??'Bestätigung erforderlich';}
-/** Explicit one-record correction. All touched tasks must be future, unchanged and unlocked. */
+/**
+ * Core of a confirmed official date change (e.g. holiday shift) of ONE bin type, inside the caller's transaction.
+ * The event leaves its old blocks (only if those are still open) and joins the open block of the new day.
+ * Done blocks are never touched; no duplicates: the target day must not already hold the same bin type.
+ */
+function wasteMoveEventCore(PDO $pdo,int $admin,int $property,array $event,array $r,int $sourceId,string $today):array {
+ if($event['collection_date']<$today||$r['date']<$today||$event['status']!=='geprueft')throw new RuntimeException('Historische/ungeprüfte Termine werden nicht verändert.');
+ $q=$pdo->prepare('SELECT id FROM waste_events WHERE property_id=? AND collection_date=? AND fraction=? AND id<>?');$q->execute([$property,$r['date'],$r['fraction'],$event['id']]);if($q->fetchColumn())throw new RuntimeException('Zieltermin existiert bereits. Keine Dublette angelegt.');
+ $offsets=$pdo->prepare('SELECT waste_out_offset,waste_in_offset FROM properties WHERE id=?');$offsets->execute([$property]);$days=$offsets->fetch();
+ $q=$pdo->prepare('SELECT l.direction,t.done FROM waste_task_links l JOIN tasks t ON t.id=l.task_id WHERE l.event_id=? FOR UPDATE');$q->execute([$event['id']]);$links=$q->fetchAll();$moved=[];
+ foreach($links as $l){if($l['done'])continue;$new=planDate($r['date'],(int)$days[$l['direction']==='raus'?'waste_out_offset':'waste_in_offset']);if($new<$today)throw new RuntimeException('Neuer Termin läge in der Vergangenheit. Einzelprüfung erforderlich.');}
+ $source=wasteSource($pdo,$sourceId);
+ $pdo->prepare('UPDATE waste_events SET collection_date=?,event_hash=? WHERE id=?')->execute([$r['date'],hash('sha256',json_encode([$property,$r['date'],$r['fraction'],$source['address']])),$event['id']]);
+ $pdo->prepare('UPDATE waste_origins SET original_start=?,record_hash=?,imported_at=UTC_TIMESTAMP() WHERE event_id=? AND source_id=? AND external_id=?')->execute([$r['original_start'],hash('sha256',json_encode($r)),$event['id'],$sourceId,$r['uid']]);
+ foreach($links as $l){if($l['done'])continue;$new=planDate($r['date'],(int)$days[$l['direction']==='raus'?'waste_out_offset':'waste_in_offset']);
+  // A block that only holds this bin type moves as a whole (keeps identity, notes, planned time) if the target day has no open block.
+  $q=$pdo->prepare('SELECT t.id,t.recurring_job_id,(SELECT COUNT(*) FROM waste_task_links x WHERE x.task_id=t.id) links FROM waste_task_links l JOIN tasks t ON t.id=l.task_id WHERE l.event_id=? AND l.direction=?');$q->execute([$event['id'],$l['direction']]);$blk=$q->fetch();
+  $targetKey=wasteBlockKey($property,$new,$l['direction']);$q=$pdo->prepare('SELECT id FROM tasks WHERE waste_key=?');$q->execute([$targetKey]);$occupied=$q->fetchColumn();
+  if($blk&&(int)$blk['links']===1&&!$blk['recurring_job_id']&&!$occupied){$pdo->prepare('UPDATE tasks SET due_date=?,window_start=?,window_end=?,waste_key=?,row_version=row_version+1 WHERE id=? AND done=0')->execute([$new,$new,$new,$targetKey,$blk['id']]);$moved[]=['direction'=>$l['direction'],'from_task'=>(int)$blk['id'],'to_task'=>(int)$blk['id'],'day'=>$new];continue;}
+  $old=wasteUnlinkFromBlock($pdo,(int)$event['id'],$l['direction']);$task=wasteLinkToBlock($pdo,(int)$event['id'],$property,$new,$l['direction']);$moved[]=['direction'=>$l['direction'],'from_task'=>$old,'to_task'=>$task,'day'=>$new];}
+ wasteHistory($pdo,$admin,'official_move_confirmed',['property'=>$property,'event'=>(int)$event['id'],'uid'=>$r['uid'],'before'=>$event['collection_date'],'after'=>$r['date'],'blocks'=>$moved,'done_blocks_untouched'=>true]);
+ return $moved;
+}
+/** Explicit one-record correction confirmed by the owner from the pending preview. */
 function wasteResolveMove(PDO $pdo,int $admin,int $id,string $token,int $rowIndex):void {
  wasteConnectionLock($pdo,$id,function()use($pdo,$admin,$id,$token,$rowIndex){$c=wasteConnection($pdo,$id);if(!$c||!$c['enabled']||$c['pending_token']!==$token||!hash_equals($c['address_hash'],hash('sha256',$c['current_address'])))throw new RuntimeException('Aktuelle bestätigbare Quelle erforderlich.');
  if((int)$pdo->query("SELECT GET_LOCK('gsz_waste_import',5)")->fetchColumn()!==1)throw new RuntimeException('Import läuft bereits.');$pdo->beginTransaction();try{
  $guard=$pdo->prepare('SELECT p.address,c.address_hash,c.enabled,c.pending_token FROM properties p JOIN waste_connections c ON c.property_id=p.id WHERE p.id=? FOR UPDATE');$guard->execute([$id]);$current=$guard->fetch();if(!$current||!$current['enabled']||$current['pending_token']!==$token||!hash_equals($current['address_hash'],hash('sha256',$current['address'])))throw new RuntimeException('Objektadresse inzwischen geändert. Neu prüfen.');
  $q=$pdo->prepare('SELECT * FROM waste_imports WHERE token=? AND admin_id=? AND source_id=? FOR UPDATE');$q->execute([$token,$admin,$c['source_id']]);$import=$q->fetch();if(!$import||$import['applied_at']||strtotime($import['created_at'].' UTC')<time()-7200||!hash_equals($import['fingerprint'],wasteSnapshot($pdo)))throw new RuntimeException('Vorschau geändert oder abgelaufen. Neu synchronisieren.');$payload=json_decode($import['payload'],true,512,JSON_THROW_ON_ERROR);$r=$payload['rows'][$rowIndex]??null;if(!$r)throw new RuntimeException('Vorschauzeile fehlt.');
- $q=$pdo->prepare('SELECT DISTINCT e.* FROM waste_events e JOIN waste_origins o ON o.event_id=e.id WHERE o.source_id=? AND o.external_id=? FOR UPDATE');$q->execute([$c['source_id'],$r['uid']]);$old=$q->fetchAll();if(count($old)!==1||$old[0]['collection_date']===$r['date']||$old[0]['fraction']!==$r['fraction'])throw new RuntimeException('Nur eindeutig identische Quellen-ID mit geändertem Datum kann verschoben werden.');$event=$old[0];$today=(new DateTimeImmutable('today',new DateTimeZone('Europe/Berlin')))->format('Y-m-d');if($event['collection_date']<$today||$r['date']<$today||$event['status']!=='geprueft')throw new RuntimeException('Historische/ungeprüfte Termine werden nicht verändert.');
+ $q=$pdo->prepare('SELECT DISTINCT e.* FROM waste_events e JOIN waste_origins o ON o.event_id=e.id WHERE o.source_id=? AND o.external_id=? FOR UPDATE');$q->execute([$c['source_id'],$r['uid']]);$old=$q->fetchAll();if(count($old)!==1||$old[0]['collection_date']===$r['date']||$old[0]['fraction']!==$r['fraction'])throw new RuntimeException('Nur eindeutig identische Quellen-ID mit geändertem Datum kann verschoben werden.');
  $source=wasteSource($pdo,(int)$c['source_id']);if($r['date']>$source['valid_until']||$source['address']!==$c['current_address'])throw new RuntimeException('Quellengültigkeit oder Adresse prüfen.');
- $q=$pdo->prepare('SELECT id FROM waste_events WHERE property_id=? AND collection_date=? AND fraction=? AND id<>?');$q->execute([$id,$r['date'],$r['fraction'],$event['id']]);if($q->fetchColumn())throw new RuntimeException('Zieltermin existiert bereits. Keine automatische Zusammenführung.');
- $q=$pdo->prepare('SELECT t.*,l.direction,(SELECT COUNT(*) FROM waste_task_links x WHERE x.task_id=t.id) link_count FROM tasks t JOIN waste_task_links l ON l.task_id=t.id WHERE l.event_id=? FOR UPDATE');$q->execute([$event['id']]);$tasks=$q->fetchAll();$offsets=$pdo->prepare('SELECT waste_out_offset,waste_in_offset FROM properties WHERE id=?');$offsets->execute([$id]);$days=$offsets->fetch();
- foreach($tasks as $t){$offset=(int)$days[$t['direction']==='raus'?'waste_out_offset':'waste_in_offset'];$new=planDate($r['date'],$offset);if($t['done']||$t['plan_locked']||$t['start_time']||$t['recurring_job_id']||(string)$t['notes']!==''||(int)$t['row_version']>0||(int)$t['sort_order']>0||(int)$t['planned_order']>0||(int)$t['link_count']!==1||$t['due_date']!==planDate($event['collection_date'],$offset)||$t['due_date']<$today||$new<$today)throw new RuntimeException('Erledigte, vergangene, gebündelte oder manuell bearbeitete Aufgabe bleibt geschützt. Einzelprüfung erforderlich.');}
- foreach($tasks as $t){$new=planDate($r['date'],(int)$days[$t['direction']==='raus'?'waste_out_offset':'waste_in_offset']);$pdo->prepare('UPDATE tasks SET due_date=?,window_start=?,window_end=?,row_version=row_version+1 WHERE id=?')->execute([$new,$new,$new,$t['id']]);}
- $pdo->prepare('UPDATE waste_events SET collection_date=?,event_hash=? WHERE id=?')->execute([$r['date'],hash('sha256',json_encode([$id,$r['date'],$r['fraction'],$source['address']])),$event['id']]);$pdo->prepare('UPDATE waste_origins SET original_start=?,record_hash=?,imported_at=UTC_TIMESTAMP() WHERE event_id=? AND source_id=? AND external_id=?')->execute([$r['original_start'],hash('sha256',json_encode($r)),$event['id'],$c['source_id'],$r['uid']]);
- $pdo->prepare("UPDATE waste_connections SET pending_token=NULL,status='confirmation' WHERE property_id=?")->execute([$id]);wasteHistory($pdo,$admin,'official_move_confirmed',['property'=>$id,'event'=>$event['id'],'uid'=>$r['uid'],'before'=>$event['collection_date'],'after'=>$r['date'],'tasks'=>array_column($tasks,'id'),'confirmation'=>true]);$pdo->commit();
+ wasteMoveEventCore($pdo,$admin,$id,$old[0],$r,(int)$c['source_id'],(new DateTimeImmutable('today',new DateTimeZone('Europe/Berlin')))->format('Y-m-d'));
+ $pdo->prepare("UPDATE waste_connections SET pending_token=NULL,status='confirmation' WHERE property_id=?")->execute([$id]);$pdo->commit();
  }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}finally{$pdo->query("SELECT RELEASE_LOCK('gsz_waste_import')");}
  });
+}
+/**
+ * Automatic recomposition during a scheduled sync: official date changes of single bin types (same provider ID,
+ * same bin type, future dates, already confirmed calendar) move into the right blocks. Anything else stays a review item.
+ */
+function wasteAutoMoves(PDO $pdo,int $admin,array $c,array $rows):int {
+ if(!$c['source_id'])return 0;$today=(new DateTimeImmutable('today',new DateTimeZone('Europe/Berlin')))->format('Y-m-d');$source=wasteSource($pdo,(int)$c['source_id']);if(!$source['checked_at']||$source['address']!==$c['current_address'])return 0;$count=0;
+ $mapping=[];foreach(json_decode($c['bins_json'],true,32,JSON_THROW_ON_ERROR) as $b)$mapping[$b['name']]=$b['canonical'];
+ foreach($rows as $r){$r['fraction']=$r['fraction']??($mapping[$r['label']]??'');if($r['fraction']===''||$r['date']<$today||$r['date']>$source['valid_until'])continue;
+  $q=$pdo->prepare('SELECT DISTINCT e.* FROM waste_events e JOIN waste_origins o ON o.event_id=e.id WHERE o.source_id=? AND o.external_id=?');$q->execute([$c['source_id'],$r['uid']]);$old=$q->fetchAll();if(count($old)!==1||$old[0]['collection_date']===$r['date']||$old[0]['fraction']!==$r['fraction']||$old[0]['collection_date']<$today||$old[0]['status']!=='geprueft')continue;
+  if((int)$pdo->query("SELECT GET_LOCK('gsz_waste_import',5)")->fetchColumn()!==1)return $count;$pdo->beginTransaction();
+  try{wasteMoveEventCore($pdo,$admin,(int)$c['property_id'],$old[0],$r,(int)$c['source_id'],$today);$pdo->commit();$count++;}catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();}finally{$pdo->query("SELECT RELEASE_LOCK('gsz_waste_import')");}
+ }
+ return $count;
 }
