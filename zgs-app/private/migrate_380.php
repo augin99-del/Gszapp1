@@ -17,6 +17,7 @@ function gszMigrate380(PDO $pdo):array {
  $foreign=$pdo->query("SELECT DISTINCT TABLE_NAME,CONSTRAINT_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA=DATABASE() AND REFERENCED_TABLE_NAME IN($finance) AND TABLE_NAME NOT IN($finance)")->fetchAll(PDO::FETCH_ASSOC);
  foreach($foreign as $fk){if(!preg_match('/^[A-Za-z0-9_]{1,64}$/D',$fk['TABLE_NAME'].$fk['CONSTRAINT_NAME']))throw new RuntimeException('GSZ_380_FOREIGN_NAME');$pdo->exec('ALTER TABLE `'.$fk['TABLE_NAME'].'` DROP FOREIGN KEY IF EXISTS `'.$fk['CONSTRAINT_NAME'].'`');}
  $sql=file_get_contents(__DIR__.'/migration_v380.sql');if($sql===false)throw new RuntimeException('Migrationsdatei 380 fehlt.');$pdo->exec($sql);
+ gszRepair380($pdo);
  $admin=(int)$pdo->query('SELECT COALESCE(MIN(id),0) FROM admins')->fetchColumn();
  $pdo->beginTransaction();try{$merge=wasteMergeOpenBlocks($pdo,$admin);$pdo->exec("INSERT IGNORE INTO app_migrations(version) VALUES('380_zentrale')");$pdo->commit();}catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
  return ['already_applied'=>$done,'foreign_keys_released'=>count($foreign),'waste_blocks_merged'=>$merge['merged']];
@@ -32,3 +33,22 @@ function gszObsoleteFilesPresent380(?string $root=null):array {
 }
 /** Removes stored settings of the removed finance block (e.g. old provider key) from the encrypted managed config. */
 function gszPurgeObsoleteConfig380():int {require_once __DIR__.'/managed_config.php';try{return gszManagedRemove(GSZ_OBSOLETE_CONFIG_KEYS_380);}catch(Throwable $e){return 0;}}
+/**
+ * Mit 380 neu angelegte Textspalten erben bei manchen Hostern den Standardzeichensatz der alten Tabelle (z. B. utf8mb3).
+ * Gleicht genau diese Spalten auf utf8mb4 an. Wiederholbar; ändert keine Inhalte (nur Hex-Prüfwerte/Namen).
+ */
+const GSZ_REPAIR_COLUMNS_380=[
+ ['estate_bank_transactions','counterparty_iban_hash','CHAR(64) CHARACTER SET utf8mb4 NULL'],
+ ['estate_tenants','iban_hash','CHAR(64) CHARACTER SET utf8mb4 NULL'],
+ ['estate_tenants','payer_names',"VARCHAR(500) CHARACTER SET utf8mb4 NOT NULL DEFAULT ''"],
+];
+function gszRepair380(PDO $pdo):array {
+ $fixed=[];$q=$pdo->prepare('SELECT CHARACTER_SET_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? AND COLUMN_NAME=?');
+ foreach(GSZ_REPAIR_COLUMNS_380 as [$t,$c,$def]){$q->execute([$t,$c]);$cs=$q->fetchColumn();if($cs!==false&&$cs!=='utf8mb4'){$pdo->exec('ALTER TABLE `'.$t.'` MODIFY `'.$c.'` '.$def);$fixed[]=$t.'.'.$c;}}
+ return $fixed;
+}
+/** True if the only structural differences are the known, repairable 380 column charsets. */
+function gszRepairable380(array $inspection):bool {
+ if(($inspection['version']??null)!==380||($inspection['code']??'')!=='GSZ_SCHEMA_STRUCTURE_MISMATCH'||empty($inspection['blockers']))return false;
+ $ok=array_map(fn($x)=>$x[0].'.'.$x[1].':shape',GSZ_REPAIR_COLUMNS_380);foreach($inspection['blockers'] as $b)if(!in_array($b,$ok,true))return false;return true;
+}
