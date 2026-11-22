@@ -15,6 +15,11 @@
   übernommen; der Abruf läuft weiter. Beide Abrufwege gegen lokalen Dovecot getestet.
 - Ohne Cronjob: Beim Öffnen von „Heute“ (höchstens stündlich) und „Mail“ (höchstens alle 5 Minuten) laufen die
   Hintergrundaufgaben bzw. der Mailabruf automatisch. `cron_mail.php` als Cron-Einstieg ohne Parameter.
+- Mail-Bereich neu gestaltet: deutsche Ordnernamen in fester Reihenfolge, Filter Ungelesen/Wichtig, Vorschauzeile,
+  Kennzeichen für Objekt/Aufgabe, Lesen mit klarem Kopf und Aktionen (Antworten, Weiterleiten, Archivieren, Löschen),
+  „Aufgabe daraus machen“, iPad quer/Mac zweispaltig, Öffnen markiert als gelesen. Neue Mail: ein Bildschirm,
+  „Senden“ in einem Schritt mit Rückfrage, mehrere Anhänge, Alltagssprache statt SMTP-Status. Sicherheitslogik
+  (kein doppelter Versand, Prüfung der Gesendet-Kopie) unverändert. Wochenvorschlag-Hinweis nur noch auf „Heute“.
 
 ## 380 – Zentrale verschlankt (20.11.2026)
 

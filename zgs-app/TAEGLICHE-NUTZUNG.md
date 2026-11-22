@@ -58,7 +58,14 @@ Einmalig nach dem Update: jedes Konto seinem Haus zuordnen („Konto = Haus“).
 
 ## Mail
 
-Posteingang, Lesen, Antworten. „Abrufen“ holt neue Mails (zusätzlich automatisch per Cron, falls eingerichtet).
+- **Posteingang** öffnet sich zuerst; neue Mails holt die Zentrale beim Öffnen selbst (höchstens alle 5 Minuten),
+  „Abrufen“ (Pfeilsymbol) holt sofort. Die anderen Ordner (Gesendet, Entwürfe, Archiv, Spam, Papierkorb) über den
+  Ordnernamen oben. Filter: Alle · Ungelesen · Wichtig.
+- **Mail lesen:** Antworten, Weiterleiten, Archivieren, Löschen (Papierkorb). Darunter: **Objekt oder Kunde zuordnen**
+  und **Aufgabe daraus machen** (Titel aus dem Betreff, Datum, Objekt – erscheint danach auf „Heute“/„Woche“).
+  Auf iPad quer und Mac stehen Liste und Mail nebeneinander.
+- **Neue Mail:** An, Betreff, Text, Anhänge (mehrere möglich), dann **Senden** – mit einer kurzen Rückfrage, an wen.
+  „Als Entwurf sichern“ hebt die Mail auf; Entwürfe stehen unter „Neue Mail“.
 Das Postfach-Passwort wird nicht mehr abgefragt. Lehnt das Postfach das Passwort ab (z. B. nach einer Änderung bei
 STRATO), erscheint eine klare Meldung mit dem Weg zum Neueintragen; bis dahin versucht die Zentrale keine weitere
 Anmeldung, damit das Postfach nicht gesperrt wird.
