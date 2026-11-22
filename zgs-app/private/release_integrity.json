@@ -101,7 +101,7 @@
         "private/setup_schema_contracts.json": "7d5361201769654f331980c4cbeb390fbfa20ad4f4f7bfd914144301809d0160",
         "private/smtp.php": "06cee89c2a3a606a710646c162ce60bc2f78061a6595c4c6f935545c3e924b76",
         "private/smtp_phpmailer.php": "9326080e7bf8503c414e2aa7817cdc6e81683df575bb04b7f1b156b5d4120aa0",
-        "private/system_check.php": "d3b282f81299d0a801d8abe8afbdcb56a6ac33f992e37c1e738af2292f19cc29",
+        "private/system_check.php": "3d21098e501a051e3edc785c8881c4ba1bfd27c3f75bc577496aea4b610ee0b5",
         "private/system_check_cli.php": "c4ac7891f73387e1f5855eeef692c0725815630d07268cf36a2c4eb0b5c3be5c",
         "private/ui.php": "17b420045b75c1d08fe56ea4de8fa7d3d8587ac49ee9c1fd7c7a206c4ed003fc",
         "private/vendor/imapengine/BIBLIOTHEKEN.md": "107a66b22738a633d4270151f15eb1852885f418fecc3f0b1c0bf4f3fda89e1b",
