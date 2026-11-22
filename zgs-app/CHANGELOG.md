@@ -24,6 +24,10 @@
   „Übernehmen“ bzw. „Nur speichern, keine Aufgaben“; Hinweise in Alltagssprache statt IDs; nächste Abholungen je Tag
   mit Raus/Rein; Einrichten, Abruf und Dateiimport eingeklappt. Der Hinweis auf „Heute“ öffnet direkt die Prüfung und
   verschwindet, sobald die Vorschau abgelaufen ist. Prüf- und Schutzlogik (wasteApply) unverändert.
+- Abfall: „Übernehmen“ bei automatischem Kalender bestätigt auch die Verbindung (Meldung kam sonst immer wieder);
+  nur die jüngste offene Vorschau je Kalender wird angezeigt.
+- Objekte: „Regelmäßige Arbeiten“ direkt am Objekt (z. B. Treppenhausreinigung wöchentlich) – auch schon beim Anlegen
+  eines neuen Objekts; Pausieren/Fortsetzen; nach dem Anlegen öffnet sich die Objektseite.
 
 ## 380 – Zentrale verschlankt (20.11.2026)
 
