@@ -1,0 +1,34 @@
+const {chromium}=require('playwright');const {execFileSync}=require('child_process');const path=require('path');
+// Abfall-Seite (Umbau 22.11.2026): neue Termine verständlich prüfen und übernehmen, nächste Abholungen in deutscher Schreibweise,
+// Technik eingeklappt. Synthetische Daten (tests/dev/screens_fixture.php), Kalenderdateien werden lokal erzeugt, kein Abruf aus dem Netz.
+(async()=>{const base=process.env.GSZ_TEST_URL,dsn=process.env.GSZ_TEST_DSN;if(!base||!/^https:\/\/127\.0\.0\.1:/.test(base)||!/dbname=gsz_test_/.test(dsn||''))throw Error('Loopback fixture only');let n=0;const ok=(v,s)=>{n++;if(!v)throw Error(s)};
+const app=path.resolve(__dirname,'..');
+const preview=(source,items)=>execFileSync('php',['-r',`$_SERVER['DOCUMENT_ROOT']=${JSON.stringify(app+'/public')};require ${JSON.stringify(app+'/private/waste_store.php')};$pdo=new PDO(getenv('GSZ_TEST_DSN'),'root','',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);$d=fn($n)=>(new DateTimeImmutable("+$n days"))->format('Ymd');$ics="BEGIN:VCALENDAR\\r\\nVERSION:2.0\\r\\n";foreach(json_decode(${JSON.stringify(JSON.stringify(items))},true) as [$n,$t,$u])$ics.="BEGIN:VEVENT\\r\\nUID:$u\\r\\nDTSTART;VALUE=DATE:".$d($n)."\\r\\nSUMMARY:$t\\r\\nEND:VEVENT\\r\\n";$ics.="END:VCALENDAR\\r\\n";echo wasteSavePreview($pdo,1,${source},$ics,'ics',[],';',['Papiertonne'=>'Papier','Gelber Sack'=>'Gelb','Restmüll'=>'Restmüll','Sperrmüll Info'=>'']);`],{env:{...process.env,GSZ_TEST_DSN:dsn}}).toString().trim();
+const b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});const errors=[];
+try{
+ const login=async(p)=>{await p.goto(base+'/index.php');await p.locator('[name=email]').fill('owner@example.invalid');await p.locator('[name=password]').fill('Local-Test-Only-2026!');await p.getByRole('button',{name:/^Anmelden$/}).click();};
+ const technical=/\b\d{4}-\d{2}-\d{2}\b|UTC|#\d+|[0-9a-f]{16,}|Dateiausschnitt|Quellen-ID|Fraktion/;
+ // 1) Kalender mit Abweichungen (fehlende bisherige Termine) → verständlicher Hinweis, nur „Ohne Aufgaben übernehmen“
+ const t1=preview(1,[[8,'Papiertonne','a1@example.invalid'],[8,'Gelber Sack','a2@example.invalid'],[15,'Restmüll','a3@example.invalid'],[22,'Sperrmüll Info','a4@example.invalid']]);
+ for(const [w,h] of [[390,844],[820,1180],[1180,820],[1440,900]]){const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:w,height:h}});const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await login(p);
+  await p.goto(base+'/index.php');const att=p.getByRole('link',{name:'Neue Abfuhrtermine prüfen'});ok(await att.count()===1,'Heute points to the new dates '+w);await att.click();ok(p.url().includes('import='),'one tap opens the check '+w);
+  const main=await p.textContent('main');ok(main.includes('Neue Abfuhrtermine prüfen')&&main.includes('Heiligenhäuschenweg 2–4'),'object named '+w);
+  ok(!technical.test(main),'no ISO dates, UTC, ids or jargon on the page '+w+': '+(main.match(technical)||[''])[0]);
+  ok(await p.locator('.waste-dates li').count()===3&&(await p.locator('.waste-dates li').first().textContent()).includes('Papiertonne, Gelbe Tonne'),'dates grouped per day with bin names '+w);
+  ok(main.includes('unklar: Sperrmüll Info (keine Aufgabe)'),'unclear bin explained '+w);ok(main.includes('Im neuen Kalender fehlen bisherige Termine')&&main.includes('bleiben vorerst bestehen'),'missing dates explained in plain words '+w);
+  ok(await p.getByRole('button',{name:'Übernehmen',exact:true}).count()===0&&await p.getByRole('button',{name:'Ohne Aufgaben übernehmen'}).count()===1,'with notes only storing without tasks is offered '+w);
+  ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'fits '+w);
+  await p.goto(base+'/waste.php');const list=await p.textContent('main');ok(!technical.test(list),'overview without technical details '+w+': '+(list.match(technical)||[''])[0]);ok(await p.locator('.waste-day').count()>=2&&/(Morgen|Mo|Di|Mi|Do|Fr|Sa|So), \d\d\.\d\d\./.test(list),'next pickups with German dates '+w);ok(!await p.locator('[name=calendar]').isVisible(),'file import folded away '+w);ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'overview fits '+w);
+  await c.close();}
+ const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await login(p);
+ await p.goto(base+'/waste.php?import='+t1);await p.getByLabel('Hinweise gelesen.',{exact:false}).check();await p.getByLabel('Adresse und Termine stimmen.').check();await Promise.all([p.waitForNavigation(),p.getByRole('button',{name:'Ohne Aufgaben übernehmen'}).tap()]);
+ ok((await p.textContent('main')).includes('ohne Aufgaben'),'stored without tasks');
+ await p.goto(base+'/waste.php?from='+new Date(Date.now()+7*864e5).toLocaleDateString('sv-SE',{timeZone:'Europe/Berlin'}));const day=p.locator('.waste-day').filter({hasText:'Papiertonne'}).first();ok(await day.locator('.tag').filter({hasText:'Noch nicht freigegeben'}).count()===1,'unreleased dates marked');
+ const dt=day.locator('details').filter({hasText:'Papiertonne freigeben'});await dt.locator('summary').tap();const rf=dt.locator('form');await rf.locator('[name=review_confirm]').check();await Promise.all([p.waitForNavigation(),rf.getByRole('button',{name:'Speichern'}).tap()]);ok((await p.textContent('main')).includes('Termin freigegeben'),'single date released');
+ // 2) Neuer Kalender ohne Abweichungen → „Übernehmen“ legt die Blöcke an
+ const t2=preview(2,[[2,'Papiertonne','uid-3'],[40,'Papiertonne','b1@example.invalid'],[40,'Gelber Sack','b2@example.invalid']]);await p.goto(base+'/waste.php?import='+t2);ok(await p.locator('.waste-notes').count()===0,'no notes for a clean calendar');
+ await p.getByLabel('Adresse und Termine stimmen.').check();await Promise.all([p.waitForNavigation(),p.getByRole('button',{name:'Übernehmen',exact:true}).tap()]);ok((await p.textContent('main')).includes('Abfuhrtermine übernommen'),'clean calendar taken over with tasks');
+ const due=new Date(Date.now()+39*864e5).toLocaleDateString('sv-SE',{timeZone:'Europe/Berlin'});await p.goto(base+'/planner.php?date='+due);ok(await p.locator('article.block').filter({hasText:'Fröbelstraße 19'}).filter({hasText:'Papiertonne und Gelbe Tonne rausstellen'}).count()===1,'one combined block the day before');
+ await p.goto(base+'/waste.php?import='+t2);ok((await p.textContent('main')).includes('Bereits übernommen')&&await p.getByRole('button',{name:'Übernehmen',exact:true}).count()===0,'taken-over preview cannot be applied again');
+ ok(errors.length===0,'no JavaScript errors '+errors.join(' | '));console.log(`Waste UI browser PASS (${n} checks; 390/820/1180/1440, synthetic calendars, no network).`);
+}finally{await b.close()}})().catch(e=>{console.error(e);process.exit(1)});

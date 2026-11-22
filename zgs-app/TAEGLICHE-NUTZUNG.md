@@ -25,6 +25,13 @@ Werden an einem Objekt am selben Tag mehrere Tonnen abgeholt, gibt es **einen** 
 Ein Haken erledigt den ganzen Block. Verschiebt der Entsorger eine einzelne Tonne (z. B. Feiertag), setzt die Zentrale
 die Blöcke beim nächsten Kalenderabgleich neu zusammen; bereits erledigte Blöcke bleiben unverändert.
 
+**Neue Abfuhrtermine** (Mehr → Abfall, oder der Hinweis auf „Heute“): Die Zentrale zeigt Objekt, Abholadresse und die
+Termine je Tag („Mo, 30.11. · Papiertonne, Gelbe Tonne“). „Adresse und Termine stimmen“ anhaken → **Übernehmen** legt
+die Blöcke an; „Nur speichern, keine Aufgaben“ übernimmt die Termine ohne Blöcke (z. B. für eine Testadresse).
+Stehen oben Hinweise (z. B. bisherige Termine fehlen im neuen Kalender), werden die Termine zunächst ohne Aufgaben
+übernommen und unter „Nächste Abholungen“ einzeln mit „… freigeben“ bestätigt. Einrichten, Abruf von Hand und
+Kalenderdateien (ICS/CSV) liegen eingeklappt unter „Kalender einrichten und abrufen“.
+
 ## Immobilien – Kontoauszug am 10. jedes Monats
 
 Ab dem 10. erinnert die Startseite, solange für ein Konto in diesem Monat noch kein Auszug hochgeladen ist.
@@ -58,7 +65,14 @@ Einmalig nach dem Update: jedes Konto seinem Haus zuordnen („Konto = Haus“).
 
 ## Mail
 
-Posteingang, Lesen, Antworten. „Abrufen“ holt neue Mails (zusätzlich automatisch per Cron, falls eingerichtet).
+- **Posteingang** öffnet sich zuerst; neue Mails holt die Zentrale beim Öffnen selbst (höchstens alle 5 Minuten),
+  „Abrufen“ (Pfeilsymbol) holt sofort. Die anderen Ordner (Gesendet, Entwürfe, Archiv, Spam, Papierkorb) über den
+  Ordnernamen oben. Filter: Alle · Ungelesen · Wichtig.
+- **Mail lesen:** Antworten, Weiterleiten, Archivieren, Löschen (Papierkorb). Darunter: **Objekt oder Kunde zuordnen**
+  und **Aufgabe daraus machen** (Titel aus dem Betreff, Datum, Objekt – erscheint danach auf „Heute“/„Woche“).
+  Auf iPad quer und Mac stehen Liste und Mail nebeneinander.
+- **Neue Mail:** An, Betreff, Text, Anhänge (mehrere möglich), dann **Senden** – mit einer kurzen Rückfrage, an wen.
+  „Als Entwurf sichern“ hebt die Mail auf; Entwürfe stehen unter „Neue Mail“.
 Das Postfach-Passwort wird nicht mehr abgefragt. Lehnt das Postfach das Passwort ab (z. B. nach einer Änderung bei
 STRATO), erscheint eine klare Meldung mit dem Weg zum Neueintragen; bis dahin versucht die Zentrale keine weitere
 Anmeldung, damit das Postfach nicht gesperrt wird.

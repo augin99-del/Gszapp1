@@ -13,6 +13,15 @@ interface GszMailFlagRemote {public function flags(string $folder,array $uids):a
 // Optional capability: exact Message-ID matches, including deleted matches, in one UID epoch.
 // A failed/incomplete search MUST throw; an empty result means a completed search.
 interface GszMailSearchRemote {public function findMessageId(string $folder,string $messageId):array;}
+const GSZ_MAIL_MAX_BYTES=15*1024*1024;
+/** Ersatz für eine Nachricht, die nicht vollständig übernommen werden kann (zu groß oder nicht lesbar):
+ *  Absender, Empfänger, Betreff und Datum bleiben sichtbar, der Inhalt wird im Webmail geöffnet. Der Abruf läuft weiter. */
+function gszMailPlaceholder(string $header,int $size=0):string {
+ $header=substr($header,0,262144);$unfolded=preg_replace('/\r?\n[ \t]+/',' ',$header);$keep=[];
+ foreach(preg_split('/\r?\n/',(string)$unfolded) as $line)if(preg_match('/^(From|To|Cc|Reply-To|Subject|Date|Message-ID):/i',$line))$keep[]=$line;
+ $text=$size>GSZ_MAIL_MAX_BYTES?'Diese Nachricht ist '.number_format($size/1048576,1,',','.').' MB groß (Grenze 15 MB). Sie wurde ohne Inhalt und Anhänge übernommen. Bitte im STRATO-Webmail öffnen.':'Diese Nachricht konnte nicht gelesen werden. Sie wurde ohne Inhalt übernommen. Bitte im STRATO-Webmail öffnen.';
+ return implode("\r\n",$keep)."\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n".$text."\r\n";
+}
 final class GszImapRemote implements GszMailRemote,GszMailFlagRemote,GszMailSearchRemote {
  private $imap;private string $prefix;private bool $more=false;
  public function morePending():bool{return $this->more;}
@@ -25,9 +34,15 @@ final class GszImapRemote implements GszMailRemote,GszMailFlagRemote,GszMailSear
  public function folders():array {$boxes=@imap_list($this->imap,$this->prefix,'*');if($boxes===false)throw new RuntimeException('IMAP-Ordner nicht lesbar.');$out=[];foreach($boxes as $b)if(str_starts_with($b,$this->prefix)){$name=substr($b,strlen($this->prefix));if($name!==''&&strlen($name)<=190&&!str_contains($name,"\0"))$out[]=$name;}return $out;}
  private function select(string $folder):void {if(!in_array($folder,$this->folders(),true))throw new RuntimeException('Ordner nicht vom Server bestätigt.');if(!@imap_reopen($this->imap,$this->prefix.$folder))throw new RuntimeException('Ordner nicht geöffnet.');}
  public function validity(string $folder):int {$this->select($folder);$s=@imap_status($this->imap,$this->prefix.$folder,SA_UIDVALIDITY);if(!$s||empty($s->uidvalidity))throw new RuntimeException('UIDVALIDITY fehlt.');return (int)$s->uidvalidity;}
+ // PHP-IMAP (c-client) kennt kein Suchkriterium „UID n:*“; deshalb alle UIDs holen und lokal filtern.
+ // false bedeutet bei imap_search sowohl „keine Treffer“ als auch „Fehler“ – nur ein leerer Fehlerspeicher ist ein leerer Ordner.
+ private function allUids():array {if(function_exists('imap_errors'))imap_errors();$uids=@imap_search($this->imap,'ALL',SE_UID);if($uids===false){$error=function_exists('imap_errors')?(imap_errors()?:[]):[];if($error)throw new RuntimeException('Nachrichtenliste nicht lesbar.');return [];}return array_map('intval',$uids);}
  public function fetchAfter(string $folder,int $uid,int $limit):array {
-  $this->more=false;$batchBytes=0;$this->select($folder);$uids=@imap_search($this->imap,'UID '.($uid+1).':*',SE_UID)?:[];sort($uids,SORT_NUMERIC);$this->more=count(array_filter($uids,fn($u)=>$u>$uid))>$limit;$out=[];
-  foreach(array_slice(array_values(array_filter($uids,fn($u)=>$u>$uid)),0,min(100,$limit)) as $u){$o=@imap_fetch_overview($this->imap,(string)$u,FT_UID);if(!$o||$o[0]->size>15*1024*1024)throw new RuntimeException('Nachricht nicht lesbar oder zu groß.');if($out&&$batchBytes+(int)$o[0]->size>20*1024*1024){$this->more=true;break;}$batchBytes+=(int)$o[0]->size;$header=@imap_fetchheader($this->imap,$u,FT_UID);$body=@imap_body($this->imap,$u,FT_UID|FT_PEEK);if($header===false||$body===false)throw new RuntimeException('Nachrichtenabruf fehlgeschlagen.');$out[]=['uid'=>(int)$u,'seen'=>(bool)($o[0]->seen??false),'deleted'=>(bool)($o[0]->deleted??false),'raw'=>$header."\r\n".$body];}return $out;
+  $this->more=false;$batchBytes=0;$this->select($folder);$uids=$this->allUids();sort($uids,SORT_NUMERIC);$this->more=count(array_filter($uids,fn($u)=>$u>$uid))>$limit;$out=[];
+  foreach(array_slice(array_values(array_filter($uids,fn($u)=>$u>$uid)),0,min(100,$limit)) as $u){$o=@imap_fetch_overview($this->imap,(string)$u,FT_UID);if(!$o)continue; // inzwischen gelöscht: überspringen statt den ganzen Abruf zu blockieren
+   $size=(int)($o[0]->size??0);$flags=['uid'=>(int)$u,'seen'=>(bool)($o[0]->seen??false),'deleted'=>(bool)($o[0]->deleted??false)];$header=@imap_fetchheader($this->imap,$u,FT_UID);if($header===false)throw new RuntimeException('Nachrichtenabruf fehlgeschlagen.');
+   if($size>GSZ_MAIL_MAX_BYTES){$out[]=$flags+['raw'=>gszMailPlaceholder($header,$size)];continue;}
+   if($out&&$batchBytes+$size>20*1024*1024){$this->more=true;break;}$batchBytes+=$size;$body=@imap_body($this->imap,$u,FT_UID|FT_PEEK);if($body===false)throw new RuntimeException('Nachrichtenabruf fehlgeschlagen.');$out[]=$flags+['raw'=>$header."\r\n".$body];}return $out;
  }
  public function flags(string $folder,array $uids):array {
   $this->select($folder);$uids=array_values(array_filter(array_map('intval',array_slice($uids,0,100)),fn($id)=>$id>0));if(!$uids)return [];$o=@imap_fetch_overview($this->imap,implode(',',$uids),FT_UID);if($o===false)throw new RuntimeException('Flag-Abruf fehlgeschlagen.');$result=[];foreach($uids as $uid)$result[$uid]=['seen'=>false,'missing'=>true];foreach($o as $row)$result[(int)$row->uid]=['seen'=>(bool)($row->seen??false),'missing'=>(bool)($row->deleted??false)];return $result;

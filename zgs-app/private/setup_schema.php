@@ -66,3 +66,20 @@ function gszSetupSchemaMessage(string $code):string {return [
  'GSZ_SCHEMA_MIGRATION_INCOMPLETE'=>'Die Zielstruktur wurde nicht vollständig erreicht. DDL ist nicht vollständig rückrollbar. Nicht blind erneut starten: Teilstand prüfen oder verifizierte Sicherung wiederherstellen.',
  'GSZ_SCHEMA_UNKNOWN'=>'Kein sicher unterstützter Ausgangsstand erkannt. Keine Neuinstallation auf vorhandenen Daten ausführen.'
  ][$code]??'Der Datenbankstatus muss geprüft werden; keine ungeprüfte Strukturänderung ausführen.';}
+/** Structure-only diagnosis for the owner (no rows, no credentials): what exactly differs from the recognised version. */
+function gszSetupSchemaDiagnosis(PDO $pdo,array $inspection):array {
+ $out=['version'=>$inspection['version'],'code'=>$inspection['code'],'tables'=>$inspection['tables']??null,'markers'=>[],'details'=>[]];
+ try{$out['markers']=$pdo->query('SELECT version FROM app_migrations ORDER BY version')->fetchAll(PDO::FETCH_COLUMN);}catch(Throwable $e){}
+ try{$server=(string)$pdo->query('SELECT VERSION()')->fetchColumn();$out['server']=$server;}catch(Throwable $e){}
+ $contracts=gszSetupSchemaContracts();$v=(string)($inspection['version']??'');$expected=$contracts[$v]['tables']??[];
+ try{$actual=gszSetupSchemaMetadata($pdo);}catch(Throwable $e){$out['details'][]='Metadaten nicht lesbar';return $out;}
+ foreach(array_slice($inspection['blockers']??[],0,60) as $b){
+  [$where,$kind]=array_pad(explode(':',$b,2),2,'');[$table,$column]=array_pad(explode('.',$where,2),2,null);$exp=$expected[$table]??null;$act=$actual[$table]??null;$d=['blocker'=>$b];
+  if($kind==='shape'&&$column!==null){$d['erwartet']=$exp['columns'][$column]??null;$d['vorhanden']=$act['columns'][$column]??null;}
+  elseif($kind==='unrecorded_column'){$d['zusaetzliche_spalten']=array_values(array_diff(array_keys($act['columns']??[]),array_keys($exp['columns']??[])));}
+  elseif($kind==='identity_key'){$d['fehlend']=array_values(array_diff($exp['unique']??[],$act['unique']??[]));$d['vorhanden']=$act['unique']??[];}
+  elseif($kind==='foreign_key'){$d['fehlend']=array_values(array_diff($exp['foreign']??[],$act['foreign']??[]));$d['vorhanden']=$act['foreign']??[];}
+  elseif($kind==='engine'){$d['vorhanden']=[$act['engine']??null,$act['kind']??null];}
+  $out['details'][]=$d;}
+ return $out;
+}

@@ -1,5 +1,11 @@
 # Cronjobs (STRATO)
 
+> **Ohne Cronjob (STRATO Hosting Basic hat keine Cronjob-Verwaltung, Stand 22.11.2026):** Die Zentrale erledigt die
+> Hintergrundaufgaben beim Öffnen. „Heute“ startet Regelaufgaben, Wochenvorschlag, Erinnerungen und Abfallabgleich
+> höchstens einmal pro Stunde; „Mail“ ruft den Posteingang höchstens alle 5 Minuten ab (nie bei abgelehntem Passwort).
+> Abschalten mit `automation_on_open = false`. Ohne Öffnen der Zentrale passiert nichts. Ein echter Cronjob (größeres
+> Paket) ersetzt das zuverlässiger; beides gleichzeitig ist unschädlich.
+
 Ob und wie oft Cronjobs laufen dürfen, hängt vom STRATO-Tarif ab – vor Ort im Kundenbereich prüfen.
 Alle Einstiege liegen in `private/` und verweigern Aufrufe über HTTP. Absolute Pfade verwenden.
 
@@ -22,6 +28,9 @@ bei Terminverschiebungen). Kein Bankabruf mehr (entfernt).
 Nutzt denselben gespeicherten Postfachzugang wie die Oberfläche (verschlüsselt in `private/secrets/`).
 Hat das Postfach das Passwort abgelehnt, bricht der Lauf **ohne Anmeldeversuch** ab, bis das Passwort in der
 Oberfläche neu eingetragen ist. Versendet nie eine Mail.
+
+Erlaubt die Cron-Oberfläche keine Parameter (STRATO-Cronjob-Verwaltung), stattdessen das Skript
+`zgs-app/private/cron_mail.php` eintragen – es entspricht genau `cron_gesamt.php --mail-sync`.
 
 `--calendar-sync` erzwingt den Kalenderabgleich zusätzlich. Beide Flags sind kombinierbar.
 

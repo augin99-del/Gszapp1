@@ -7,6 +7,12 @@ cd "$(dirname "$0")/.."
 SOCK="${GSZ_TEST_SOCKET:-/run/mysqld/mysqld.sock}"
 PHP="${GSZ_TEST_PHP:-php}"
 pass=0; fail=0; failed=()
+# Die Shim-Tests für den nativen Adapter brauchen ein PHP ohne ext-imap; der Test gegen den lokalen Mailserver eines mit.
+NOIMAP_INI=""
+if "$PHP" -m | grep -qi '^imap$'; then
+  NOIMAP_INI=$(mktemp -d); scan=$("$PHP" --ini | sed -n 's/^Scan for additional .ini files in: //p')
+  for i in "$scan"/*.ini; do grep -qi 'extension *= *imap' "$i" || ln -s "$i" "$NOIMAP_INI/"; done
+fi
 for f in tests/test_*.php; do
   name=$(basename "$f" .php)
   case "$name" in test_smtp_transport|test_setup_mail_loopback|test_final_optional_dom|test_setup_schema|test_final_upgrade) continue;; esac
@@ -18,7 +24,8 @@ for f in tests/test_*.php; do
     mysql -uroot -S "$SOCK" -e "CREATE DATABASE \`$db\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci" || exit 2
     env=(GSZ_TEST_DSN="mysql:unix_socket=$SOCK;dbname=$db")
   fi
-  out=$(env "${env[@]}" GSZ_TEST_PHP="$PHP" ${GSZ_TEST_SOURCE_SCHEMA:+GSZ_TEST_SOURCE_SCHEMA=$GSZ_TEST_SOURCE_SCHEMA} timeout 300 "$PHP" "$f" 2>&1); rc=$?
+  scan_env=(); case "$name" in test_mail_recovery_http|test_mail_recovery_imap) [ -n "$NOIMAP_INI" ] && scan_env=(PHP_INI_SCAN_DIR="$NOIMAP_INI");; esac
+  out=$(env "${env[@]}" "${scan_env[@]}" GSZ_TEST_PHP="$PHP" ${GSZ_TEST_SOURCE_SCHEMA:+GSZ_TEST_SOURCE_SCHEMA=$GSZ_TEST_SOURCE_SCHEMA} timeout 300 "$PHP" "$f" 2>&1); rc=$?
   if [ $rc -eq 0 ] && [ "$name" = test_estate_database ]; then out2=$(GSZ_TEST_DSN="mysql:unix_socket=$SOCK;dbname=$db" GSZ_TEST_PHP="$PHP" timeout 300 node tests/test_estate_concurrency.cjs 2>&1); rc2=$?; if [ $rc2 -eq 0 ]; then pass=$((pass+1)); echo "PASS test_estate_concurrency :: $(echo "$out2" | tail -1 | cut -c1-160)"; else fail=$((fail+1)); failed+=(test_estate_concurrency); echo "FAIL test_estate_concurrency :: $(echo "$out2" | tail -3 | tr '\n' ' ' | cut -c1-300)"; fi; fi
   [ -n "$prefix" ] && mysql -uroot -S "$SOCK" -e "DROP DATABASE IF EXISTS \`$db\`"
   if [ $rc -eq 0 ]; then pass=$((pass+1)); echo "PASS $name :: $(echo "$out" | tail -1 | cut -c1-160)";

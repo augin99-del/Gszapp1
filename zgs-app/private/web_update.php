@@ -24,3 +24,12 @@ function gszWebUpgrade(PDO $pdo,array $config,int $admin,string $password,array 
  gszLoginAttempt('update:'.$owner['email'],$ip,true);
  return ['status'=>$after['status'],'files_failed'=>$files['failed']];
 }
+/** Owner-confirmed repair of the known 380 charset difference. Same safeguards as the update. */
+function gszWebRepair380(PDO $pdo,int $admin,string $password,array $evidence,string $ip):array {
+ $before=gszSetupInspect($pdo);if(!gszRepairable380($before))throw new RuntimeException('Diese Abweichung kann nicht automatisch angeglichen werden.');
+ if(empty($evidence['backup_kept']))throw new RuntimeException('Bitte bestätigen, dass die Sicherung heruntergeladen und aufbewahrt ist.');$backup=gszRecentBackup((string)($evidence['backup_sha256']??''));
+ $q=$pdo->prepare('SELECT email,password_hash FROM admins WHERE id=?');$q->execute([$admin]);$owner=$q->fetch(PDO::FETCH_ASSOC);
+ if(!$owner||!gszLoginAttempt('update:'.$owner['email'],$ip)||!password_verify($password,$owner['password_hash']))throw new RuntimeException('Passwort nicht bestätigt (oder zu viele Versuche – bitte 15 Minuten warten).');
+ $fixed=gszRepair380($pdo);$after=gszSetupInspect($pdo);gszAudit($pdo,$admin,'schema_repair_380',['fixed'=>$fixed,'backup_sha256'=>$backup['sha256'],'status'=>$after['status']]);gszLoginAttempt('update:'.$owner['email'],$ip,true);
+ return ['status'=>$after['status'],'fixed'=>$fixed];
+}

@@ -33,9 +33,9 @@ DELETE FROM automation_state WHERE job_key='bank';
 ALTER TABLE estate_bank_accounts ADD COLUMN IF NOT EXISTS building_id INT UNSIGNED NULL;
 ALTER TABLE estate_bank_accounts ADD UNIQUE KEY IF NOT EXISTS uq_estate_account_building(building_id);
 ALTER TABLE estate_bank_accounts ADD CONSTRAINT fk_estate_account_building FOREIGN KEY IF NOT EXISTS (building_id) REFERENCES estate_buildings(id) ON DELETE RESTRICT;
-ALTER TABLE estate_tenants ADD COLUMN IF NOT EXISTS payer_names VARCHAR(500) NOT NULL DEFAULT '';
-ALTER TABLE estate_tenants ADD COLUMN IF NOT EXISTS iban_hash CHAR(64) NULL;
-ALTER TABLE estate_bank_transactions ADD COLUMN IF NOT EXISTS counterparty_iban_hash CHAR(64) NULL;
+ALTER TABLE estate_tenants ADD COLUMN IF NOT EXISTS payer_names VARCHAR(500) CHARACTER SET utf8mb4 NOT NULL DEFAULT '';
+ALTER TABLE estate_tenants ADD COLUMN IF NOT EXISTS iban_hash CHAR(64) CHARACTER SET utf8mb4 NULL;
+ALTER TABLE estate_bank_transactions ADD COLUMN IF NOT EXISTS counterparty_iban_hash CHAR(64) CHARACTER SET utf8mb4 NULL;
 CREATE TABLE IF NOT EXISTS estate_bank_uploads (
  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,account_id TINYINT UNSIGNED NOT NULL,admin_id INT UNSIGNED NOT NULL,
  uploaded_on DATE NOT NULL,uploaded_at DATETIME NOT NULL,file_hash CHAR(64) NOT NULL,format VARCHAR(20) NOT NULL,
