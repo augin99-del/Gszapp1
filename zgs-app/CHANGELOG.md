@@ -31,6 +31,9 @@
 - Objektseite neu gestaltet: Schnellzugriff (Route, Anrufen, Aufgabe, Arbeitsnachweise), Hinweise, „Anstehend“ als
   Blöcke mit Tag (Abhaken bleibt auf der Seite), regelmäßige Arbeiten, nächste Abholung, Objektdaten eingeklappt,
   „Zuletzt erledigt“ und Änderungen in Alltagssprache (deutsche Zeit statt UTC/Rohdaten).
+- Abhaken ohne Neuladen: Der Haken sitzt sofort, die Seite bleibt an ihrer Stelle, kurze Rückmeldung
+  „… erledigt – Rückgängig“ (6 Sekunden). Ohne JavaScript oder bei Unklarheit wird wie bisher normal gesendet; der
+  Server prüft unverändert Anmeldung, CSRF und Bearbeitungsstand. Systemstatus zeigt, ob alle Programmdateien da sind.
 
 ## 380 – Zentrale verschlankt (20.11.2026)
 

@@ -320,3 +320,11 @@ form.compose .mail-files{margin:0 0 var(--s-3)}
 }
 body>main{display:block;max-width:var(--content-max);margin:0 auto;padding:var(--s-5) var(--s-4)}
 p,li,td,th,dd,dt,h1,h2,h3,label,summary,.card,.surface{overflow-wrap:break-word;word-break:normal}p,li,td{overflow-wrap:anywhere}
+
+/* ---------- Kurze Rückmeldung (Abhaken ohne Neuladen) ---------- */
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:60;display:flex;align-items:center;gap:var(--s-3);max-width:calc(100vw - 32px);padding:10px 10px 10px 16px;border-radius:999px;background:var(--c-dark);color:#fff;font-size:var(--fs-s);font-weight:600;box-shadow:0 8px 28px rgba(16,17,19,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.toast button{flex:none;min-height:36px;padding:0 var(--s-4);border:0;border-radius:999px;background:#fff;color:var(--c-ink);font-weight:700}
+@media (min-width:1024px){.toast{bottom:24px}}
+.block{transition:background-color .2s,opacity .2s}

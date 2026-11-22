@@ -38,6 +38,8 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   }else throw new InvalidArgumentException('Unbekannte Aktion.');
  if(in_array($action,['toggle','task','move','appointment','remove_appointment','generate'],true))gszSuggestWeek($pdo,(int)$_SESSION['admin_id']);
  }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();$_SESSION['plan_error']=$e instanceof PDOException?'Planung nicht verfügbar. Migration und Datenbank prüfen.':$e->getMessage();}
+ // Abhaken ohne Neuladen (zentrale.js): kurze Antwort statt Weiterleitung, gleiche Prüfungen wie oben.
+ if($action==='toggle'&&($_SERVER['HTTP_X_GSZ_FETCH']??'')==='1'){$err=$_SESSION['plan_error']??null;unset($_SESSION['plan_error']);$q=$pdo->prepare('SELECT done,row_version FROM tasks WHERE id=?');$q->execute([$id]);$row=$q->fetch(PDO::FETCH_ASSOC);header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');echo json_encode($err||!$row?['ok'=>false,'error'=>$err?:'Aufgabe nicht gefunden.']:['ok'=>true,'done'=>(bool)$row['done'],'row_version'=>(int)$row['row_version']],JSON_UNESCAPED_UNICODE);exit;}
  $ret=(string)($_POST['return']??'');if($ret==='index.php')redirect('index.php');if(preg_match('~^property\.php\?id=[0-9]{1,10}$~D',$ret))redirect($ret);if(preg_match('~^planner\.php\?[A-Za-z0-9=&_.-]{1,120}$~D',$ret))redirect($ret);redirect($back);
 }
 $data=null;$proposal=null;$plan=null;
