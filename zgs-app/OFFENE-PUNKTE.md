@@ -21,5 +21,5 @@ Diese Punkte konnten bei der Entwicklung nicht geprüft werden und werden hier n
 7. **Konto = Haus** nach dem Update einmal zuordnen; Zahlernamen für Mieter ergänzen, die nicht selbst überweisen.
 8. **Abfallkalender**: Feiertagsverschiebungen werden beim automatischen Abgleich neu zusammengesetzt, wenn der
    Anbieter dieselbe Termin-ID mit neuem Datum liefert. Ob der amtliche Kalender (Abfallnavi) das so tut, ist nicht
-   real beobachtet. Sonst erscheint die Änderung wie bisher als „Neue Abfuhrtermine bestätigen“.
+   real beobachtet. Sonst erscheint die Änderung wie bisher als „Neue Abfuhrtermine prüfen“.
 9. Historische Hinweise in `docs/archiv/` beschreiben ältere Stände und sind keine aktuelle Anleitung.

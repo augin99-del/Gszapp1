@@ -20,6 +20,10 @@
   „Aufgabe daraus machen“, iPad quer/Mac zweispaltig, Öffnen markiert als gelesen. Neue Mail: ein Bildschirm,
   „Senden“ in einem Schritt mit Rückfrage, mehrere Anhänge, Alltagssprache statt SMTP-Status. Sicherheitslogik
   (kein doppelter Versand, Prüfung der Gesendet-Kopie) unverändert. Wochenvorschlag-Hinweis nur noch auf „Heute“.
+- Abfall-Seite neu gestaltet: neue Termine mit Objekt, Adresse und Tagesliste in deutscher Schreibweise, ein Haken,
+  „Übernehmen“ bzw. „Nur speichern, keine Aufgaben“; Hinweise in Alltagssprache statt IDs; nächste Abholungen je Tag
+  mit Raus/Rein; Einrichten, Abruf und Dateiimport eingeklappt. Der Hinweis auf „Heute“ öffnet direkt die Prüfung und
+  verschwindet, sobald die Vorschau abgelaufen ist. Prüf- und Schutzlogik (wasteApply) unverändert.
 
 ## 380 – Zentrale verschlankt (20.11.2026)
 
