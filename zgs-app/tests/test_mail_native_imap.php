@@ -15,4 +15,11 @@ $all=$remote->fetchAfter('INBOX',0,50);ni(array_column($all,'uid')===[1,2,3],'fi
 ni(array_column($remote->fetchAfter('INBOX',2,50),'uid')===[3],'later fetch only returns newer messages');ni($remote->fetchAfter('INBOX',3,50)===[],'nothing new after the last UID');
 ni(count($remote->fetchAfter('INBOX',0,2))===2&&$remote->morePending(),'limit respected, more pending reported');
 ni($remote->validity('INBOX')>0,'UIDVALIDITY readable');
+// Befund 22.11.2026: eine Nachricht über 15 MB blockierte den Abruf aller neueren Mails.
+$big="From: Gross <g@example.invalid>\r\nTo: owner@example.invalid\r\nSubject: =?UTF-8?Q?Gro=C3=9Fer_Anhang?=\r\nDate: Sun, 22 Nov 2026 10:00:00 +0100\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=b\r\n\r\n--b\r\nContent-Type: application/octet-stream\r\nContent-Transfer-Encoding: base64\r\n\r\n".chunk_split(base64_encode(random_bytes(12*1024*1024)))."--b--\r\n";
+imap_append($imap,$prefix.'INBOX',$big);imap_append($imap,$prefix.'INBOX',"From: Danach <d@example.invalid>\r\nSubject: Nach der grossen Mail\r\n\r\nText\r\n");
+$next=$remote->fetchAfter('INBOX',3,50);ni(array_column($next,'uid')===[4,5],'oversized message no longer blocks newer mail');
+require_once dirname(__DIR__).'/private/mail_mime.php';$m=gszMimeParse($next[0]['raw']);ni(strlen($next[0]['raw'])<4096&&$m['subject']==='Großer Anhang'&&str_contains($m['body'],'Webmail')&&!$m['attachments'],'oversized message kept as small placeholder with sender/subject and a hint');
+ni(str_contains($next[1]['raw'],'Nach der grossen Mail'),'following message fetched completely');
+ni(gszMimeParse(gszMailPlaceholder("Subject: Defekt\r\nFrom: x@example.invalid"))['subject']==='Defekt','placeholder for unreadable messages parses');
 echo "Native IMAP PASS ($n assertions; local Dovecot, synthetic messages, no real mailbox).\n";

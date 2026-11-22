@@ -10,6 +10,9 @@
 - Mail: „Abrufen“ meldete mit der PHP-IMAP-Erweiterung immer 0 neue Nachrichten, weil diese das Suchkriterium
   „UID n:*“ nicht kennt. Jetzt werden alle UIDs gelesen und lokal gefiltert; Fehler werden nicht mehr als leerer Ordner
   gewertet. Test gegen einen lokalen Mailserver (Dovecot, synthetische Nachrichten), nicht gegen das echte Postfach.
+- Mail: Eine Nachricht über 15 MB (oder eine nicht lesbare) blockierte den Abruf aller neueren Mails
+  („Nachricht nicht lesbar oder zu groß“). Sie wird jetzt ohne Inhalt mit Absender, Betreff und Hinweis aufs Webmail
+  übernommen; der Abruf läuft weiter. Beide Abrufwege gegen lokalen Dovecot getestet.
 
 ## 380 – Zentrale verschlankt (20.11.2026)
 
