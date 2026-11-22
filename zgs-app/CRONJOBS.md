@@ -23,6 +23,9 @@ Nutzt denselben gespeicherten Postfachzugang wie die Oberfläche (verschlüsselt
 Hat das Postfach das Passwort abgelehnt, bricht der Lauf **ohne Anmeldeversuch** ab, bis das Passwort in der
 Oberfläche neu eingetragen ist. Versendet nie eine Mail.
 
+Erlaubt die Cron-Oberfläche keine Parameter (STRATO-Cronjob-Verwaltung), stattdessen das Skript
+`zgs-app/private/cron_mail.php` eintragen – es entspricht genau `cron_gesamt.php --mail-sync`.
+
 `--calendar-sync` erzwingt den Kalenderabgleich zusätzlich. Beide Flags sind kombinierbar.
 
 ## Kontrolle

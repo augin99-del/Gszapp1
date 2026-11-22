@@ -11,6 +11,7 @@
         "private/config_security.php": "bcefd17e55b334bab58056622783d85ada58bb69ef0eb0eb1545554a6affb82d",
         "private/connection_diagnostics.php": "eaa0ea9be62af13552f3c9bafbfc76b8489790009f5b0f0d39b86027c523a9e8",
         "private/cron_gesamt.php": "d4ba4d28686df1694fa74fc4f3a5090975183247b451339744b4e8501e644aad",
+        "private/cron_mail.php": "7e480d1a26976985e903f1194219c378a1c660f4976b1ffdcc75d608d2e35638",
         "private/cron_scheduler.php": "a14c7837247af7974f56627097306006615ad3b9e49da42b3afb5f8d425b48f4",
         "private/dashboard_service.php": "28e702e990894b94ebfb9b7e7de71999e577935d7883b746af00569ea063b1e9",
         "private/day_view.php": "8e753be1dedc66659471b9615360b18a3654782fac5a5a55c14d4a7599ca847c",
