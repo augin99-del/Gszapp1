@@ -17,6 +17,23 @@ function gszRunAutomation(PDO $pdo,array $config,bool $mail=false,bool $waste=fa
  return ['status'=>array_filter($results,fn($r)=>$r['status']!=='PASS')?'BLOCKED':'PASS','jobs'=>$results];
  }finally{$release=$pdo->prepare('SELECT RELEASE_LOCK(?)');$release->execute([$key]);}
 }
+/** Ersatz für den Cronjob, wenn das Hosting-Paket keinen hat: Aufgaben laufen beim Öffnen der Zentrale nach,
+ *  gedrosselt über automation_state.last_started (auch nach einem Fehler erst nach Ablauf der Frist erneut).
+ *  „heute“: Regelaufgaben, Wochenvorschlag, Erinnerungen, Abfallkalender – höchstens stündlich.
+ *  „mail“: Posteingang abrufen – höchstens alle 5 Minuten, nie bei abgelehntem Passwort (keine Postfachsperre). */
+function gszAutomationDue(PDO $pdo,string $job,int $minutes):bool {
+ $q=$pdo->prepare('SELECT last_started>=UTC_TIMESTAMP()-INTERVAL ? MINUTE FROM automation_state WHERE job_key=?');$q->execute([$minutes,$job]);$recent=$q->fetchColumn();return $recent===false||!(int)$recent;
+}
+function gszAutomationOnOpen(PDO $pdo,array $config,string $what):?array {
+ if(filter_var($config['automation_on_open']??true,FILTER_VALIDATE_BOOLEAN)===false||!gszV1Ready($pdo))return null;
+ if($what==='heute')return gszAutomationDue($pdo,'tasks',60)?gszRunAutomation($pdo,$config):null;
+ if($what==='mail'){
+  require_once __DIR__.'/mail_credentials.php';
+  if(!filter_var($config['mail_enabled']??false,FILTER_VALIDATE_BOOLEAN)||empty($config['mail_pass'])||gszMailAuthBlockedNow()||!gszAutomationDue($pdo,'mail',5))return null;
+  return gszAutomationJob($pdo,'mail',function()use($pdo,$config){require_once __DIR__.'/mail_service.php';require_once __DIR__.'/mail_engine.php';return gszMailSync($pdo,gszMailRemote($config),'INBOX',(int)($config['mail_sync_limit']??50));});
+ }
+ throw new InvalidArgumentException('Unbekannter Auslöser.');
+}
 /** Read-only status. A configured expected interval does not prove hosting cron execution. */
 function gszAutomationStatus(PDO $pdo,array $config):array {
  $registry=['tasks'=>'Regelaufgaben','planning'=>'Wochenvorschläge','waste'=>'Abfallkalender','mail'=>'Posteingang','reminders'=>'Erinnerungen','seo'=>'SEO-Onlineabruf'];

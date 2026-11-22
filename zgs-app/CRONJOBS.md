@@ -1,5 +1,11 @@
 # Cronjobs (STRATO)
 
+> **Ohne Cronjob (STRATO Hosting Basic hat keine Cronjob-Verwaltung, Stand 22.11.2026):** Die Zentrale erledigt die
+> Hintergrundaufgaben beim Öffnen. „Heute“ startet Regelaufgaben, Wochenvorschlag, Erinnerungen und Abfallabgleich
+> höchstens einmal pro Stunde; „Mail“ ruft den Posteingang höchstens alle 5 Minuten ab (nie bei abgelehntem Passwort).
+> Abschalten mit `automation_on_open = false`. Ohne Öffnen der Zentrale passiert nichts. Ein echter Cronjob (größeres
+> Paket) ersetzt das zuverlässiger; beides gleichzeitig ist unschädlich.
+
 Ob und wie oft Cronjobs laufen dürfen, hängt vom STRATO-Tarif ab – vor Ort im Kundenbereich prüfen.
 Alle Einstiege liegen in `private/` und verweigern Aufrufe über HTTP. Absolute Pfade verwenden.
 

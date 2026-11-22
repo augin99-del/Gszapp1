@@ -29,6 +29,7 @@ if(!$logged):?><!doctype html><html lang="de"><head><meta charset="utf-8"><meta 
 <?php exit;endif;
 require_once dirname(__DIR__).'/private/day_view.php';require_once dirname(__DIR__).'/private/web_update.php';
 if(!gszSchemaCurrent($pdo))redirect('update.php');
+try{require_once dirname(__DIR__).'/private/automation.php';gszAutomationOnOpen($pdo,$config,'heute');}catch(Throwable $e){} // ersetzt den Cronjob (Hosting Basic hat keinen)
 $today=date('Y-m-d');$attention=[];
 try{require_once dirname(__DIR__).'/private/estate_rent_match.php';$estate=estateAttention($pdo);
  if($estate['unlinked_accounts'])$attention[]=['estate_bank.php#konten','Volksbank-Konten den Häusern zuordnen'];

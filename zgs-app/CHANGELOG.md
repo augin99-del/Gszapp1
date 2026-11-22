@@ -13,6 +13,8 @@
 - Mail: Eine Nachricht über 15 MB (oder eine nicht lesbare) blockierte den Abruf aller neueren Mails
   („Nachricht nicht lesbar oder zu groß“). Sie wird jetzt ohne Inhalt mit Absender, Betreff und Hinweis aufs Webmail
   übernommen; der Abruf läuft weiter. Beide Abrufwege gegen lokalen Dovecot getestet.
+- Ohne Cronjob: Beim Öffnen von „Heute“ (höchstens stündlich) und „Mail“ (höchstens alle 5 Minuten) laufen die
+  Hintergrundaufgaben bzw. der Mailabruf automatisch. `cron_mail.php` als Cron-Einstieg ohne Parameter.
 
 ## 380 – Zentrale verschlankt (20.11.2026)
 
