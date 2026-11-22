@@ -45,7 +45,7 @@ function gszMailSendDraft(PDO $pdo,GszMailSender $sender,?GszMailRemote $remote,
   if($existing&&$existing['result']==='found'){$pdo->prepare('UPDATE mail_drafts SET sent_copy=1,sent_copy_uid=? WHERE id=?')->execute([$existing['uids'][0],$id]);return 'accepted';}
   // Persist ambiguity BEFORE APPEND: a crash or lost acknowledgement must never look unattempted.
   $pdo->prepare('UPDATE mail_drafts SET sent_copy_uncertain=1 WHERE id=?')->execute([$id]);$remote->append($sentFolder,$built['raw']);if($remote->validity($sentFolder)!==$valid)throw new RuntimeException('Gesendet-Ordneridentität geändert.');$pdo->prepare('UPDATE mail_drafts SET sent_copy=1,sent_copy_uncertain=0 WHERE id=?')->execute([$id]);
- }catch(Throwable $e){$pdo->prepare("UPDATE mail_drafts SET last_error='SMTP angenommen, Gesendet-Kopie nicht bestätigt. Nur Kopie prüfen; nicht erneut senden.' WHERE id=?")->execute([$id]);}}
+ }catch(Throwable $e){$why=trim(preg_replace('/\s+/u',' ',preg_replace('/[\x00-\x1f\x7f]/u',' ',$e->getMessage())));$pdo->prepare('UPDATE mail_drafts SET last_error=? WHERE id=?')->execute([mb_substr('Mail versendet, Kopie im Gesendet-Ordner fehlt. Nicht erneut senden. Grund: '.($why!==''?$why:'unbekannt'),0,190),$id]);}}
  return 'accepted';
  });
 }
