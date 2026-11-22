@@ -4,7 +4,7 @@
         "private/.htaccess": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
         "private/admin_setup.php": "0e5e37d430f26acc7d4523a0a13b476938725d3bd64e7b82d4774b06bf0fae5d",
         "private/audit_check.php": "2dea8c998782afcdb4ff5a28c6cc69196b4e2ed40b3e515ff2ef159d5c850a87",
-        "private/automation.php": "d25b481f687fb2cf2006988c8ce947723a3dbf6ec068ef021fdfa413885d9ce3",
+        "private/automation.php": "f31964597196f1322b227ea5b620f98e9b723a456d581b2655d655149aa54976",
         "private/bank_formats.php": "1856f4cdfeb85118de8423706ad0c6aa642fed65a06779f0b17f84301a096799",
         "private/config.example.php": "2ad0b1a5b7cb3e023e531a8a0cdf8ef6980beed2c5c31def69ecc4662b7a7863",
         "private/config_loader.php": "aafe24e26257414643e85d08ce43393bb9c10c82e889baeb62d79e3f26bd42f6",
@@ -29,6 +29,7 @@
         "private/estate_ui.php": "342cf23f39eb98891feb478b27442057620088b757dd65223730cb3e88ec20d1",
         "private/export_core.php": "ae8822f6007815463042a0ef4e1ba9022ebc937175e977b6bdb4ba68f96a089d",
         "private/fresh_install_v192.sql": "9ce943807acfced09b20f149fc41f12a6b7b983cbe2fdf4c19a0daa79b0149e9",
+        "private/gsc.php": "90ef66401b90acef1c9d6be88bab3bc87ce120960482a59283649ca8ed5fd894",
         "private/http_security.php": "55da5cc258223046155345f0dc7b84fe8cc69047492e5beec74943e1c213466e",
         "private/install.php": "58aae787540d823152cb0eb81eb74ecfcfbc84af1a7abecf106d291ad4fd6a71",
         "private/install_core.php": "1de8b254d5e554b6b187b96c597087413de1fb9e145869e3470974bae7ac6c24",
@@ -91,7 +92,7 @@
         "private/scheduler.php": "a7445423b321736bbc53ed0547d2daf11c13dce77d02041cc396405c8c83c67d",
         "private/schema.sql": "a483cab2eb53ca707353e529e790fe308104f38f7d105f16fd4cfcc6efcda913",
         "private/schema_requirements.php": "dc1432a27669789d7eb8a2ebbfa254ee3114d7ac112875cc446ddf39b782fe11",
-        "private/secret_vault.php": "f154e680977cb6a76e8e0b9b57251924d3367b8a8d23852ab73f4856b4afd86a",
+        "private/secret_vault.php": "1b49cb5147b87581fc6a5286092e5fd9aaa314d58c714eb9e27d16e7fa35d95e",
         "private/secret_vault_cli.php": "49ea6c71e2ef129c75c9f3419f663407781a3ff4a793df51e50165d6328b3095",
         "private/secure_config.php": "400ee37a531e3aa00d32f169607854a429e4f5cfc83995b7c7d16b19d4592868",
         "private/seo.php": "598b8a239c23aab002bd3d0dd42368f0f466fac5f76e96923d738ebcf570b2b1",
@@ -2238,7 +2239,7 @@
         "public/property.php": "3d58bf72f813869992e85d992873dca474f00272694da0fde2f45b0877fa389f",
         "public/recurring.php": "508242502a4ae00288133d67e10c819587eb1fdee825ef53e23f6a0e2828c947",
         "public/route.php": "ee388b11243efbaf837fb96d54d3ce4be1f7f39dffeda2dbde80de070f12b79e",
-        "public/seo.php": "1298e521269ca248660699f0956fbc5ebf60fd6a5c770baa19fad0575551bdce",
+        "public/seo.php": "67081b1219e48799847acf617e456962dec874ee6a05f13ed0e462bec5618c99",
         "public/seo_export.php": "5f6b4a5db5ebf8579710b6a9089c8ef83b00140ace97ce2605703538ddc7eb77",
         "public/settings.php": "4051610e791e976ba0977b7088faecc71c47efb1611f296020df2a051abd5224",
         "public/setup.php": "4f5bdeccc4a8dbaa524cd59cdd99909c8644120090ab9f63f1e0b69b8c0056af",
@@ -2253,7 +2254,7 @@
         "public/worklog_photo.php": "5080a93ca875e754d774bbdb41689a72dee7922a6ebb9c67e964480029e75b15",
         "public/worklog_photos.php": "32e114e13a94a5bebf18bf5beb025e34bdbc225b494316bdcf26553d1d6bd6b4",
         "public/worklogs.php": "53554eb214d523ff21443a75263016e1d3bed9312ee24ffae10f5981cef2c722",
-        "public/zentrale.css": "a4a7d569a0b1da18a6a45747f693bb82b317e98248fc6684fe8e9d3ad39694b5",
+        "public/zentrale.css": "2e8d722b43cccb9a0519ce00bccf4d9eadd64a4098eeea39cf96758ade5d7da1",
         "public/zentrale.js": "f888c9ffa8d655c756eac3a4225741169f79ffed4ce67add56dc5bfd364f3e20"
     }
 }

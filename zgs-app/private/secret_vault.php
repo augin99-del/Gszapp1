@@ -2,7 +2,7 @@
 declare(strict_types=1);
 /** Optional server-side vault. Standard libsodium AEAD; never accept paths from HTTP. */
 function gszVaultKeys(array $values):array {
- $allowed=['db_pass','mail_pass','setup_key','db_user','mail_user'];if(!$values||array_is_list($values))throw new RuntimeException('Ungültige Geheimniskonfiguration.');
+ $allowed=['db_pass','mail_pass','setup_key','db_user','mail_user','gsc_email','gsc_key','gsc_key_id','gsc_site'];if(!$values||array_is_list($values))throw new RuntimeException('Ungültige Geheimniskonfiguration.');
  foreach($values as $key=>$value)if(!in_array($key,$allowed,true)||!is_string($value)||strlen($value)>8192)throw new RuntimeException('Nicht unterstützter Geheimnisschlüssel/Wert.');return $values;
 }
 function gszVaultCrypto():void {if(!function_exists('sodium_crypto_aead_xchacha20poly1305_ietf_encrypt'))throw new RuntimeException('libsodium für verschlüsselte Konfiguration erforderlich.');}

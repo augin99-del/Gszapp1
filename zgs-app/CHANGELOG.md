@@ -34,6 +34,10 @@
 - Abhaken ohne Neuladen: Der Haken sitzt sofort, die Seite bleibt an ihrer Stelle, kurze Rückmeldung
   „… erledigt – Rückgängig“ (6 Sekunden). Ohne JavaScript oder bei Unklarheit wird wie bisher normal gesendet; der
   Server prüft unverändert Anmeldung, CSRF und Bearbeitungsstand. Systemstatus zeigt, ob alle Programmdateien da sind.
+- Google Search Console angebunden (kostenlos, nur lesen): Dienstkonto-Schlüssel verschlüsselt im Vault, täglicher
+  Abruf beim Öffnen; Seite „Google-Sichtbarkeit“ mit Klicks, Anzeigen, Suchbegriffen, Ø-Position und Trend, neuen und
+  verlorenen Begriffen. CSV-Rangmessungen bleiben eingeklappt erhalten. Systemstatus: „Google Search Console“ statt
+  „SEO-Onlineabruf“; fehlgeschlagene Abfallabrufe nennen Objekt und Grund.
 
 ## 380 – Zentrale verschlankt (20.11.2026)
 

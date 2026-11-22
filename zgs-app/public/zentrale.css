@@ -328,3 +328,17 @@ p,li,td,th,dd,dt,h1,h2,h3,label,summary,.card,.surface{overflow-wrap:break-word;
 .toast button{flex:none;min-height:36px;padding:0 var(--s-4);border:0;border-radius:999px;background:#fff;color:var(--c-ink);font-weight:700}
 @media (min-width:1024px){.toast{bottom:24px}}
 .block{transition:background-color .2s,opacity .2s}
+
+/* ---------- Google Search Console ---------- */
+.gsc-totals{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-3);margin:0 0 var(--s-4)}
+.gsc-totals>div{display:grid;gap:2px;padding:var(--s-3);border:1px solid var(--c-line);border-radius:var(--r-s);background:var(--c-bg)}
+.gsc-totals strong{font-size:var(--fs-xl);line-height:1.1}
+.gsc-totals span{font-weight:600;color:var(--c-ink-2)}
+.gsc-totals small{color:var(--c-muted);font-size:var(--fs-xs)}
+.gsc h3{margin:var(--s-4) 0 var(--s-1)}
+.gsc-pos{flex:none;display:grid;justify-items:end;gap:2px;min-width:64px;font-size:var(--fs-s)}
+.gsc-pos strong{font-size:var(--fs-m)}
+.up{color:#1f5e1c;font-weight:650;font-size:var(--fs-xs)}
+.down{color:#9a3412;font-weight:650;font-size:var(--fs-xs)}
+ol.steps{margin:0 0 var(--s-3);padding-left:1.2em}
+ol.steps li{margin:0 0 var(--s-2)}

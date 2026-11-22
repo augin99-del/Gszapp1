@@ -77,6 +77,14 @@ Das Postfach-Passwort wird nicht mehr abgefragt. Lehnt das Postfach das Passwort
 STRATO), erscheint eine klare Meldung mit dem Weg zum Neueintragen; bis dahin versucht die Zentrale keine weitere
 Anmeldung, damit das Postfach nicht gesperrt wird.
 
+## Google-Sichtbarkeit (Mehr → Online)
+
+Zeigt aus der Google Search Console, bei welchen Suchbegriffen die Website erscheint: durchschnittliche Position
+(1 = ganz oben), Klicks, wie oft angezeigt, Trend gegenüber den 28 Tagen davor, neue und nicht mehr gefundene Begriffe.
+Aktualisiert sich einmal am Tag beim Öffnen der Zentrale (Google liefert mit 2–3 Tagen Verzug). Einrichtung einmalig:
+Dienstkonto in der Google Cloud anlegen, Search-Console-API aktivieren, JSON-Schlüssel herunterladen, Dienstkonto in der
+Search Console mit Berechtigung „Eingeschränkt“ eintragen, Schlüssel in der Zentrale hochladen (Schritte stehen auf der Seite).
+
 ## Mehr
 
 Abfallkalender, Regelaufgaben, Termine, Route, Arbeitsnachweise, Helfer, Kunden, Dokumente, Häuser/Mieter/Verträge,

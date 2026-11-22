@@ -13,6 +13,8 @@ function gszRunAutomation(PDO $pdo,array $config,bool $mail=false,bool $waste=fa
  require_once __DIR__.'/waste_connections.php';$hasConnections=wasteAutoReady($pdo)&&(bool)$pdo->query('SELECT property_id FROM waste_connections WHERE enabled=1 AND provider_key<>\'\' LIMIT 1')->fetchColumn();
  if($waste||$hasConnections)$results['waste']=gszAutomationJob($pdo,'waste',function()use($pdo,$config,$admin,$hasConnections){$results=[];if($hasConnections)$results=wasteSyncConnections($pdo,$admin)['results'];if(!empty($config['waste_sync_config_json']))$results=[...$results,...wasteSyncConfigured($pdo,$admin,$config)['results']];if(!$hasConnections&&empty($config['waste_sync_config_json']))throw new RuntimeException('Keine Quelle eingerichtet.');$failed=array_values(array_filter($results,fn($r)=>$r['status']==='BLOCKED'));if($failed){$pdo->prepare("UPDATE automation_state SET result_json=? WHERE job_key='waste'")->execute([json_encode(['failed'=>array_map(fn($r)=>['property'=>$r['property']??'','reason'=>$r['reason']??($r['error']??'')],$failed)],JSON_UNESCAPED_UNICODE)]);throw new RuntimeException();}return ['sources'=>count($results),'results'=>$results];});
 
+ // Google Search Console: einmal am Tag, nur wenn verbunden und eine Website gewählt ist.
+ require_once __DIR__.'/gsc.php';if(gszGscExists()){$g=null;try{$g=gszGscLoad();}catch(Throwable $e){}if(($g['site']??'')!==''&&gszAutomationDue($pdo,'seo',20*60))$results['seo']=gszAutomationJob($pdo,'seo',fn()=>gszGscSync());}
  if($mail)$results['mail']=gszAutomationJob($pdo,'mail',function()use($pdo,$config){require_once __DIR__.'/mail_service.php';require_once __DIR__.'/mail_engine.php';$remote=gszMailRemote($config);return gszMailSync($pdo,$remote,'INBOX',(int)$config['mail_sync_limit']);});
  return ['status'=>array_filter($results,fn($r)=>$r['status']!=='PASS')?'BLOCKED':'PASS','jobs'=>$results];
  }finally{$release=$pdo->prepare('SELECT RELEASE_LOCK(?)');$release->execute([$key]);}
@@ -36,7 +38,7 @@ function gszAutomationOnOpen(PDO $pdo,array $config,string $what):?array {
 }
 /** Read-only status. A configured expected interval does not prove hosting cron execution. */
 function gszAutomationStatus(PDO $pdo,array $config):array {
- $registry=['tasks'=>'Regelaufgaben','planning'=>'Wochenvorschläge','waste'=>'Abfallkalender','mail'=>'Posteingang','reminders'=>'Erinnerungen','seo'=>'SEO-Onlineabruf'];
+ $registry=['tasks'=>'Regelaufgaben','planning'=>'Wochenvorschläge','waste'=>'Abfallkalender','mail'=>'Posteingang','reminders'=>'Erinnerungen','seo'=>'Google Search Console'];
  $stored=[];try{$stored=array_column($pdo->query('SELECT * FROM automation_state')->fetchAll(),null,'job_key');}catch(PDOException $e){}
  $hasWasteConnections=false;try{$hasWasteConnections=(bool)$pdo->query('SELECT property_id FROM waste_connections WHERE enabled=1 LIMIT 1')->fetchColumn();}catch(PDOException $e){}
  $scheduled=filter_var($config['automation_schedule_enabled']??false,FILTER_VALIDATE_BOOLEAN);$minutes=max(5,min(1440,(int)($config['automation_interval_minutes']??30)));$scheduledJobs=array_intersect(array_keys($registry),array_map('trim',explode(',',(string)($config['automation_scheduled_jobs']??'tasks,planning,reminders'))));$out=[];if($hasWasteConnections)$scheduledJobs[]='waste';
