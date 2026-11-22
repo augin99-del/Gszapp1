@@ -1,0 +1,10 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__.'/estate_settlement_store.php';require_once __DIR__.'/export_core.php';
+/** Private owner/advisor bundle, never automatically deliver to a tenant. */
+function estateSettlementBundle(PDO $pdo,int $id):array {
+ $s=estateSettlementRead($pdo,$id);$snapshot=$s['snapshot'];$files=['snapshot.json'=>$s['snapshot_json'],'HINWEISE.txt'=>"Privates Eigentümer-/Beraterpaket. Enthält sämtliche Mieterdaten des Gebäudes. Nicht ungeprüft als Mieterpaket weitergeben. Keine DATEV-/Anlage-V-/Rechtskonformitätszusage. Einzelne Mieter erhalten ausschließlich ihre eigene Abrechnung. Originale und Snapshot unverändert, SHA256-Prüfliste beigefügt.\n"];$total=array_sum(array_map('strlen',$files));$docs=$snapshot['state']['documents'];$q=$pdo->prepare('SELECT * FROM estate_settlement_documents WHERE settlement_id=? ORDER BY lease_id');$q->execute([$id]);$pdfs=$q->fetchAll();if(count($docs)+count($pdfs)+3>200)throw new RuntimeException('Archivlimit200 Dateien; Einzelbelege getrennt herunterladen.');
+ foreach($docs as $d){$size=(int)$d['size_bytes'];if($size>10*1024*1024||$total+$size>20*1024*1024)throw new RuntimeException('Archivlimit20MB; Einzelbelege getrennt herunterladen.');$bytes=gszReadBytes('estate',$d['sha256'],$d['sha256']);if(strlen($bytes)!==$size)throw new RuntimeException('Belegintegrität verletzt.');$ext=strtolower(pathinfo($d['original_name'],PATHINFO_EXTENSION));if(!in_array($ext,['pdf','jpg','jpeg','png','txt','csv'],true))$ext='original';$files['belege/beleg-'.(int)$d['id'].'.'.$ext]=$bytes;$total+=strlen($bytes);}
+ foreach($pdfs as $d){$size=(int)$d['pdf_size'];if($total+$size>20*1024*1024)throw new RuntimeException('Archivlimit20MB.');$bytes=gszReadBytes('estate',$d['pdf_sha256'],$d['pdf_sha256']);if(strlen($bytes)!==$size)throw new RuntimeException('PDF-Integrität verletzt.');$files['abrechnungen/vertrag-'.(int)$d['lease_id'].'-v'.(int)$s['version'].'.pdf']=$bytes;$total+=strlen($bytes);}
+ $hashes=[];foreach($files as $name=>$bytes)$hashes[]=hash('sha256',$bytes).'  '.$name;$files['SHA256SUMS.txt']=implode("\n",$hashes)."\n";return $files;
+}

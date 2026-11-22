@@ -1,0 +1,18 @@
+# Aktualisierte interne Restarbeiten nach v330
+
+Immobiliengrundverwaltung und Nebenkosten-PDF sind inzwischen integriert, siehe TESTSTATUS.md; nicht neu implementieren. Noch offen: endgültige private Abrechnungssalden als eigene Forderungs-/Guthabenobjekte mit Zahlung und Versionsdifferenzen; private Bankausgaben nachvollziehbar korrigieren; komplexe Vertragsnachträge zeitlich versionieren; Kautionszins-/Verwahrungskonzept; Fristen/Erinnerungen; umfassende Suche/Paginierung für sehr große Bestände. Keine Nullkostenabrechnung bei leerem Belegregister. Heizkostensplit im reinen Kern vorhanden, UI derzeit externe freigegebene Beträge, keine automatische Rechts-/CO2-Entscheidung. Echtes ista-Format/OCR nicht integriert. CAMT/Bankschnittstellen und vollständige serverseitige IMAP-Entwurfs-/Ordnersynchronisation bleiben offen. Externe/fachliche Prüfungen getrennt OFFENE_PUNKTE.md.
+
+---
+
+# Verbleibende Entwicklung – kein fertiges Gesamtprojekt behaupten
+
+Diese Punkte sind Code-/QA-Arbeit, keine pauschalen Nutzerentscheidungen. OFFENE_PUNKTE.md enthält separat ausschließlich externe Freigaben/Informationen.
+
+1. Mail: IMAP-Entwürfe als echte serverseitige Entwürfe synchronisieren, sichere Wiederholung einer fehlgeschlagenen Gesendet-Kopie per Message-ID-Suche, vollständigeres Delta-/Flagmodell für ältere (>100) Nachrichten, große Postfächer/fehlerhafte Einzelmail mit Fortsetzung testen. Kein stilles Überspringen als erfolgreich deklarieren. HTML bleibt absichtlich Plaintext; S/MIME/verschlüsselte Sonderfälle nicht entschlüsselt. Zustell-/Bounce-/DSN-Behandlung, Bcc und weitere MIME-Sonderfälle fehlen. Native IMAP/SMTP müssen zusätzlich gegen kontrollierten Server getestet werden.
+2. Finanzen: Sammelumsätze auf mehrere Belege/Rechnungen aufteilen; kategorisierter Konten-/Steuerkennzeichenplan nach abgestimmten Vorgaben; Anlagen/Abschreibungen, Anzahlungen, Teilstornos, gemischte Steuersätze, Reverse Charge und andere Sonderfälle. Solche Fälle aktuell blockieren/manuell fachlich prüfen. Keine Vollständigkeit der Arbeits-EÜR behaupten.
+3. Rechnungen: Mehrseiten-/Schriftfunktion vorhanden, neuer unveränderlicher PDF-Snapshot bei Ausstellung vorhanden; historische Dokumente ohne Snapshot bleiben entsprechend gekennzeichnet; E-Rechnungsvalidierung/PDF-A, vollständiger Pflichtfeld- und Sonderfallkatalog, belastbare Archiv-/Verfahrensdokumentation fehlen. Angebots-Metadaten-/Revisionskomfort und Teilkorrekturen ausbauen. Unvalidiertes XML bleibt gesperrt.
+4. Betrieb: Mengenlimits/Paginierung in Planung/Importsnapshots, Cache-/Entwurfs-/Vorschlagsaufbewahrung, Aufräumen unreferenzierter Dateien mit Referenzprüfung, Query-/Last-/Paralleltests, formales Migrationsledger mit Strukturchecks/Checksummen über bloßes IF NOT EXISTS hinaus. Nicht auf Produktion experimentieren.
+5. Sicherheit: vollständiger Penetrations-/Datenschutz-/Recoverytest, Anti-Malware/Dateiinhaltsprüfung, Cookie-/CSP-/Hostinghärtung über den geprüften Umfang hinaus, eventuelle externe/Offline-Verankerung von Auditprüfsummen. Hashkette allein ist nicht manipulationssicher gegen DB-Administratoren.
+6. UX: vollständige Tastatur-/Screenreader-Abnahme, einfache Auswahl statt IDs für alle Mail-/Finanzzuordnungen, übersichtlichere Detailhistorien/Leerzustände, einheitliche Beschriftungen und wiederholte mobile Regression bei weiteren Änderungen. Keine Pflichtfotos einführen.
+
+Konkreter Wiedereinstieg: zuerst TESTBERICHT_GESAMT.md reproduzieren. Danach Mail-Adaptertests mit kontrolliertem IMAP/SMTP-Server und wiederaufnehmbarer Draft-/Sent-Synchronisation; anschließend Sammelzuordnungen und steuerliche Fallmatrix. Migrationen v230/v240/v250/v260 nicht durch alte SQL-Dateien ersetzen, Phase-3-Daten erhalten.

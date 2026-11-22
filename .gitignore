@@ -23,3 +23,10 @@
 /app/Config/core.php
 /app/Config/database.php
 /vendors/*
+
+# GSZ-Zentrale: Laufzeitdaten niemals einchecken
+zgs-app/private/config.php
+zgs-app/private/uploads/
+zgs-app/private/server-config/
+zgs-app/private/secrets/
+zgs-app/private/backups/

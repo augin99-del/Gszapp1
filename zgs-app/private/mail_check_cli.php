@@ -1,0 +1,7 @@
+<?php
+declare(strict_types=1);if(PHP_SAPI!=='cli'){http_response_code(403);exit;}require __DIR__.'/config_loader.php';
+try{
+ if(count($argv)>2||isset($argv[1])&&!in_array($argv[1],['--check','--imap'],true))throw new RuntimeException();$config=gszLoadConfig();$configured=filter_var($config['mail_user']??'',FILTER_VALIDATE_EMAIL)&&!empty($config['mail_pass'])&&filter_var($config['mail_enabled']??false,FILTER_VALIDATE_BOOLEAN);$report=['configuration'=>$configured?'PASS':'BLOCKED','imap_extension'=>function_exists('imap_open')?'PASS':'NOT AVAILABLE','bundled_imap_adapter'=>is_file(__DIR__.'/vendor/imapengine/vendor/autoload.php')?'PASS':'NOT AVAILABLE','imap_connection'=>'NOT TESTED','smtp_connection'=>'NOT TESTED','message_sent'=>false,'credentials_printed'=>false];
+ if(($argv[1]??'')==='--imap'&&$configured){require __DIR__.'/mail_remote.php';require_once __DIR__.'/mail_engine.php';$remote=gszMailRemote($config);$folders=$remote->folders();$validity=$remote->validity('INBOX');$report['imap_connection']=$validity>0?'PASS':'FAIL';$report['folder_count']=count($folders);$report['sent_folder_configured_and_present']=!empty($config['mail_sent_folder'])&&in_array($config['mail_sent_folder'],$folders,true);}
+ echo json_encode($report,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE),"\n";exit($configured&&(function_exists('imap_open')||is_file(__DIR__.'/vendor/imapengine/vendor/autoload.php'))?0:2);
+}catch(Throwable $e){fwrite(STDERR,"BLOCKED: Mailkonfiguration/IMAP/TLS/Anmeldung prüfen. Keine Nachricht versendet, keine vertraulichen Werte ausgegeben.\n");exit(2);}

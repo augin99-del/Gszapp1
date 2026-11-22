@@ -1,0 +1,819 @@
+<?php
+declare(strict_types=1);
+// Column/identity contract from the locally migration-tested v380 schema. No records.
+return array (
+  'tables' => 
+  array (
+    'admins' => 
+    array (
+      0 => 'id',
+      1 => 'email',
+      2 => 'password_hash',
+      3 => 'created_at',
+    ),
+    'app_audit' => 
+    array (
+      0 => 'id',
+      1 => 'admin_id',
+      2 => 'action',
+      3 => 'detail',
+      4 => 'previous_hash',
+      5 => 'entry_hash',
+      6 => 'created_at',
+    ),
+    'app_migrations' => 
+    array (
+      0 => 'version',
+      1 => 'applied_at',
+    ),
+    'app_mutex' => 
+    array (
+      0 => 'id',
+    ),
+    'automation_state' => 
+    array (
+      0 => 'job_key',
+      1 => 'last_started',
+      2 => 'last_finished',
+      3 => 'last_success',
+      4 => 'status',
+      5 => 'duration_ms',
+      6 => 'result_json',
+      7 => 'last_error_code',
+    ),
+    'customers' => 
+    array (
+      0 => 'id',
+      1 => 'name',
+      2 => 'email',
+      3 => 'phone',
+      4 => 'notes',
+      5 => 'created_at',
+      6 => 'billing_address',
+      7 => 'row_version',
+      8 => 'archived_at',
+    ),
+    'documents' => 
+    array (
+      0 => 'id',
+      1 => 'customer_id',
+      2 => 'property_id',
+      3 => 'category',
+      4 => 'title',
+      5 => 'original_name',
+      6 => 'stored_name',
+      7 => 'mime_type',
+      8 => 'size_bytes',
+      9 => 'sha256',
+      10 => 'notes',
+      11 => 'created_at',
+    ),
+    'estate_allocations' => 
+    array (
+      0 => 'id',
+      1 => 'payment_id',
+      2 => 'lease_id',
+      3 => 'charge_id',
+      4 => 'component',
+      5 => 'amount_cents',
+      6 => 'reversal_of',
+      7 => 'reason',
+      8 => 'request_key',
+      9 => 'created_by',
+      10 => 'created_at',
+      11 => 'allocation_from',
+      12 => 'allocation_to',
+    ),
+    'estate_bank_accounts' => 
+    array (
+      0 => 'id',
+      1 => 'alias',
+      2 => 'reference',
+      3 => 'row_version',
+      4 => 'import_iban_hash',
+      5 => 'building_id',
+    ),
+    'estate_bank_transactions' => 
+    array (
+      0 => 'id',
+      1 => 'account_id',
+      2 => 'source_key',
+      3 => 'record_hash',
+      4 => 'external_id',
+      5 => 'booked_on',
+      6 => 'value_on',
+      7 => 'amount_cents',
+      8 => 'currency',
+      9 => 'purpose',
+      10 => 'counterparty',
+      11 => 'counterparty_iban_hash',
+    ),
+    'estate_bank_uploads' => 
+    array (
+      0 => 'id',
+      1 => 'account_id',
+      2 => 'admin_id',
+      3 => 'uploaded_on',
+      4 => 'uploaded_at',
+      5 => 'file_hash',
+      6 => 'format',
+      7 => 'period_from',
+      8 => 'period_to',
+      9 => 'rows_total',
+      10 => 'rows_new',
+      11 => 'rows_known',
+    ),
+    'estate_buildings' => 
+    array (
+      0 => 'id',
+      1 => 'name',
+      2 => 'address',
+      3 => 'notes',
+      4 => 'row_version',
+      5 => 'created_at',
+    ),
+    'estate_charge_adjustments' => 
+    array (
+      0 => 'id',
+      1 => 'charge_id',
+      2 => 'component',
+      3 => 'amount_cents',
+      4 => 'reason',
+      5 => 'request_key',
+      6 => 'created_by',
+      7 => 'created_at',
+    ),
+    'estate_costs' => 
+    array (
+      0 => 'id',
+      1 => 'building_id',
+      2 => 'document_id',
+      3 => 'source_position',
+      4 => 'title',
+      5 => 'category',
+      6 => 'amount_cents',
+      7 => 'period_from',
+      8 => 'period_to',
+      9 => 'apportionable',
+      10 => 'legal_basis',
+      11 => 'allocation_json',
+      12 => 'co2_json',
+      13 => 'allocation_document_id',
+      14 => 'duplicate_reason',
+      15 => 'approved',
+      16 => 'voided_at',
+      17 => 'void_reason',
+      18 => 'row_version',
+      19 => 'created_by',
+      20 => 'created_at',
+    ),
+    'estate_documents' => 
+    array (
+      0 => 'id',
+      1 => 'building_id',
+      2 => 'lease_id',
+      3 => 'original_name',
+      4 => 'mime_type',
+      5 => 'sha256',
+      6 => 'size_bytes',
+      7 => 'created_by',
+      8 => 'created_at',
+    ),
+    'estate_expenses' => 
+    array (
+      0 => 'id',
+      1 => 'transaction_id',
+      2 => 'building_id',
+      3 => 'unit_id',
+      4 => 'category',
+      5 => 'notes',
+      6 => 'document_id',
+      7 => 'created_by',
+      8 => 'created_at',
+    ),
+    'estate_history' => 
+    array (
+      0 => 'id',
+      1 => 'entity',
+      2 => 'entity_id',
+      3 => 'action',
+      4 => 'changes_json',
+      5 => 'admin_id',
+      6 => 'created_at',
+    ),
+    'estate_leases' => 
+    array (
+      0 => 'id',
+      1 => 'unit_id',
+      2 => 'tenant_id',
+      3 => 'occupancy_kind',
+      4 => 'starts_on',
+      5 => 'ends_on',
+      6 => 'due_day',
+      7 => 'proration',
+      8 => 'operating_mode',
+      9 => 'heating_mode',
+      10 => 'deposit_cents',
+      11 => 'notes',
+      12 => 'row_version',
+    ),
+    'estate_mutex' => 
+    array (
+      0 => 'id',
+    ),
+    'estate_payments' => 
+    array (
+      0 => 'id',
+      1 => 'bank_transaction_id',
+      2 => 'paid_on',
+      3 => 'amount_cents',
+      4 => 'description',
+      5 => 'request_key',
+      6 => 'created_by',
+      7 => 'created_at',
+    ),
+    'estate_proposals' => 
+    array (
+      0 => 'token',
+      1 => 'kind',
+      2 => 'admin_id',
+      3 => 'fingerprint',
+      4 => 'payload',
+      5 => 'created_at',
+      6 => 'applied_at',
+    ),
+    'estate_rent_charges' => 
+    array (
+      0 => 'id',
+      1 => 'lease_id',
+      2 => 'month',
+      3 => 'due_on',
+      4 => 'rent_cents',
+      5 => 'operating_cents',
+      6 => 'heating_cents',
+      7 => 'terms_hash',
+      8 => 'created_by',
+      9 => 'created_at',
+    ),
+    'estate_settings' => 
+    array (
+      0 => 'id',
+      1 => 'landlord_name',
+      2 => 'landlord_address',
+      3 => 'row_version',
+    ),
+    'estate_settlements' => 
+    array (
+      0 => 'id',
+      1 => 'building_id',
+      2 => 'period_from',
+      3 => 'period_to',
+      4 => 'as_of',
+      5 => 'version',
+      6 => 'proposal_token',
+      7 => 'snapshot_json',
+      8 => 'snapshot_hash',
+      9 => 'supersedes_id',
+      10 => 'created_by',
+      11 => 'created_at',
+    ),
+    'estate_settlement_documents' => 
+    array (
+      0 => 'id',
+      1 => 'settlement_id',
+      2 => 'lease_id',
+      3 => 'pdf_sha256',
+      4 => 'pdf_size',
+    ),
+    'estate_settlement_proposals' => 
+    array (
+      0 => 'token',
+      1 => 'admin_id',
+      2 => 'building_id',
+      3 => 'fingerprint',
+      4 => 'payload',
+      5 => 'created_at',
+      6 => 'applied_id',
+    ),
+    'estate_tenants' => 
+    array (
+      0 => 'id',
+      1 => 'name',
+      2 => 'email',
+      3 => 'phone',
+      4 => 'address',
+      5 => 'notes',
+      6 => 'row_version',
+      7 => 'created_at',
+      8 => 'payer_names',
+      9 => 'iban_hash',
+    ),
+    'estate_terms' => 
+    array (
+      0 => 'id',
+      1 => 'lease_id',
+      2 => 'valid_from',
+      3 => 'rent_cents',
+      4 => 'operating_cents',
+      5 => 'heating_cents',
+      6 => 'created_by',
+      7 => 'created_at',
+    ),
+    'estate_transfers' => 
+    array (
+      0 => 'id',
+      1 => 'outgoing_id',
+      2 => 'incoming_id',
+      3 => 'reason',
+      4 => 'created_by',
+      5 => 'created_at',
+    ),
+    'estate_units' => 
+    array (
+      0 => 'id',
+      1 => 'building_id',
+      2 => 'label',
+      3 => 'area_units',
+      4 => 'notes',
+      5 => 'row_version',
+    ),
+    'mail_attachments' => 
+    array (
+      0 => 'id',
+      1 => 'message_id',
+      2 => 'original_name',
+      3 => 'mime_type',
+      4 => 'stored_name',
+      5 => 'size_bytes',
+      6 => 'sha256',
+    ),
+    'mail_drafts' => 
+    array (
+      0 => 'id',
+      1 => 'to_address',
+      2 => 'cc_address',
+      3 => 'subject',
+      4 => 'body',
+      5 => 'reply_message_id',
+      6 => 'reply_header',
+      7 => 'message_id',
+      8 => 'status',
+      9 => 'sent_copy',
+      10 => 'last_error',
+      11 => 'updated_at',
+      12 => 'created_at',
+      13 => 'smtp_raw',
+      14 => 'smtp_raw_sha256',
+      15 => 'sent_copy_folder',
+      16 => 'sent_copy_uidvalidity',
+      17 => 'sent_copy_uid',
+      18 => 'sent_copy_uncertain',
+      19 => 'bcc_address',
+    ),
+    'mail_draft_attachments' => 
+    array (
+      0 => 'id',
+      1 => 'draft_id',
+      2 => 'original_name',
+      3 => 'mime_type',
+      4 => 'stored_name',
+      5 => 'size_bytes',
+      6 => 'sha256',
+    ),
+    'mail_folders' => 
+    array (
+      0 => 'id',
+      1 => 'name',
+      2 => 'uidvalidity',
+      3 => 'last_uid',
+      4 => 'last_sync',
+      5 => 'last_error',
+    ),
+    'mail_messages' => 
+    array (
+      0 => 'id',
+      1 => 'folder_id',
+      2 => 'uidvalidity',
+      3 => 'remote_uid',
+      4 => 'message_id',
+      5 => 'sender',
+      6 => 'recipients',
+      7 => 'subject',
+      8 => 'sent_at',
+      9 => 'body',
+      10 => 'seen',
+      11 => 'active',
+      12 => 'important',
+      13 => 'answered',
+      14 => 'automatic_message',
+      15 => 'property_id',
+      16 => 'customer_id',
+      17 => 'task_id',
+      18 => 'invoice_id',
+      19 => 'created_at',
+      20 => 'reply_to',
+    ),
+    'mail_rules' => 
+    array (
+      0 => 'id',
+      1 => 'sender_pattern',
+      2 => 'important',
+      3 => 'active',
+    ),
+    'operations_events' => 
+    array (
+      0 => 'id',
+      1 => 'entity_type',
+      2 => 'entity_id',
+      3 => 'admin_id',
+      4 => 'action',
+      5 => 'changes_json',
+      6 => 'created_at',
+    ),
+    'operations_workers' => 
+    array (
+      0 => 'id',
+      1 => 'name',
+      2 => 'kind',
+      3 => 'email',
+      4 => 'phone',
+      5 => 'notes',
+      6 => 'active',
+      7 => 'row_version',
+      8 => 'created_at',
+    ),
+    'planning_appointments' => 
+    array (
+      0 => 'id',
+      1 => 'day',
+      2 => 'start_time',
+      3 => 'end_time',
+      4 => 'title',
+      5 => 'address',
+      6 => 'notes',
+      7 => 'reminder_minutes',
+      8 => 'cancelled_at',
+      9 => 'row_version',
+    ),
+    'planning_days' => 
+    array (
+      0 => 'day',
+      1 => 'start_time',
+    ),
+    'planning_proposals' => 
+    array (
+      0 => 'token',
+      1 => 'admin_id',
+      2 => 'fingerprint',
+      3 => 'payload',
+      4 => 'created_at',
+      5 => 'applied_at',
+    ),
+    'planning_settings' => 
+    array (
+      0 => 'id',
+      1 => 'start_time',
+      2 => 'target_time',
+      3 => 'warning_time',
+      4 => 'buffer_minutes',
+      5 => 'evening_destination',
+      6 => 'route_start_address',
+      7 => 'route_end_address',
+      8 => 'workdays_mask',
+      9 => 'capacity_end_time',
+    ),
+    'properties' => 
+    array (
+      0 => 'id',
+      1 => 'customer_id',
+      2 => 'name',
+      3 => 'address',
+      4 => 'contact_name',
+      5 => 'contact_phone',
+      6 => 'contact_email',
+      7 => 'notes',
+      8 => 'created_at',
+      9 => 'seed_key',
+      10 => 'row_version',
+      11 => 'waste_out_offset',
+      12 => 'waste_in_offset',
+    ),
+    'recurring_completions' => 
+    array (
+      0 => 'id',
+      1 => 'task_id',
+      2 => 'job_id',
+      3 => 'task_version',
+      4 => 'completed_on',
+      5 => 'next_due_date',
+      6 => 'recorded_at',
+    ),
+    'recurring_jobs' => 
+    array (
+      0 => 'id',
+      1 => 'property_id',
+      2 => 'title',
+      3 => 'frequency',
+      4 => 'notes',
+      5 => 'active',
+      6 => 'last_generated',
+      7 => 'created_at',
+      8 => 'next_due_date',
+      9 => 'seed_key',
+      10 => 'duration_minutes',
+      11 => 'anchor_day',
+      12 => 'season_start_month',
+      13 => 'season_end_month',
+      14 => 'rule_source',
+      15 => 'service_kind',
+      16 => 'recurrence_mode',
+      17 => 'allowed_weekdays_mask',
+      18 => 'last_completed_on',
+      19 => 'completion_task_id',
+    ),
+    'routing_cache' => 
+    array (
+      0 => 'cache_key',
+      1 => 'payload',
+      2 => 'expires_at',
+    ),
+    'routing_locations' => 
+    array (
+      0 => 'location_key',
+      1 => 'address',
+      2 => 'latitude',
+      3 => 'longitude',
+      4 => 'source',
+      5 => 'quality',
+      6 => 'checked_at',
+    ),
+    'seo_imports' => 
+    array (
+      0 => 'token',
+      1 => 'admin_id',
+      2 => 'keyword_id',
+      3 => 'payload',
+      4 => 'created_at',
+      5 => 'applied_at',
+    ),
+    'seo_keywords' => 
+    array (
+      0 => 'id',
+      1 => 'keyword',
+      2 => 'location',
+      3 => 'active',
+      4 => 'created_at',
+    ),
+    'seo_points' => 
+    array (
+      0 => 'run_id',
+      1 => 'point_key',
+      2 => 'latitude_e6',
+      3 => 'longitude_e6',
+      4 => 'rank_position',
+      5 => 'competitor',
+      6 => 'competitor_rank',
+    ),
+    'seo_runs' => 
+    array (
+      0 => 'id',
+      1 => 'keyword_id',
+      2 => 'measured_at',
+      3 => 'source',
+      4 => 'search_depth',
+      5 => 'run_hash',
+      6 => 'file_hash',
+      7 => 'created_by',
+      8 => 'created_at',
+    ),
+    'tasks' => 
+    array (
+      0 => 'id',
+      1 => 'property_id',
+      2 => 'title',
+      3 => 'due_date',
+      4 => 'done',
+      5 => 'created_at',
+      6 => 'recurring_job_id',
+      7 => 'scheduled_for',
+      8 => 'priority',
+      9 => 'start_time',
+      10 => 'duration_minutes',
+      11 => 'sort_order',
+      12 => 'plan_locked',
+      13 => 'notes',
+      14 => 'planned_order',
+      15 => 'window_start',
+      16 => 'window_end',
+      17 => 'waste_key',
+      18 => 'assigned_worker_id',
+      19 => 'completed_at',
+      20 => 'row_version',
+      21 => 'completed_on',
+    ),
+    'waste_connections' => 
+    array (
+      0 => 'property_id',
+      1 => 'enabled',
+      2 => 'address_json',
+      3 => 'address_hash',
+      4 => 'provider_key',
+      5 => 'selection_json',
+      6 => 'offered_json',
+      7 => 'bins_json',
+      8 => 'source_id',
+      9 => 'status',
+      10 => 'last_attempt_at',
+      11 => 'last_success_at',
+      12 => 'next_sync_at',
+      13 => 'error_code',
+      14 => 'pending_token',
+      15 => 'out_time',
+      16 => 'in_time',
+    ),
+    'waste_events' => 
+    array (
+      0 => 'id',
+      1 => 'property_id',
+      2 => 'collection_date',
+      3 => 'fraction',
+      4 => 'address',
+      5 => 'status',
+      6 => 'event_hash',
+      7 => 'created_at',
+    ),
+    'waste_history' => 
+    array (
+      0 => 'id',
+      1 => 'admin_id',
+      2 => 'event_type',
+      3 => 'detail',
+      4 => 'created_at',
+    ),
+    'waste_imports' => 
+    array (
+      0 => 'token',
+      1 => 'admin_id',
+      2 => 'source_id',
+      3 => 'file_hash',
+      4 => 'fingerprint',
+      5 => 'payload',
+      6 => 'created_at',
+      7 => 'applied_at',
+    ),
+    'waste_origins' => 
+    array (
+      0 => 'event_id',
+      1 => 'source_id',
+      2 => 'external_id',
+      3 => 'original_title',
+      4 => 'original_start',
+      5 => 'record_hash',
+      6 => 'imported_at',
+    ),
+    'waste_provider_cache' => 
+    array (
+      0 => 'cache_key',
+      1 => 'payload',
+      2 => 'expires_at',
+    ),
+    'waste_sources' => 
+    array (
+      0 => 'id',
+      1 => 'property_id',
+      2 => 'name',
+      3 => 'address',
+      4 => 'source_date',
+      5 => 'valid_until',
+      6 => 'checked_at',
+      7 => 'last_import_at',
+      8 => 'last_error',
+      9 => 'auto_managed',
+    ),
+    'waste_task_links' => 
+    array (
+      0 => 'event_id',
+      1 => 'direction',
+      2 => 'task_id',
+    ),
+    'work_logs' => 
+    array (
+      0 => 'id',
+      1 => 'property_id',
+      2 => 'task_id',
+      3 => 'performed_on',
+      4 => 'duration_minutes',
+      5 => 'description',
+      6 => 'notes',
+      7 => 'created_at',
+    ),
+    'work_log_photos' => 
+    array (
+      0 => 'id',
+      1 => 'work_log_id',
+      2 => 'stored_name',
+      3 => 'original_name',
+      4 => 'mime_type',
+      5 => 'size_bytes',
+      6 => 'label',
+      7 => 'created_at',
+    ),
+  ),
+  'unique_keys' => 
+  array (
+    'estate_bank_accounts' => 
+    array (
+      0 => 'id',
+      1 => 'import_iban_hash',
+      2 => 'building_id',
+    ),
+    'estate_bank_transactions' => 
+    array (
+      0 => 'id',
+      1 => 'account_id,source_key',
+    ),
+    'planning_proposals' => 
+    array (
+      0 => 'token',
+    ),
+    'properties' => 
+    array (
+      0 => 'id',
+      1 => 'seed_key',
+    ),
+    'recurring_completions' => 
+    array (
+      0 => 'id',
+      1 => 'task_id,task_version',
+    ),
+    'recurring_jobs' => 
+    array (
+      0 => 'id',
+      1 => 'seed_key',
+    ),
+    'seo_keywords' => 
+    array (
+      0 => 'id',
+      1 => 'keyword,location',
+    ),
+    'seo_points' => 
+    array (
+      0 => 'run_id,point_key',
+      1 => 'run_id,latitude_e6,longitude_e6',
+    ),
+    'seo_runs' => 
+    array (
+      0 => 'id',
+      1 => 'keyword_id,measured_at,source',
+    ),
+    'tasks' => 
+    array (
+      0 => 'id',
+      1 => 'recurring_job_id,scheduled_for',
+      2 => 'waste_key',
+    ),
+    'waste_connections' => 
+    array (
+      0 => 'property_id',
+    ),
+    'waste_events' => 
+    array (
+      0 => 'id',
+      1 => 'property_id,collection_date,fraction',
+    ),
+    'waste_origins' => 
+    array (
+      0 => 'event_id,source_id,external_id',
+    ),
+    'waste_provider_cache' => 
+    array (
+      0 => 'cache_key',
+    ),
+    'waste_task_links' => 
+    array (
+      0 => 'event_id,direction',
+    ),
+  ),
+  'migrations' => 
+  array (
+    0 => '200_phase1',
+    1 => '210_phase2',
+    2 => '220_phase3',
+    3 => '230_mail_security',
+    4 => '240_finance_basis',
+    5 => '250_documents',
+    6 => '260_pdf_originals',
+    7 => '270_operations',
+    8 => '280_receivables',
+    9 => '290_finance_recurrences',
+    10 => '300_cash_assets',
+    11 => '310_estate_core',
+    12 => '320_estate_settlements',
+    13 => '330_mail_recovery',
+    14 => '340_v1',
+    15 => '350_final',
+    16 => '360_waste_connections',
+    17 => '370_bank_connections',
+    18 => '380_zentrale',
+  ),
+);

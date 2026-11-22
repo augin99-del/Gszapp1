@@ -1,0 +1,18 @@
+{
+  "name": "gsz/mail-adapter",
+  "description": "Bundled framework-independent IMAP adapter; production requires no Composer",
+  "type": "project",
+  "license": "proprietary",
+  "require": {
+    "directorytree/imapengine": "1.25.9"
+  },
+  "config": {
+    "platform": {
+      "php": "8.2.0"
+    },
+    "allow-plugins": {},
+    "sort-packages": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}

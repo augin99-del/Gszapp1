@@ -1,0 +1,9 @@
+# Noch notwendige Angaben / externe Abnahme
+
+1. Vollständige, widerspruchsfreie Anschriften der Bestandsobjekte einschließlich PLZ und tatsächlich betreute Behältervarianten bestätigen. Fontänenstraße und Lippstädter Straße wurden in Aufträgen mit unterschiedlichen Orten bezeichnet; bestehende Daten nicht ungefragt korrigiert. Eine entsprechende Anfrage wurde einmal gestellt. Keine realen Adressen in Testdaten hineinraten. Amtliche Straße/Bezirk muss tatsächlich passen.
+2. Auf geschütztem STRATO-Staging mit tatsächlicher PHP-Konfiguration direkten HTTPS-/DNS-/CA-Abruf des offiziellen Hosts prüfen. Hier waren TLS-validierte Quellenabrufe über Python möglich, direkte PHP-Sockets jedoch blockiert. Kein deaktivierter Zertifikatscheck als Ersatz.
+3. Cronfähigkeit/Laufzeitlimits des tatsächlichen Tarifs bestätigen und mehrere echte Jobläufe samt Status nachweisen. Sichere manuelle Bedienung funktioniert auch ohne Cron.
+4. Erst nach gesichertem Staging-/Restore-/Alltagstest ausdrückliche Produktivfreigabe; bis dahin keine produktive DB-/Dateiänderung. Bestehende Mail-/Bankfreigaben bleiben unabhängig offen.
+5. Weitere Kommunen und besondere Behälter-/Hausnummernzuordnungen benötigen geprüfte Quellen/Adapter; keine allgemeine Deutschlandabdeckung. Anbieterbedingungen und öffentliche Schnittstelle können sich ändern; keine garantierte Langzeit-API. Unklare Kalenderdaten bleiben zur Einzelprüfung.
+
+Technische bekannte Grenzen ohne notwendige Rückfrage: geerbte Snapshotgrenze5000Datensätze je Geschäftstabelle; große mehrjährige Bestände erfordern später quellbezogene Snapshots. Keine automatische sichere PDF-Erkennung/komplexe ICS-RRULE-Unterstützung; vorhandener begrenzter ICS/CSV-Weg. Terminänderung mit neuer UID kann ohne verlässliche Identität nicht automatisch zusammengeführt werden. Alle unklaren oder bereits manuell bearbeiteten/erledigten Fälle bleiben erhalten und sichtbar.

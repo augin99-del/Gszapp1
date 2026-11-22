@@ -1,0 +1,16 @@
+<?php
+declare(strict_types=1);require dirname(__DIR__).'/private/planning_store.php';
+$n=0;function vp(bool $v,string $label):void{global $n;$n++;if(!$v)throw new RuntimeException($label);}
+$s=['start_time'=>'10:30','target_time'=>'16:00','warning_time'=>'17:00','capacity_end_time'=>'17:00','workdays_mask'=>31,'buffer_minutes'=>10,'planning_from'=>'2026-12-07'];
+function vt(int $id,array $extra=[]):array{return array_replace(['id'=>$id,'key'=>'t'.$id,'title'=>'Treppenhaus reinigen','duration_minutes'=>75,'due_date'=>'2026-12-07','done'=>0,'property_id'=>$id%3,'address'=>'Teststadt','sort_order'=>0,'planned_order'=>0,'start_time'=>null,'plan_locked'=>0,'recurring_job_id'=>1,'scheduled_for'=>'2026-12-07','window_start'=>null,'window_end'=>null],$extra);}
+$tasks=[];for($i=1;$i<=20;$i++)$tasks[]=vt($i);$p=planWeek($tasks,[],$s,[],'2026-12-07');$seen=[];
+foreach($p['days'] as $day=>$d){vp($d['end']<=1020,'capacity limit');foreach($d['rows'] as $row){vp((int)(new DateTimeImmutable($day))->format('N')<=3,'stairs Mon-Wed only');$seen[]=$row['task']['id'];}}
+vp(count($p['unplaced'])>0,'overcapacity explicit conflict');vp(count($seen)+count($p['unplaced'])===20&&count(array_unique($seen))===count($seen),'all retained once');vp($p===planWeek($tasks,[],$s,[],'2026-12-07'),'deterministic');
+$tasks=[];for($i=1;$i<=12;$i++)$tasks[]=vt($i,['title'=>'Außenanlage pflegen','duration_minutes'=>120]);$p=planWeek($tasks,[],$s,[],'2026-12-07');$days=[];foreach($p['days'] as $day=>$d){foreach($d['rows'] as $row){vp((int)(new DateTimeImmutable($day))->format('N')<=5,'outdoor Mon-Fri');$days[$day]=true;}}vp(count($days)>=4,'load distributed across week');
+$p=planWeek([vt(1,['due_date'=>'2026-12-13','title'=>'Tonnen rausstellen','plan_locked'=>1,'duration_minutes'=>15])],[],$s,[],'2026-12-07');vp(count($p['days']['2026-12-13']['rows'])===1,'fixed Sunday waste retained');
+$p=planWeek([vt(1,['due_date'=>'2026-12-11','plan_locked'=>1])],[],$s,[],'2026-12-07');vp(count($p['days']['2026-12-11']['rows'])===1,'manual Friday retained despite service policy');
+$app=['day'=>'2026-12-07','start_time'=>'13:00','end_time'=>'14:30'];$p=planWeek([vt(1,['duration_minutes'=>180])],[$app],$s,[],'2026-12-07');foreach($p['days'] as $day=>$d)foreach($d['rows'] as $r)vp($day!=='2026-12-07'||$r['end']<=780||$r['start']>=870,'fixed appointment blocked');
+$r=planTimeline([vt(1,['done'=>1]),vt(2,['title'=>'Test','duration_minutes'=>480])],[],$s,'10:30');vp($r['minutes']===480,'done not counted twice');vp(str_contains(implode(' ',$r['warnings']),'Geplantes Arbeitsende 18:30'),'forecast message is future plan, no current-time claim');
+vp(zgsAdvanceDate('2026-11-25','quarterly',25)==='2027-02-25','completion plus3 calendar months');vp(zgsAdvanceDate('2026-11-30','quarterly',30)==='2027-02-28','February clamp');vp(zgsAdvanceDate('2027-11-30','quarterly',30)==='2028-02-29','leap-year clamp');
+vp(gszRecurrenceMode(['recurrence_mode'=>'auto','title'=>'Fenster reinigen','frequency'=>'quarterly'])==='completion','windows completion-based');vp(gszRecurrenceMode(['recurrence_mode'=>'auto','title'=>'Tiefgarage reinigen','frequency'=>'quarterly'])==='completion','garage completion-based');vp(gszRecurrenceMode(['recurrence_mode'=>'calendar','title'=>'Test','frequency'=>'monthly'])==='calendar','calendar mode preserved');
+echo "V1 planning PASS ($n assertions).\n";

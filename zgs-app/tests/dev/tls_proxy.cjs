@@ -1,0 +1,3 @@
+// Nur lokale QA: HTTPS-Loopback vor dem PHP-Testserver (selbstsigniertes Zertifikat). Aufruf: node tls_proxy.cjs <https-port> <http-port> <cert> <key>
+const https=require('https'),http=require('http'),fs=require('fs');const [port,target,cert,key]=process.argv.slice(2);
+https.createServer({cert:fs.readFileSync(cert),key:fs.readFileSync(key)},(req,res)=>{const p=http.request({host:'127.0.0.1',port:+target,path:req.url,method:req.method,headers:{...req.headers,'x-forwarded-proto':'https'}},r=>{res.writeHead(r.statusCode,r.headers);r.pipe(res);});p.on('error',()=>{res.writeHead(502);res.end();});req.pipe(p);}).listen(+port,'127.0.0.1');
