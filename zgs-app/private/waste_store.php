@@ -2,6 +2,17 @@
 declare(strict_types=1);
 require_once __DIR__.'/waste_parser.php';require_once __DIR__.'/waste_blocks.php';
 function wasteAutoReady(PDO $pdo):bool {return (bool)$pdo->query("SELECT COUNT(*) FROM app_migrations WHERE version='360_waste_connections'")->fetchColumn();}
+/** Offene Vorschauen, die wirklich noch zu prüfen sind: nur die jüngste je Quelle, höchstens zwei Stunden alt,
+ *  und bei automatischen Kalendern nur die, auf die die Verbindung gerade wartet (ältere sind überholt). */
+/** Automatische Kalenderverbindung, zu der diese Vorschau gehört (oder null bei Datei-/Handimport). */
+function wasteImportConnection(PDO $pdo,string $token):?array {
+ if(!wasteAutoReady($pdo))return null;$q=$pdo->prepare('SELECT c.* FROM waste_connections c JOIN waste_imports i ON i.source_id=c.source_id WHERE i.token=? AND c.enabled=1');$q->execute([$token]);return $q->fetch()?:null;
+}
+function wastePendingImports(PDO $pdo,int $admin,int $limit=20):array {
+ $auto=wasteAutoReady($pdo)?" AND NOT EXISTS(SELECT 1 FROM waste_connections c WHERE c.source_id=i.source_id AND c.enabled=1 AND (c.pending_token IS NULL OR c.pending_token<>i.token))":'';
+ $q=$pdo->prepare('SELECT i.token,i.source_id,i.created_at,s.name,s.property_id FROM waste_imports i JOIN waste_sources s ON s.id=i.source_id WHERE i.admin_id=? AND i.applied_at IS NULL AND i.created_at>=UTC_TIMESTAMP()-INTERVAL 2 HOUR AND NOT EXISTS(SELECT 1 FROM waste_imports j WHERE j.source_id=i.source_id AND j.created_at>i.created_at)'.$auto.' ORDER BY i.created_at DESC LIMIT '.max(1,min(100,$limit)));
+ $q->execute([$admin]);return $q->fetchAll();
+}
 function wasteSource(PDO $pdo,int $id):array {$s=$pdo->prepare('SELECT s.*,p.address current_address,p.seed_key FROM waste_sources s JOIN properties p ON p.id=s.property_id WHERE s.id=?');$s->execute([$id]);$r=$s->fetch();if(!$r)throw new RuntimeException('Quelle nicht gefunden.');return $r;}
 function wasteSnapshot(PDO $pdo):string {
  $data=[];foreach(['properties','waste_sources','waste_events','waste_origins','waste_task_links','tasks','recurring_jobs'] as $t){$rows=$pdo->query('SELECT * FROM '.$t.' ORDER BY 1,2,3 LIMIT 5001')->fetchAll();if(count($rows)>5000)throw new RuntimeException('Importgrenze erreicht.');$data[$t]=$rows;}if(wasteAutoReady($pdo))$data['waste_connections']=$pdo->query('SELECT property_id,enabled,address_hash,source_id,bins_json,out_time,in_time FROM waste_connections ORDER BY property_id LIMIT 5001')->fetchAll();return hash('sha256',json_encode($data,JSON_THROW_ON_ERROR));
