@@ -1,5 +1,16 @@
 # Changelog
 
+## 380 – Korrekturen nach der Umstellung auf STRATO (22.11.2026)
+
+- Update-Seite: genaue Strukturdiagnose; geschütztes „Angleichen“ für die Spalten, die STRATO im älteren Zeichensatz
+  utf8mb3 angelegt hatte (Inhalte unverändert). Neue Updates legen diese Spalten ausdrücklich in utf8mb4 an.
+- Update-Seite: Bestätigungsfeld wurde als runder Erledigt-Knopf dargestellt – behoben.
+- Mail: „Verbindung testen“ erkennt den Gesendet-Ordner (z. B. „Sent Items“, „Gesendete Objekte“) und ersetzt einen
+  gespeicherten Ordner, den es im Postfach nicht gibt. Fehlt eine Gesendet-Kopie, wird der Grund angezeigt.
+- Mail: „Abrufen“ meldete mit der PHP-IMAP-Erweiterung immer 0 neue Nachrichten, weil diese das Suchkriterium
+  „UID n:*“ nicht kennt. Jetzt werden alle UIDs gelesen und lokal gefiltert; Fehler werden nicht mehr als leerer Ordner
+  gewertet. Test gegen einen lokalen Mailserver (Dovecot, synthetische Nachrichten), nicht gegen das echte Postfach.
+
 ## 380 – Zentrale verschlankt (20.11.2026)
 
 ### Entfernt
