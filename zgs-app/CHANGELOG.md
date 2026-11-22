@@ -28,6 +28,9 @@
   nur die jüngste offene Vorschau je Kalender wird angezeigt.
 - Objekte: „Regelmäßige Arbeiten“ direkt am Objekt (z. B. Treppenhausreinigung wöchentlich) – auch schon beim Anlegen
   eines neuen Objekts; Pausieren/Fortsetzen; nach dem Anlegen öffnet sich die Objektseite.
+- Objektseite neu gestaltet: Schnellzugriff (Route, Anrufen, Aufgabe, Arbeitsnachweise), Hinweise, „Anstehend“ als
+  Blöcke mit Tag (Abhaken bleibt auf der Seite), regelmäßige Arbeiten, nächste Abholung, Objektdaten eingeklappt,
+  „Zuletzt erledigt“ und Änderungen in Alltagssprache (deutsche Zeit statt UTC/Rohdaten).
 
 ## 380 – Zentrale verschlankt (20.11.2026)
 

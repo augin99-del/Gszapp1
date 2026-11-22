@@ -38,7 +38,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   }else throw new InvalidArgumentException('Unbekannte Aktion.');
  if(in_array($action,['toggle','task','move','appointment','remove_appointment','generate'],true))gszSuggestWeek($pdo,(int)$_SESSION['admin_id']);
  }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();$_SESSION['plan_error']=$e instanceof PDOException?'Planung nicht verfügbar. Migration und Datenbank prüfen.':$e->getMessage();}
- $ret=(string)($_POST['return']??'');if($ret==='index.php')redirect('index.php');if(preg_match('~^planner\.php\?[A-Za-z0-9=&_.-]{1,120}$~D',$ret))redirect($ret);redirect($back);
+ $ret=(string)($_POST['return']??'');if($ret==='index.php')redirect('index.php');if(preg_match('~^property\.php\?id=[0-9]{1,10}$~D',$ret))redirect($ret);if(preg_match('~^planner\.php\?[A-Za-z0-9=&_.-]{1,120}$~D',$ret))redirect($ret);redirect($back);
 }
 $data=null;$proposal=null;$plan=null;
 try{
