@@ -53,3 +53,11 @@ function gszRenderNote(PDO $pdo,array $n,string $csrf,string $return,bool $showP
 function gszRenderNoteList(PDO $pdo,array $rows,string $csrf,string $return,bool $showProperty=true):string {
  if(!$rows)return '';$h='<div class="blocks notes">';foreach($rows as $n)$h.=gszRenderNote($pdo,$n,$csrf,$return,$showProperty);return $h.'</div>';
 }
+/** „Mitnehmen“ im Tagesblock: To-dos am selben Objekt, einzeln abhakbar (ohne Neuladen). */
+function gszRenderTakeAlong(array $notes,string $return):string {
+ $csrf=csrf();$h='<div class="take"><span class="take-label">Mitnehmen</span>';
+ foreach($notes as $n){$sub=[];if($n['material']!=='')$sub[]='Material: '.$n['material'].($n['material_done']?' (besorgt)':'');if($n['note']!=='')$sub[]=$n['note'];if(gszNoteLate($n))$sub[]=gszNoteAge($n);
+  $h.='<div class="take-item" id="notiz-'.(int)$n['id'].'"><form method="post" action="notes.php">'.gszNoteHidden($csrf,'note_done',$return).'<input type="hidden" name="id" value="'.(int)$n['id'].'"><input type="hidden" name="row_version" value="'.(int)$n['row_version'].'"><input type="hidden" name="done" value="1"><button class="check" aria-label="'.e('Erledigt: '.$n['title']).'" title="Erledigt">'.gszNavIcon('check').'</button></form>'
+   .'<span class="take-text"><span class="take-title">'.e($n['title']).'</span>'.($sub?'<span class="take-sub">'.e(implode(' · ',$sub)).'</span>':'').'</span>'.($n['photo_name']?'<a class="note-photo" href="note_photo.php?id='.(int)$n['id'].'" target="_blank" rel="noopener"><img src="note_photo.php?id='.(int)$n['id'].'" alt="Foto" loading="lazy" width="44" height="44"></a>':'').'</div>';}
+ return $h.'</div>';
+}

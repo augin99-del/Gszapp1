@@ -43,13 +43,13 @@ try{$q=$pdo->prepare('SELECT COUNT(*) FROM tasks WHERE done=0 AND due_date<?');$
  require_once dirname(__DIR__).'/private/waste_store.php';$wt=wastePendingImports($pdo,(int)$_SESSION['admin_id'],1)[0]['token']??null;if($wt)$attention[]=['waste.php?import='.rawurlencode((string)$wt).'#pruefen','Neue Abfuhrtermine prüfen'];}catch(Throwable $e){}
 $todos=[];$noteCounts=['todo'=>0,'invoice'=>0];try{require_once dirname(__DIR__).'/private/notes_view.php';$noteCounts=gszNotesCounts($pdo);
  if($noteCounts['invoice'])$attention[]=['notes.php?view=rechnungen',$noteCounts['invoice']===1?'1 Rechnung noch schreiben (Lexware)':$noteCounts['invoice'].' Rechnungen noch schreiben (Lexware)'];
- $q=$pdo->prepare("SELECT n.*,p.name property_name FROM quick_notes n LEFT JOIN properties p ON p.id=n.property_id WHERE n.kind='todo' AND n.done_at IS NULL AND (n.due_date IS NULL OR n.due_date<=?) ORDER BY CASE WHEN n.due_date IS NULL THEN 1 ELSE 0 END,n.due_date,n.created_at,n.id LIMIT 8");$q->execute([$today]);$todos=$q->fetchAll(PDO::FETCH_ASSOC);}catch(Throwable $e){}
+ $q=$pdo->prepare("SELECT n.*,p.name property_name FROM quick_notes n LEFT JOIN properties p ON p.id=n.property_id WHERE n.kind='todo' AND n.done_at IS NULL AND (n.due_date IS NULL OR n.due_date<=?) ORDER BY CASE WHEN n.due_date IS NULL THEN 1 ELSE 0 END,n.due_date,n.created_at,n.id LIMIT 60");$q->execute([$today]);$todos=$q->fetchAll(PDO::FETCH_ASSOC);}catch(Throwable $e){}
 ?><!doctype html><html lang="de"><head><meta charset="utf-8"><title>Heute</title></head><body><main>
 <?php $planError=$_SESSION['plan_error']??'';$planNotice=$_SESSION['plan_notice']??'';unset($_SESSION['plan_error'],$_SESSION['plan_notice']);if($error||$planError):?><p class="error flash" role="alert"><?=e($error?:$planError)?></p><?php endif?><?php if($planNotice):?><p class="notice flash" role="status"><?=e($planNotice)?></p><?php endif?>
 <div class="page-head"><div><h1>Heute</h1><p class="sub"><?=e(gszDayLabel($today,true))?></p></div></div>
-<?=gszRenderDay($pdo,$today,'index.php')?>
+<?=gszRenderDay($pdo,$today,'index.php')?><?php $atBlocks=array_flip(gszNotesShownAtBlocks());$todos=array_slice(array_values(array_filter($todos,fn($n)=>!isset($atBlocks[(int)$n['id']]))),0,8);?>
 <div class="section-head" id="todos"><h2 class="section-title">To-dos</h2><a href="notes.php">Merkliste<?=$noteCounts['todo']>count($todos)?' ('.(int)$noteCounts['todo'].')':''?></a></div>
-<?php if($todos):?><?=gszRenderNoteList($pdo,$todos,csrf(),'index.php#todos')?><?php else:?><p class="muted todo-empty">Keine offenen To-dos. Neues mit „+“ unten rechts notieren.</p><?php endif?>
+<?php if($todos):?><?=gszRenderNoteList($pdo,$todos,csrf(),'index.php#todos')?><?php else:?><p class="muted todo-empty"><?=$atBlocks?'Weitere To-dos stehen oben bei den Einsätzen („Mitnehmen“).':'Keine offenen To-dos. Neues mit „+ Notieren“ aufschreiben.'?></p><?php endif?>
 <?php if($attention):?><h2 class="section-title">Braucht Aufmerksamkeit</h2><div class="attention"><?php foreach($attention as [$href,$text]):?><a class="att" href="<?=e($href)?>"><span><?=e($text)?></span></a><?php endforeach?></div><?php endif?>
 <p><a href="planner.php?date=<?=e(planDate($today,1))?>">Morgen ansehen</a></p>
 </main></body></html>

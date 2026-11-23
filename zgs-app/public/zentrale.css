@@ -395,3 +395,22 @@ button.link{min-height:40px;padding:0 var(--s-2);border:0;background:transparent
 @media (min-width:1024px){.content{padding-bottom:112px}}
 .toast.two{flex-wrap:wrap;justify-content:flex-end;border-radius:18px;padding:12px;width:min(360px,calc(100vw - 32px))}
 .toast.two span{flex:1 1 100%;padding:0 4px}
+/* ---------- Auf Tour mitnehmen ---------- */
+.take{margin:var(--s-3) 0 var(--s-1);padding:var(--s-2) var(--s-3);border-radius:var(--r-s);background:var(--c-accent-soft)}
+.take-label{display:block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--c-accent);margin-bottom:2px}
+.take-item{display:flex;align-items:center;gap:var(--s-3);padding:6px 0}
+.take-item+.take-item{border-top:1px solid rgba(47,138,43,.15)}
+.take-item form{margin:0;flex:none}
+.take-item .check{width:40px;height:40px}
+.take-item .check svg{width:20px;height:20px}
+.take-text{min-width:0;flex:1}
+.take-title{display:block;font-weight:650;font-size:var(--fs-s);overflow-wrap:anywhere}
+.take-sub{display:block;font-size:var(--fs-xs);color:var(--c-ink-2);overflow-wrap:anywhere}
+.take-item.is-done .take-title{text-decoration:line-through;color:var(--c-muted)}
+.take-item .note-photo{margin:0}
+.take-item .note-photo img{width:44px;height:44px}
+.take-material ul{margin:0 0 var(--s-2);padding-left:1.2em}
+.take-material li{margin:2px 0}
+.take-material a{font-size:var(--fs-s);font-weight:600;color:var(--c-muted)}
+.take-hint{display:block;margin-top:2px;font-size:var(--fs-xs);font-weight:650;color:var(--c-accent)}
+.row .t .take-hint{color:var(--c-accent);font-weight:650}

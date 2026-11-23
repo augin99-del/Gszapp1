@@ -23,6 +23,8 @@ Die Startseite ist der heutige Tag: ein Block je Objekt und Tätigkeit, in der g
 - **Rechnung offen:** Umschalter auf „Rechnung offen“, z. B. „Fröbelstraße Beleuchtung“, Notiz „3 Std. + Material“.
   Die Rechnung schreibst du wie immer in Lexware und hakst den Eintrag danach ab.
 - Nach dem Abhaken einer einmaligen Arbeit fragt die Zentrale „Rechnung nötig?“ – „Rechnung merken“ antippen.
+- **Mitnehmen:** Hat ein Objekt einen Einsatz im Plan, stehen seine offenen To-dos direkt in diesem Block unter
+  „Mitnehmen“. Oben auf „Heute“ steht, welches Material du dafür einpacken musst.
 - Erledigtes bleibt 30 Tage unter „Erledigt“ bzw. „Geschrieben“ sichtbar.
 
 ## Woche

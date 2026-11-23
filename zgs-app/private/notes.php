@@ -168,3 +168,22 @@ function gszNoteWeekday(DateTimeImmutable $d):string {return ['Montag','Dienstag
 function gszNoteLate(array $n,?string $today=null):bool {return !$n['done_at']&&$n['kind']==='todo'&&$n['due_date']&&$n['due_date']<($today??date('Y-m-d'));}
 /** Rücksprung nur auf eigene Seiten (relativer Dateiname, keine Pfade oder fremden Adressen). */
 function gszNoteReturn(mixed $r):string {$r=(string)$r;return preg_match('/^[a-z_]+\.php(\?[A-Za-z0-9=&_%.\-]*)?(#[a-z0-9-]+)?$/D',$r)?$r:'notes.php';}
+/**
+ * „Auf Tour mitnehmen“: offene To-dos, die beim Einsatz am selben Objekt erledigt werden können.
+ * Ein To-do passt zu Tag D, wenn es kein Datum hat oder sein Datum spätestens D ist. Nur für heute und später.
+ * Rückgabe: [property_id => [To-dos …]].
+ */
+function gszNotesTakeAlong(PDO $pdo,string $day,array $propertyIds,?string $today=null):array {
+ $today??=date('Y-m-d');$ids=array_values(array_unique(array_filter(array_map('intval',$propertyIds))));if(!$ids||$day<$today)return [];
+ $q=$pdo->prepare("SELECT n.*,p.name property_name FROM quick_notes n JOIN properties p ON p.id=n.property_id WHERE n.kind='todo' AND n.done_at IS NULL AND n.property_id IN(".implode(',',array_fill(0,count($ids),'?')).") AND (n.due_date IS NULL OR n.due_date<=?) ORDER BY n.due_date IS NULL,n.due_date,n.created_at,n.id");
+ $q->execute([...$ids,$day]);$out=[];foreach($q->fetchAll(PDO::FETCH_ASSOC) as $n)$out[(int)$n['property_id']][]=$n;return $out;
+}
+/** Merkt sich, welche To-dos schon an einem Tagesblock stehen (damit „Heute“ sie nicht doppelt zeigt). */
+function gszNotesShownAtBlocks(array $add=[]):array {static $ids=[];foreach($add as $id)$ids[(int)$id]=true;return array_keys($ids);}
+/** Wochenansicht: jedes To-do nur beim ersten passenden Einsatz ab heute. $days: [Datum => [property_id …]] in Reihenfolge. */
+function gszNotesTakeAlongWeek(PDO $pdo,array $days,?string $today=null):array {
+ $today??=date('Y-m-d');$all=[];foreach($days as $props)foreach($props as $pid)$all[]=(int)$pid;if(!$all)return [];
+ $last=max(array_keys($days));$pool=gszNotesTakeAlong($pdo,$last,$all,$today);$used=[];$out=[];
+ foreach($days as $d=>$props){if($d<$today)continue;foreach(array_unique(array_map('intval',$props)) as $pid)foreach($pool[$pid]??[] as $n){if(isset($used[$n['id']])||($n['due_date']&&$n['due_date']>$d))continue;$used[$n['id']]=true;$out[$d][$pid][]=$n;}}
+ return $out;
+}

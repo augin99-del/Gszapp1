@@ -63,4 +63,13 @@ $p->prepare('DELETE FROM tasks WHERE id=?')->execute([$task]);nt(gszNoteGet($p,$
 gszNoteDelete($p,1,$c['id']);nt(gszNoteGet($p,$c['id'])===null,'deleted');
 nt(gszNoteReturn('property.php?id=3#todos')==='property.php?id=3#todos'&&gszNoteReturn('https://evil.example/')==='notes.php'&&gszNoteReturn('//evil')==='notes.php'&&gszNoteReturn('../x.php')==='notes.php','return only to own pages');
 nt((int)$p->query("SELECT COUNT(*) FROM app_audit WHERE action IN ('note_added','invoice_note_added','invoice_note_done','note_deleted')")->fetchColumn()>=5,'audited');
+// Auf Tour mitnehmen
+$fo=$id('Wohnanlage Fontänenstraße');$q=gszNoteAdd($p,1,['kind'=>'todo','title'=>'Fontänenstraße Klingel','property_id'=>'auto']);$fut=gszNoteAdd($p,1,['kind'=>'todo','title'=>'Fontänenstraße Lampe','property_id'=>'auto','due_date'=>date('Y-m-d',strtotime('+3 days'))]);
+$t=gszNotesTakeAlong($p,date('Y-m-d'),[$fo,$id('Am Lindenhof')]);$ids=array_map('intval',array_column($t[$fo]??[],'id'));
+nt(in_array($q['id'],$ids,true)&&!in_array($fut['id'],$ids,true)&&!isset($t[$id('Am Lindenhof')]),'undated todo goes along today, future one not yet');
+nt(in_array($fut['id'],array_map('intval',array_column(gszNotesTakeAlong($p,date('Y-m-d',strtotime('+3 days')),[$fo])[$fo],'id')),true),'dated todo from its day on');
+nt(gszNotesTakeAlong($p,date('Y-m-d',strtotime('-1 day')),[$fo])===[],'nothing for past days');
+$days=[];for($i=0;$i<5;$i++)$days[date('Y-m-d',strtotime("+$i days"))]=[$fo];$w=gszNotesTakeAlongWeek($p,$days);$first=array_key_first($days);
+nt(count($w[$first][$fo])>=1&&in_array($q['id'],array_map('intval',array_column($w[$first][$fo],'id')),true)&&!in_array($q['id'],array_map('intval',array_column($w[date('Y-m-d',strtotime('+1 day'))][$fo]??[],'id')),true),'week: only at the first visit');
+nt(in_array($fut['id'],array_map('intval',array_column($w[date('Y-m-d',strtotime('+3 days'))][$fo]??[],'id')),true),'week: dated todo at the first visit from its day');
 echo "Merkliste PASS ($n checks; migration 380→390, object detection, todo/invoice/shopping, once-only invoice reminder).\n";

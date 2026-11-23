@@ -16,6 +16,9 @@
 - Einkaufsliste: Material offener To-dos, abhaken = besorgt.
 - Erledigte Einträge bleiben 30 Tage sichtbar und werden danach nur ausgeblendet.
 - Behoben: Die Zahl ungelesener Mails im Menü wurde nie angezeigt (Seitenrahmen hatte keine Datenbankverbindung mehr).
+- Auf Tour mitnehmen: Offene To-dos stehen im Tagesblock des nächsten Einsatzes am selben Objekt („Mitnehmen“,
+  einzeln abhakbar). Oben auf dem Tag „Für heute mitnehmen“ mit dem nötigen Material. In der Woche steht jedes To-do
+  nur beim ersten passenden Einsatz („+ … mitnehmen“). To-dos mit Datum erst ab diesem Datum.
 - Tests: `test_notes.php` (Migration 380→390, Objekterkennung, Listen), `test_notes_browser.cjs`.
 
 ## 380 – Korrekturen nach der Umstellung auf STRATO (22.11.2026)

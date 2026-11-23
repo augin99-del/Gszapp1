@@ -17,9 +17,10 @@
     return fetch(url,{method:'POST',body:data,credentials:'same-origin',headers:{'X-GSZ-Fetch':'1','Accept':'application/json'}})
       .then(function(r){var ct=r.headers.get('Content-Type')||'';if(!r.ok||ct.indexOf('application/json')<0)throw new Error('fallback');return r.json();});
   }
-  function itemName(form){var block=form.closest('.block');var o=block&&block.querySelector('.obj');return o?o.textContent.trim():'';}
+  function itemOf(form){return form.closest('.take-item')||form.closest('.block');}
+  function itemName(form){var item=itemOf(form);var o=item&&(item.querySelector('.take-title')||item.querySelector('.obj'));return o?o.textContent.trim():'';}
   function setState(form,done){
-    var block=form.closest('.block');if(block)block.classList.toggle('is-done',done);
+    var block=itemOf(form);if(block)block.classList.toggle('is-done',done);
     var input=form.querySelector('input[name=done]');if(input)input.value=done?'0':'1';
     var btn=form.querySelector('button.check');var kind=form.querySelector('input[name=action]').value;
     if(btn){var invoice=block&&block.classList.contains('is-invoice');
@@ -48,7 +49,7 @@
         var rv=form.querySelector('input[name=row_version]');if(rv)rv.value=String(j.row_version);
         setState(form,j.done);
         if(fromUndo)return;
-        var block=form.closest('.block');var actions=[{label:'Rückgängig',run:function(){send(form,!j.done,true);}}];
+        var block=itemOf(form);var actions=[{label:'Rückgängig',run:function(){send(form,!j.done,true);}}];
         if(j.done&&j.invoice)actions.unshift({label:'Rechnung merken',run:function(){rememberInvoice(form,j.invoice);}});
         toast((itemName(form)||'Aufgabe')+doneText(kind,block,j.done)+(j.done&&j.invoice?'. Rechnung nötig?':''),actions);
       })

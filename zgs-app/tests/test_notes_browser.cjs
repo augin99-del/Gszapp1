@@ -43,11 +43,20 @@ try{const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,heigh
  ok((await p.locator('#todos ~ .blocks.notes').first().textContent()).includes('Briefkasten'),'todo on its object page');
  await p.locator('summary').filter({hasText:'To-do für dieses Objekt notieren'}).tap();const pf=p.locator('details.card form.quick-note');await pf.locator('[name=title]').fill('Hecke kontrollieren');await Promise.all([p.waitForNavigation(),pf.getByRole('button',{name:'Merken'}).tap()]);
  ok(p.url().includes(pid)&&(await p.textContent('main')).includes('Objekt: Berliner Straße 45'),'object page note keeps its object');
+ // Auf Tour mitnehmen: undatiertes To-do erscheint am Einsatz am selben Objekt, Material oben, nicht doppelt in der Liste
+ await p.goto(base+'/notes.php');const mf=p.locator('#neu form');await mf.locator('[name=title]').fill('Loch Wand Fröbelstraße');await mf.locator('summary').tap();await mf.locator('[name=material]').fill('Gips');await Promise.all([p.waitForNavigation(),mf.getByRole('button',{name:'Merken'}).tap()]);
+ await p.goto(base+'/index.php');const fb=p.locator('.blocks:not(.notes) .block').filter({hasText:'Treppenhaus reinigen'}).filter({hasText:'Fröbelstraße 19'});
+ ok((await fb.locator('.take').textContent()).includes('Loch Wand Fröbelstraße')&&(await fb.locator('.take').textContent()).includes('Gips'),'todo shown at the visit to the same object');
+ ok((await p.locator('.take-material').textContent()).includes('Gips'),'material for today listed');ok(await p.locator('.blocks.notes .block').filter({hasText:'Loch Wand Fröbelstraße'}).count()===0,'not repeated in the To-dos list');
+ await fb.locator('.take-item button.check').tap();await p.locator('#gsz-toast').getByRole('button',{name:'Rechnung merken'}).waitFor();ok(await fb.locator('.take-item').evaluate(e=>e.classList.contains('is-done'))&&!(await fb.evaluate(e=>e.classList.contains('is-done'))),'take-along ticked on its own, visit stays open');
+ await p.locator('#gsz-toast').getByRole('button',{name:'Rückgängig'}).tap();await p.waitForFunction(()=>{const i=document.querySelector('.take-item');return i&&!i.classList.contains('is-done')&&!i.querySelector('button.check').disabled;});
+ await p.goto(base+'/planner.php?view=week');ok((await p.locator('.week-day.is-today .row').filter({hasText:'Fröbelstraße 19'}).textContent()).includes('Loch Wand Fröbelstraße mitnehmen'),'week shows what to take along');
+ ok(await p.locator('.take-hint').filter({hasText:'Loch Wand Fröbelstraße'}).count()===1,'each todo only at the first visit in the week');
  // Einmalige Aufgabe aus dem Tagesplan abhaken → „Rechnung merken“; Abfall-/Regelaufgaben fragen nicht
  await p.goto(base+'/index.php');const plan=p.locator('.blocks:not(.notes) .block:not(.is-done):not(.is-appointment)');
- const wasteBlk=plan.filter({hasText:/Restmüll|Biotonne|Tonnen/}).first();await wasteBlk.locator('button.check').tap();await p.waitForFunction(()=>/erledigt/.test((document.getElementById('gsz-toast')?.textContent||'')));
+ const wasteBlk=plan.filter({hasText:/Restmüll|Biotonne|Tonnen/}).first();await wasteBlk.locator('.acts button.check').tap();await p.waitForFunction(()=>/erledigt/.test((document.getElementById('gsz-toast')?.textContent||'')));
  ok(await p.locator('#gsz-toast').getByRole('button',{name:'Rechnung merken'}).count()===0,'waste blocks do not ask for an invoice');
- const oneOff=plan.filter({hasText:'Außenanlage pflegen'}).first();await oneOff.locator('button.check').tap();await p.locator('#gsz-toast').getByRole('button',{name:'Rechnung merken'}).waitFor();
+ const oneOff=plan.filter({hasText:'Außenanlage pflegen'}).first();await oneOff.locator('.acts button.check').tap();await p.locator('#gsz-toast').getByRole('button',{name:'Rechnung merken'}).waitFor();
  await p.locator('#gsz-toast').getByRole('button',{name:'Rechnung merken'}).tap();await p.waitForFunction(()=>(document.getElementById('gsz-toast')?.textContent||'').includes('gemerkt'));
  await p.goto(base+'/notes.php?view=rechnungen');ok((await p.locator('.block.note').filter({hasText:'Außenanlage pflegen'}).textContent()).includes('Berliner Straße 45'),'one-off task from the day plan remembered for invoicing with its object');
  await p.setViewportSize({width:1440,height:900});await p.goto(base+'/index.php');ok(await p.locator('a.fab').isVisible()&&!(await p.locator('header a.top-add').isVisible()),'+ bottom right on the computer');
