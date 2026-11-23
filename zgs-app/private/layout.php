@@ -39,7 +39,7 @@ function gszLayoutDocument(string $html,string $page,string $csrf,?array $respon
  foreach($responseHeaders??headers_list() as $header){if(stripos($header,'Content-Disposition:')===0)return $html;if(preg_match('~^Content-Type:\s*([^;]+)~i',$header,$type)&&!in_array(strtolower(trim($type[1])),['text/html','application/xhtml+xml'],true))return $html;}
  if(!preg_match('~<html\b~i',$html)||!preg_match('~<main\b[^>]*>(.*)</main>~is',$html,$match))return $html;
  preg_match('~<title>(.*?)</title>~is',$html,$t);$title=trim(preg_replace('/\s*·\s*GSZ.*$/u','',html_entity_decode(strip_tags($t[1]??'GSZ-Zentrale'),ENT_QUOTES,'UTF-8')))?:'GSZ-Zentrale';
- $content=preg_replace('~<header\b[^>]*>.*?</header>~is','',$match[1],1);
+ $content=preg_replace('~<header\b[^>]*>.*?</header>~is','',$match[1],1)??$match[1];
  $section=gszNavSection($page);$badges=gszNavBadges();$side='';$tabs='';
  foreach(GSZ_NAV as [$key,$label,$url]){$cur=$key===$section?' aria-current="page"':'';$badge=isset($badges[$key])?'<span class="badge" aria-label="'.(int)$badges[$key].' neu">'.(int)$badges[$key].'</span>':'';
   $side.='<a href="'.e($url).'"'.$cur.'>'.gszNavIcon($key).'<span>'.e($label).'</span>'.$badge.'</a>';$tabs.='<a href="'.e($url).'"'.$cur.'>'.gszNavIcon($key).'<span>'.e($label).'</span>'.$badge.'</a>';}
@@ -59,6 +59,7 @@ function gszLayoutQuickNote(string $page,string $csrf):string {
  try{require_once __DIR__.'/notes_view.php';$uri=basename((string)parse_url((string)($_SERVER['REQUEST_URI']??''),PHP_URL_PATH));$qs=(string)parse_url((string)($_SERVER['REQUEST_URI']??''),PHP_URL_QUERY);$return=gszNoteReturn($uri.($qs!==''?'?'.$qs:''));
   $propertyId=$page==='property.php'&&ctype_digit((string)($_GET['id']??''))?(int)$_GET['id']:null;
   return '<a class="fab" href="notes.php#neu" data-quick-note aria-label="Schnell notieren" title="Schnell notieren"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></a>'
-   .'<dialog class="quick-dialog" id="quick-note" aria-labelledby="quick-note-title"><div class="quick-head"><h2 id="quick-note-title">Schnell notieren</h2><button type="button" class="link" data-close aria-label="Schließen">Schließen</button></div>'.gszNoteQuickForm($pdo,$csrf,$return,'todo',$propertyId,'qd').'<p class="hint"><a href="notes.php">Zur Merkliste</a></p></dialog>';
+   .'<dialog class="quick-dialog" id="quick-note" aria-labelledby="quick-note-title"><div class="quick-head"><h2 id="quick-note-title">Schnell notieren</h2><button type="button" class="link" data-close aria-label="Schließen">Schließen</button></div><div class="quick-body"></div><p class="hint"><a href="notes.php">Zur Merkliste</a></p></dialog>'
+   .'<template id="quick-note-form">'.gszNoteQuickForm($pdo,$csrf,$return,'todo',$propertyId,'qd').'</template>';
  }catch(Throwable $e){return '';}
 }

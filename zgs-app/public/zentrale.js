@@ -66,7 +66,7 @@
   // „+ Schnell notieren“ als Dialog
   document.addEventListener('click',function(ev){
     var open=ev.target.closest&&ev.target.closest('[data-quick-note]');var dlg=document.getElementById('quick-note');
-    if(open&&dlg&&typeof dlg.showModal==='function'){ev.preventDefault();dlg.showModal();var f=dlg.querySelector('input[name=title]');if(f)f.focus();return;}
+    if(open&&dlg&&typeof dlg.showModal==='function'){ev.preventDefault();var body=dlg.querySelector('.quick-body'),tpl=document.getElementById('quick-note-form');if(body&&tpl&&!body.firstElementChild)body.appendChild(tpl.content.cloneNode(true));dlg.showModal();var f=dlg.querySelector('input[name=title]');if(f)f.focus();return;}
     if(ev.target.closest&&ev.target.closest('[data-close]')&&dlg){dlg.close();return;}
     if(dlg&&ev.target===dlg)dlg.close();
   });
