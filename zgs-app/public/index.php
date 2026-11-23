@@ -23,7 +23,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
  }
 }
 $logged=!empty($_SESSION['admin_id']);
-if(!$logged):?><!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#f3f3f1"><title>Anmelden · GSZ-Zentrale</title><link rel="icon" href="assets/favicon-32.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"><link rel="stylesheet" href="zentrale.css?v=382"></head><body>
+if(!$logged):?><!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#f3f3f1"><title>Anmelden · GSZ-Zentrale</title><link rel="icon" href="assets/favicon-32.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"><link rel="stylesheet" href="zentrale.css?v=390"></head><body>
 <div class="login"><div class="login-card"><img src="assets/gsz-logo-horizontal.webp" alt="Gebäudeservice Zentrum" width="300" height="88"><h1>Willkommen zurück</h1><?php if($error):?><p class="error" role="alert"><?=e($error)?></p><?php endif?><form method="post"><input type="hidden" name="csrf" value="<?=e(csrf())?>"><input type="hidden" name="action" value="login"><label>E-Mail-Adresse<input type="email" name="email" autocomplete="username" required></label><label>Passwort<input type="password" name="password" autocomplete="current-password" required></label><button class="primary">Anmelden</button></form></div></div>
 </body></html>
 <?php exit;endif;
@@ -41,10 +41,15 @@ try{require_once dirname(__DIR__).'/private/mail_credentials.php';if(gszMailAuth
  $unread=(int)$pdo->query("SELECT COUNT(*) FROM mail_messages m JOIN mail_folders f ON f.id=m.folder_id WHERE m.active=1 AND m.seen=0 AND f.name='INBOX'")->fetchColumn();if($unread)$attention[]=['mail.php',$unread===1?'1 neue Mail':$unread.' neue Mails'];}catch(Throwable $e){}
 try{$q=$pdo->prepare('SELECT COUNT(*) FROM tasks WHERE done=0 AND due_date<?');$q->execute([$today]);$late=(int)$q->fetchColumn();if($late)$attention[]=['planner.php?view=week',$late===1?'1 Aufgabe von einem Vortag ist noch offen':$late.' Aufgaben von Vortagen sind noch offen'];
  require_once dirname(__DIR__).'/private/waste_store.php';$wt=wastePendingImports($pdo,(int)$_SESSION['admin_id'],1)[0]['token']??null;if($wt)$attention[]=['waste.php?import='.rawurlencode((string)$wt).'#pruefen','Neue Abfuhrtermine prüfen'];}catch(Throwable $e){}
+$todos=[];$noteCounts=['todo'=>0,'invoice'=>0];try{require_once dirname(__DIR__).'/private/notes_view.php';$noteCounts=gszNotesCounts($pdo);
+ if($noteCounts['invoice'])$attention[]=['notes.php?view=rechnungen',$noteCounts['invoice']===1?'1 Rechnung noch schreiben (Lexware)':$noteCounts['invoice'].' Rechnungen noch schreiben (Lexware)'];
+ $q=$pdo->prepare("SELECT n.*,p.name property_name FROM quick_notes n LEFT JOIN properties p ON p.id=n.property_id WHERE n.kind='todo' AND n.done_at IS NULL AND (n.due_date IS NULL OR n.due_date<=?) ORDER BY CASE WHEN n.due_date IS NULL THEN 1 ELSE 0 END,n.due_date,n.created_at,n.id LIMIT 8");$q->execute([$today]);$todos=$q->fetchAll(PDO::FETCH_ASSOC);}catch(Throwable $e){}
 ?><!doctype html><html lang="de"><head><meta charset="utf-8"><title>Heute</title></head><body><main>
 <?php $planError=$_SESSION['plan_error']??'';$planNotice=$_SESSION['plan_notice']??'';unset($_SESSION['plan_error'],$_SESSION['plan_notice']);if($error||$planError):?><p class="error flash" role="alert"><?=e($error?:$planError)?></p><?php endif?><?php if($planNotice):?><p class="notice flash" role="status"><?=e($planNotice)?></p><?php endif?>
 <div class="page-head"><div><h1>Heute</h1><p class="sub"><?=e(gszDayLabel($today,true))?></p></div></div>
 <?=gszRenderDay($pdo,$today,'index.php')?>
+<div class="section-head" id="todos"><h2 class="section-title">To-dos</h2><a href="notes.php">Merkliste<?=$noteCounts['todo']>count($todos)?' ('.(int)$noteCounts['todo'].')':''?></a></div>
+<?php if($todos):?><?=gszRenderNoteList($pdo,$todos,csrf(),'index.php#todos')?><?php else:?><p class="muted todo-empty">Keine offenen To-dos. Neues mit „+“ unten rechts notieren.</p><?php endif?>
 <?php if($attention):?><h2 class="section-title">Braucht Aufmerksamkeit</h2><div class="attention"><?php foreach($attention as [$href,$text]):?><a class="att" href="<?=e($href)?>"><span><?=e($text)?></span></a><?php endforeach?></div><?php endif?>
 <p><a href="planner.php?date=<?=e(planDate($today,1))?>">Morgen ansehen</a></p>
 </main></body></html>

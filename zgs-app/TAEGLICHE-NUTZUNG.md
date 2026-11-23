@@ -12,6 +12,19 @@ Die Startseite ist der heutige Tag: ein Block je Objekt und Tätigkeit, in der g
 - Darunter steht nur, was Aufmerksamkeit braucht: fehlende Miete, fehlender Kontoauszug, neue Mails, offene Aufgaben
   von Vortagen, neue Abfuhrtermine zum Bestätigen.
 
+## Merkliste: To-dos und „Rechnungen offen“
+
+- **„+ Notieren“** (Handy: oben, Computer: unten rechts) – kurz aufschreiben, z. B. „Loch Wand Fontänenstraße“.
+  Das Objekt erkennt die Zentrale aus dem Text und zeigt es nach dem Speichern an. Falsch oder nicht erkannt:
+  am Eintrag „Bearbeiten“ → Objekt wählen.
+- **Wann:** „Irgendwann“ (Standard), Heute, Morgen, Diese Woche oder ein Datum. Auf „Heute“ stehen überfällige,
+  heutige und undatierte To-dos; spätere erscheinen an ihrem Tag.
+- **Material** landet auf der Einkaufsliste (Merkliste → Einkauf). Abhaken dort heißt „besorgt“.
+- **Rechnung offen:** Umschalter auf „Rechnung offen“, z. B. „Fröbelstraße Beleuchtung“, Notiz „3 Std. + Material“.
+  Die Rechnung schreibst du wie immer in Lexware und hakst den Eintrag danach ab.
+- Nach dem Abhaken einer einmaligen Arbeit fragt die Zentrale „Rechnung nötig?“ – „Rechnung merken“ antippen.
+- Erledigtes bleibt 30 Tage unter „Erledigt“ bzw. „Geschrieben“ sichtbar.
+
 ## Woche
 
 Sieben Tage auf einen Blick. Tag antippen = Tagesansicht. Unter „Planung“: Woche neu vorschlagen lassen

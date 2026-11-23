@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-// Column/identity contract from the locally migration-tested v380 schema. No records.
+// Column/identity contract from the locally migration-tested v390 schema. No records.
 return array (
   'tables' => 
   array (
@@ -498,6 +498,24 @@ return array (
       11 => 'waste_out_offset',
       12 => 'waste_in_offset',
     ),
+    'quick_notes' => 
+    array (
+      0 => 'id',
+      1 => 'kind',
+      2 => 'title',
+      3 => 'property_id',
+      4 => 'due_date',
+      5 => 'material',
+      6 => 'material_done',
+      7 => 'note',
+      8 => 'photo_name',
+      9 => 'photo_mime',
+      10 => 'task_id',
+      11 => 'source_note_id',
+      12 => 'done_at',
+      13 => 'created_at',
+      14 => 'row_version',
+    ),
     'recurring_completions' => 
     array (
       0 => 'id',
@@ -815,5 +833,6 @@ return array (
     16 => '360_waste_connections',
     17 => '370_bank_connections',
     18 => '380_zentrale',
+    19 => '390_notizen',
   ),
 );

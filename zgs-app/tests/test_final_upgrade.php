@@ -29,7 +29,7 @@ try{
  ug(gszWebUpgrade($p,[],1,$pass,$e,'127.0.0.9')['status']==='current','repeat is a no-op');
  foreach($before as $t=>$rows){if($t==='app_audit')continue;$after=$p->query('SELECT `'.implode('`,`',$cols[$t]).'` FROM '.$t.' ORDER BY 1')->fetchAll();if($t==='app_migrations'){$old=array_column($rows,'version');$after=array_values(array_filter($after,fn($r)=>in_array($r['version'],$old,true)));}ug($after===$rows,'non-finance table preserved '.$t);}
  foreach($finance as $t)ug(!$p->query("SHOW TABLES LIKE '$t'")->fetchAll(),'finance table removed '.$t);
- ug(count($p->query('SHOW TABLES')->fetchAll())===62,'380 has 62 tables');ug(gszAuditVerify($p)['valid'],'audit chain valid');
+ ug(count($p->query('SHOW TABLES')->fetchAll())===63,'390 has 63 tables');ug(gszAuditVerify($p)['valid'],'audit chain valid');
  // Rollback: restore the app backup into a second empty database → identical to the state before the update.
  $rdb=$dm[2].'_restore';$p->exec('DROP DATABASE IF EXISTS `'.$rdb.'`');$p->exec('CREATE DATABASE `'.$rdb.'` CHARACTER SET utf8mb4');$r2=new PDO($dm[1].$rdb,'root','',$opt);$res=gszDatabaseRestore($r2,gszBackupPath($b['file']));
  ug($dump($r2)===$original,'restored backup is identical to the pre-update database (structure and rows)');$p->exec('DROP DATABASE `'.$rdb.'`');

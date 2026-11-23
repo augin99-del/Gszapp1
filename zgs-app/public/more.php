@@ -2,7 +2,7 @@
 declare(strict_types=1);
 require __DIR__.'/bootstrap.php';if(empty($_SESSION['admin_id']))redirect('index.php');require_once dirname(__DIR__).'/private/ui.php';
 $groups=[
- 'Arbeit'=>[['waste.php','Abfallkalender'],['recurring.php','Regelaufgaben'],['appointments.php','Termine'],['route.php','Route'],['worklogs.php','Arbeitsnachweise'],['workers.php','Helfer und Zuordnungen']],
+ 'Arbeit'=>[['notes.php','Merkliste: To-dos, Rechnungen offen, Einkauf'],['waste.php','Abfallkalender'],['recurring.php','Regelaufgaben'],['appointments.php','Termine'],['route.php','Route'],['worklogs.php','Arbeitsnachweise'],['workers.php','Helfer und Zuordnungen']],
  'Kunden und Unterlagen'=>[['customers.php','Kunden'],['documents.php','Dokumente']],
  'Eigene Immobilien'=>[['estate.php','Häuser, Mieter und Verträge'],['estate_settlements.php','Nebenkostenabrechnung']],
  'Online'=>[['seo.php','Google-Sichtbarkeit (SEO)']],

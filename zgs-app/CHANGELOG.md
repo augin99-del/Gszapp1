@@ -1,5 +1,23 @@
 # Changelog
 
+## 390 – Merkliste: To-dos und „Rechnungen offen“ (23.11.2026)
+
+- Neue Tabelle `quick_notes` (Migration 390, rein additiv, Marker `390_notizen`). Einspielen über „Sicherung und Update“
+  (Sicherung + Passwort, wie bei 380). Alle vorhandenen Daten bleiben unverändert.
+- „+ Notieren“ (Handy oben in der Kopfzeile, Computer unten rechts): To-do oder „Rechnung offen“ in einem Feld notieren.
+  Das Objekt wird aus dem Text erkannt (auch mit kleinen Tippfehlern und „Str.“); bei zwei Objekten in derselben
+  Straße entscheidet die Hausnummer, sonst wird nicht geraten. Wann: Irgendwann, Heute, Morgen, Diese Woche oder Datum.
+  Optional Material, Notiz-Zeile und Foto.
+- To-dos erscheinen auf „Heute“ (überfällig, heute, ohne Datum) und auf der Objektseite; Abhaken ohne Neuladen.
+- „Rechnungen offen“: reine Erinnerung, die Rechnung selbst entsteht weiter in Lexware. „Heute“ zeigt
+  „N Rechnungen noch schreiben“. Nach dem Abhaken einer einmaligen Arbeit (To-do oder Aufgabe im Tagesplan) fragt die
+  Zentrale „Rechnung nötig?“ – ein Tipp auf „Rechnung merken“ trägt sie ein (je Arbeit nur einmal). Regel- und
+  Abfallaufgaben fragen nicht.
+- Einkaufsliste: Material offener To-dos, abhaken = besorgt.
+- Erledigte Einträge bleiben 30 Tage sichtbar und werden danach nur ausgeblendet.
+- Behoben: Die Zahl ungelesener Mails im Menü wurde nie angezeigt (Seitenrahmen hatte keine Datenbankverbindung mehr).
+- Tests: `test_notes.php` (Migration 380→390, Objekterkennung, Listen), `test_notes_browser.cjs`.
+
 ## 380 – Korrekturen nach der Umstellung auf STRATO (22.11.2026)
 
 - Update-Seite: genaue Strukturdiagnose; geschütztes „Angleichen“ für die Spalten, die STRATO im älteren Zeichensatz
