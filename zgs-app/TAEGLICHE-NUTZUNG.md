@@ -27,6 +27,14 @@ Die Startseite ist der heutige Tag: ein Block je Objekt und Tätigkeit, in der g
   „Mitnehmen“. Oben auf „Heute“ steht, welches Material du dafür einpacken musst.
 - Erledigtes bleibt 30 Tage unter „Erledigt“ bzw. „Geschrieben“ sichtbar.
 
+## Ferienwohnung (Airbnb / Booking.com)
+
+- Einmalig: Objekt öffnen → „Ferienwohnung“ → „Als Ferienwohnung einrichten“ (10:00 / 15:00 / 60 Min.), dann je
+  Plattform den Link aus „Kalender exportieren“ einfügen → „Verbinden“.
+- Danach plant die Zentrale die Reinigung am Abreisetag um 10:00 selbst. „Neue Gäste 15:00“ heißt: Gästewechsel, bis
+  15 Uhr fertig sein. To-dos zur Wohnung stehen bei der Reinigung unter „Mitnehmen“.
+- Steht beim Kalender „Abruf fehlgeschlagen“, gilt weiter der letzte Stand. Bleibt der Fehler, Link neu kopieren.
+
 ## Woche
 
 Sieben Tage auf einen Blick. Tag antippen = Tagesansicht. Unter „Planung“: Woche neu vorschlagen lassen

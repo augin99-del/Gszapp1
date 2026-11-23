@@ -10,10 +10,10 @@ $n=0;function nt(bool $v,string $s):void{global $n;$n++;if(!$v)throw new Runtime
 $p->exec(file_get_contents(dirname(__DIR__).'/private/fresh_install_v192.sql'));$p->exec(file_get_contents(dirname(__DIR__).'/private/migration_v200.sql'));gszMigratePhase2($p);gszMigratePhase3($p);
 foreach([230,240,250,260,270,280,290,300,310,320,330,340,350,360,370] as $v)$p->exec(file_get_contents(dirname(__DIR__).'/private/migration_v'.$v.'.sql'));
 $p->exec("INSERT INTO admins(email,password_hash) VALUES('owner@example.invalid','x')");gszMigrate380($p);
-nt(!gszSchemaCurrent($p),'380 is not current any more');$i=gszSetupInspect($p);nt($i['status']==='upgrade'&&$i['version']===380&&$i['steps']===[390],'380 offers exactly the step to 390');
+nt(!gszSchemaCurrent($p),'380 is not current any more');$i=gszSetupInspect($p);nt($i['status']==='upgrade'&&$i['version']===380&&$i['steps']===[390,400],'380 offers the steps to 390 and 400');
 $tasksBefore=$p->query('SELECT COUNT(*) FROM tasks')->fetchColumn();
-$after=gszSetupMigrate($p);nt($after['status']==='current'&&$after['version']===390&&gszSchemaCurrent($p),'migrated to 390');
-nt(count($p->query('SHOW TABLES')->fetchAll())===63,'63 tables');nt($p->query('SELECT COUNT(*) FROM tasks')->fetchColumn()===$tasksBefore,'existing data untouched');
+$after=gszSetupMigrate($p);nt($after['status']==='current'&&$after['version']===400&&gszSchemaCurrent($p),'migrated to 390');
+nt(count($p->query('SHOW TABLES')->fetchAll())===66,'66 tables');nt($p->query('SELECT COUNT(*) FROM tasks')->fetchColumn()===$tasksBefore,'existing data untouched');
 gszMigrate390($p);nt(gszSetupInspect($p)['status']==='current','390 repeatable');
 // Objekte (synthetisch)
 $ins=$p->prepare('INSERT INTO properties(name,address) VALUES(?,?)');

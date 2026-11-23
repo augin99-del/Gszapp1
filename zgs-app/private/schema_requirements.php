@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-// Column/identity contract from the locally migration-tested v390 schema. No records.
+// Column/identity contract from the locally migration-tested v380 schema. No records.
 return array (
   'tables' => 
   array (
@@ -604,6 +604,41 @@ return array (
       7 => 'created_by',
       8 => 'created_at',
     ),
+    'stay_calendars' => 
+    array (
+      0 => 'id',
+      1 => 'property_id',
+      2 => 'source',
+      3 => 'url_cipher',
+      4 => 'url_hint',
+      5 => 'last_fetch_at',
+      6 => 'last_status',
+      7 => 'last_error',
+      8 => 'stays_found',
+      9 => 'stays_json',
+      10 => 'created_at',
+    ),
+    'stay_cleanings' => 
+    array (
+      0 => 'id',
+      1 => 'property_id',
+      2 => 'clean_date',
+      3 => 'turnover',
+      4 => 'task_id',
+      5 => 'status',
+      6 => 'updated_at',
+    ),
+    'stay_units' => 
+    array (
+      0 => 'property_id',
+      1 => 'checkout_time',
+      2 => 'checkin_time',
+      3 => 'duration_minutes',
+      4 => 'enabled',
+      5 => 'last_sync_at',
+      6 => 'created_at',
+      7 => 'row_version',
+    ),
     'tasks' => 
     array (
       0 => 'id',
@@ -834,5 +869,6 @@ return array (
     17 => '370_bank_connections',
     18 => '380_zentrale',
     19 => '390_notizen',
+    20 => '400_ferienwohnung',
   ),
 );

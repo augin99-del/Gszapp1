@@ -1,5 +1,22 @@
 # Changelog
 
+## 400 – Ferienwohnung: Airbnb- und Booking-Kalender planen die Reinigung (23.11.2026)
+
+- Migration 400 (`stay_units`, `stay_calendars`, `stay_cleanings`; rein additiv, Marker `400_ferienwohnung`).
+  Ein Update spielt 390 und 400 zusammen ein, falls 390 noch fehlt.
+- Objektseite → „Ferienwohnung“: Check-out/Check-in/Dauer (Standard 10:00, 15:00, 60 Min.) und die iCal-Export-Links
+  von Airbnb und Booking.com eintragen. Links werden verschlüsselt gespeichert (Schlüssel in `private/secrets/stay.key`),
+  nur Host und letzte 4 Zeichen werden angezeigt. Abruf nur von exakt bekannten Airbnb-/Booking-Hosts per HTTPS.
+- Reinigung am Abreisetag um Check-out-Zeit, fest an diesem Tag (auch am Wochenende). Kommt am selben Tag ein neuer
+  Gast: dringend, „neue Gäste 15:00“. Dieselbe Buchung in beiden Kalendern zählt einmal. Airbnb: nur „Reserved“,
+  gesperrte Tage nicht. Booking.com: alle Einträge (der Export unterscheidet Buchung und Sperre nicht).
+- Storno/Verschiebung: offene künftige Reinigung wird entfernt bzw. angepasst; erledigte und von Hand gelöschte
+  bleiben, wie sie sind. Schlägt ein Abruf fehl, gilt der letzte bekannte Stand (es wird nichts gelöscht).
+- Abruf automatisch beim Öffnen von „Heute“ (höchstens stündlich) oder per „Jetzt abrufen“; Systemstatus-Zeile
+  „Ferienwohnung-Kalender“. Gespeichert werden nur An-/Abreisedaten, keine Gastnamen, Telefonnummern oder Codes.
+- Eigene Reinigungen fragen beim Abhaken nicht „Rechnung nötig?“.
+- Tests: `test_stays.php`, `test_stays_browser.cjs` (synthetische Kalender, kein Airbnb-/Booking-Kontakt).
+
 ## 390 – Merkliste: To-dos und „Rechnungen offen“ (23.11.2026)
 
 - Neue Tabelle `quick_notes` (Migration 390, rein additiv, Marker `390_notizen`). Einspielen über „Sicherung und Update“

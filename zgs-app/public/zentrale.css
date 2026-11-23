@@ -414,3 +414,13 @@ button.link{min-height:40px;padding:0 var(--s-2);border:0;background:transparent
 .take-material a{font-size:var(--fs-s);font-weight:600;color:var(--c-muted)}
 .take-hint{display:block;margin-top:2px;font-size:var(--fs-xs);font-weight:650;color:var(--c-accent)}
 .row .t .take-hint{color:var(--c-accent);font-weight:650}
+/* ---------- Ferienwohnung ---------- */
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s-2)}
+@media (max-width:420px){.grid-3{grid-template-columns:1fr 1fr}.grid-3 label:last-child{grid-column:1/-1}}
+.grid-3 input{min-width:0}
+.steps-small{margin:0 0 var(--s-2);padding-left:1.2em}
+.steps-small li{margin:2px 0}
+.stay-sync{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s-3);margin:var(--s-3) 0}
+.stay-sync .hint{margin:0}
+.stay-cals .sub.late{color:#a3361b}
+#ferienwohnung>form:last-child{margin-top:var(--s-3)}
