@@ -424,3 +424,8 @@ button.link{min-height:40px;padding:0 var(--s-2);border:0;background:transparent
 .stay-sync .hint{margin:0}
 .stay-cals .sub.late{color:#a3361b}
 #ferienwohnung>form:last-child{margin-top:var(--s-3)}
+/* ---------- Vorgesehene regelmäßige Arbeiten ---------- */
+.row.is-preview{background:repeating-linear-gradient(135deg,transparent 0 10px,rgba(16,17,19,.025) 10px 20px)}
+.row.is-preview .t strong{color:var(--c-ink-2)}
+.row.is-preview .end{font-size:var(--fs-xs);font-weight:600;color:var(--c-muted);border:1px dashed var(--c-line-2);border-radius:999px;padding:2px 8px}
+.block.is-preview{background:transparent;box-shadow:none;border-style:dashed;grid-template-columns:1fr}

@@ -23,7 +23,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
  }
 }
 $logged=!empty($_SESSION['admin_id']);
-if(!$logged):?><!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#f3f3f1"><title>Anmelden · GSZ-Zentrale</title><link rel="icon" href="assets/favicon-32.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"><link rel="stylesheet" href="zentrale.css?v=390"></head><body>
+if(!$logged):?><!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#f3f3f1"><title>Anmelden · GSZ-Zentrale</title><link rel="icon" href="assets/favicon-32.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"><link rel="stylesheet" href="zentrale.css?v=391"></head><body>
 <div class="login"><div class="login-card"><img src="assets/gsz-logo-horizontal.webp" alt="Gebäudeservice Zentrum" width="300" height="88"><h1>Willkommen zurück</h1><?php if($error):?><p class="error" role="alert"><?=e($error)?></p><?php endif?><form method="post"><input type="hidden" name="csrf" value="<?=e(csrf())?>"><input type="hidden" name="action" value="login"><label>E-Mail-Adresse<input type="email" name="email" autocomplete="username" required></label><label>Passwort<input type="password" name="password" autocomplete="current-password" required></label><button class="primary">Anmelden</button></form></div></div>
 </body></html>
 <?php exit;endif;
