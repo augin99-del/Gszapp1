@@ -429,3 +429,50 @@ button.link{min-height:40px;padding:0 var(--s-2);border:0;background:transparent
 .row.is-preview .t strong{color:var(--c-ink-2)}
 .row.is-preview .end{font-size:var(--fs-xs);font-weight:600;color:var(--c-muted);border:1px dashed var(--c-line-2);border-radius:999px;padding:2px 8px}
 .block.is-preview{background:transparent;box-shadow:none;border-style:dashed;grid-template-columns:1fr}
+/* ---------- Bauprojekte ---------- */
+.project-cards{display:grid;gap:var(--s-3);margin-bottom:var(--s-5)}
+@media (min-width:900px){.project-cards{grid-template-columns:1fr 1fr}}
+.project-card{display:flex;flex-direction:column;gap:6px;padding:var(--s-4) var(--s-5);background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--r-m);box-shadow:var(--shadow);text-decoration:none;color:var(--c-ink)}
+.pc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s-3)}.pc-head strong{font-size:var(--fs-l);line-height:1.2}
+.pc-facts{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:var(--fs-s);color:var(--c-ink-2)}.pc-next{font-size:var(--fs-s);color:var(--c-muted)}
+.progress{display:block;height:8px;border-radius:99px;background:var(--c-line);overflow:hidden;margin:4px 0}
+.progress>span{display:block;height:100%;background:var(--c-accent);border-radius:99px}
+.progress.over>span{background:#c2410c}
+.tag.status-planung,.tag.status-offen{background:var(--c-bg);color:var(--c-ink-2)}
+.tag.status-geplant{background:#eef2ff;color:#3730a3}
+.tag.status-laeuft{background:var(--c-accent-soft);color:var(--c-accent)}
+.tag.status-fertig{background:var(--c-dark);color:#fff}
+.project-tabs{margin-top:var(--s-2)}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-3);margin-bottom:var(--s-4)}
+@media (min-width:900px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpi{background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--r-m);padding:var(--s-4);display:flex;flex-direction:column;gap:2px;min-width:0}
+.kpi .k{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--c-muted)}
+.kpi strong{font-size:var(--fs-xl);line-height:1.15;overflow-wrap:anywhere}.kpi small{color:var(--c-muted);font-size:var(--fs-xs)}
+.two-col{display:grid;gap:var(--s-4)}@media (min-width:900px){.two-col{grid-template-columns:1fr 1fr}}
+.gantt{--lab:38%;position:relative;display:grid;gap:6px;margin-top:var(--s-2)}
+@media (min-width:700px){.gantt{--lab:200px}}
+.g-row{display:grid;grid-template-columns:var(--lab) 1fr;align-items:center;gap:0}
+.g-lab{font-size:var(--fs-s);font-weight:600;padding-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-track{position:relative;height:22px;background:var(--c-bg);border-radius:6px}
+.g-bar{position:absolute;top:3px;bottom:3px;border-radius:5px;background:#b9bdb7}
+.g-bar.st-laeuft{background:var(--c-accent)}.g-bar.st-fertig{background:var(--c-dark)}.g-bar.st-geplant{background:#8b93d9}
+.gantt-today{position:absolute;top:-4px;bottom:-4px;width:2px;background:#c2410c;z-index:2}
+.trade .status-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.trade .status-row form{margin:0}
+.block.trade{grid-template-columns:1fr}
+.block.trade.st-fertig{background:var(--c-bg)}
+.block.note.is-defect{border-left:4px solid #c2410c}
+.list.costs .li{flex-wrap:wrap}.list.costs .amount{margin-left:auto;font-size:var(--fs-m);white-space:nowrap}
+.list.costs .li.is-late{box-shadow:inset 4px 0 0 #c2410c}
+.photo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--s-3)}
+@media (min-width:900px){.photo-grid{grid-template-columns:repeat(4,1fr)}}
+.photo-grid figure{margin:0;background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--r-m);overflow:hidden}
+.photo-grid img{width:100%;aspect-ratio:1;object-fit:cover}
+.photo-grid figcaption{padding:6px 10px;font-size:var(--fs-xs);color:var(--c-ink-2)}.photo-grid form{padding:0 8px 8px;margin:0}
+.quick-note:has(input[name=kind][value=angebot]:checked) .cost-due{visibility:hidden}
+.danger-zone{margin-top:var(--s-4);padding-top:var(--s-3);border-top:1px solid var(--c-line)}
+.li .inline-edit{flex:none}
+/* Links innerhalb einer Listenzeile (z. B. Telefonnummer) bleiben normale Textlinks */
+.list .li a{display:inline;min-height:0;padding:0;border:0;color:inherit;text-decoration:underline;text-decoration-color:var(--c-line-2);text-underline-offset:3px}
+.list .li a::after,.list .li a::before{content:none}
+.list .li a:hover{background:none}
+.kpi strong{font-size:clamp(20px,5.6vw,30px);white-space:nowrap}

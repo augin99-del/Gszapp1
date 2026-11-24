@@ -18,7 +18,7 @@ try{const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,heigh
  php(`$t=new DateTimeImmutable('today',new DateTimeZone('Europe/Berlin'));$f=fn($k)=>$t->modify($k.' days')->format('Ymd');$ics="BEGIN:VCALENDAR\\r\\n".implode('',array_map(fn($x)=>"BEGIN:VEVENT\\r\\nDTSTART;VALUE=DATE:".$f($x[0])."\\r\\nDTEND;VALUE=DATE:".$f($x[1])."\\r\\nSUMMARY:Reserved\\r\\nEND:VEVENT\\r\\n",[[-2,1],[1,3]]))."END:VCALENDAR\\r\\n";gszStaySync($p,1,${pid},fn($u,$h)=>$ics);`);
  await p.reload();sec=p.locator('#ferienwohnung');const up=await sec.textContent();ok(up.includes('Nächste Reinigungen')&&up.includes('Gästewechsel – bis 15:00 fertig')&&up.includes('Abreise 10:00, danach frei'),'upcoming cleanings with turnover');
  ok((await sec.locator('.stay-cals').textContent()).includes('2 Buchungen'),'calendar status after fetch');
- const tomorrow=await p.evaluate(()=>{const d=new Date();d.setDate(d.getDate()+1);return d.toISOString().slice(0,10)});
+ const tomorrow=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Berlin'}).format(new Date(Date.now()+1*864e5));
  await p.goto(base+'/planner.php?date='+tomorrow);const blk=p.locator('article.block').filter({hasText:'Reinigung Ferienwohnung – neue Gäste 15:00'});ok(await blk.count()===1&&(await blk.textContent()).includes('10:00'),'cleaning in the day plan at 10:00');
  await blk.locator('.acts button.check').tap();await p.waitForFunction(()=>/erledigt/.test(document.getElementById('gsz-toast')?.textContent||''));ok(await p.locator('#gsz-toast').getByRole('button',{name:'Rechnung merken'}).count()===0,'own flat: no invoice question');
  await p.goto(base+'/system_check.php');ok((await p.textContent('main')).includes('Ferienwohnung-Kalender'),'status lists the calendar job');

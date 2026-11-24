@@ -1,5 +1,19 @@
 # Changelog
 
+## 410 – Bauprojekte (24.11.2026)
+
+- Migration 410 (`projects`, `project_contractors`, `project_trades`, `project_files`, `project_events`, `project_costs`,
+  `project_items`; rein additiv, Marker `410_projekte`). Ein Update spielt fehlende Stufen 390/400 mit ein.
+- Mehr → „Bauprojekte“ (Navigation: Immobilien): Projekt je Haus mit Start, Fertigstellung, Budget; typische Gewerke einer
+  Sanierung per Klick. Je Projekt: Übersicht (Fortschritt, Kosten gegen Budget, offen zu zahlen, Mängel, Bauzeitenplan,
+  nächste Termine, Gewährleistung), Gewerke (Handwerker, Zeitraum, Budget, Status mit einem Tipp, Gewährleistung bis),
+  Termine (erscheinen automatisch in Woche/Heute; Löschen sagt den Termin ab), Kosten (Angebote/Rechnungen mit PDF,
+  bezahlt/angenommen – nur Übersicht, Buchhaltung bleibt in Lexware), Mängel & To-dos je Wohnung mit Foto (abhaken ohne
+  Neuladen), Fotos & Dokumente (vorher/während/nachher), Handwerker-Liste für alle Projekte.
+- „Heute“ erinnert an bald fällige Handwerkerrechnungen, überfällige Mängel und Gewährleistungen, die in 60 Tagen enden.
+- Woche/Tag: regelmäßige Arbeiten (z. B. Treppenhausreinigung) erscheinen vorab als „vorgesehen“.
+- Tests: `test_projects.php`, `test_projects_browser.cjs`, `test_recurring_preview.php`.
+
 ## 400 – Ferienwohnung: Airbnb- und Booking-Kalender planen die Reinigung (23.11.2026)
 
 - Migration 400 (`stay_units`, `stay_calendars`, `stay_cleanings`; rein additiv, Marker `400_ferienwohnung`).

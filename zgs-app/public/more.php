@@ -4,7 +4,7 @@ require __DIR__.'/bootstrap.php';if(empty($_SESSION['admin_id']))redirect('index
 $groups=[
  'Arbeit'=>[['notes.php','Merkliste: To-dos, Einkauf, Erinnerungen'],['waste.php','Abfallkalender'],['recurring.php','Regelaufgaben'],['appointments.php','Termine'],['route.php','Route'],['worklogs.php','Arbeitsnachweise'],['workers.php','Helfer und Zuordnungen']],
  'Kunden und Unterlagen'=>[['customers.php','Kunden'],['documents.php','Dokumente']],
- 'Eigene Immobilien'=>[['estate.php','Häuser, Mieter und Verträge'],['estate_settlements.php','Nebenkostenabrechnung']],
+ 'Eigene Immobilien'=>[['projects.php','Bauprojekte (Sanierung)'],['estate.php','Häuser, Mieter und Verträge'],['estate_settlements.php','Nebenkostenabrechnung']],
  'Online'=>[['seo.php','Google-Sichtbarkeit (SEO)']],
  'Einstellungen'=>[['settings.php','Einstellungen']],
 ];

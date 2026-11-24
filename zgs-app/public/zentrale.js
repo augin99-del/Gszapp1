@@ -3,7 +3,7 @@
    Der Server prüft wie immer (Anmeldung, CSRF, Bearbeitungsstand); bei jeder Unklarheit wird das Formular normal gesendet. */
 (function(){
   'use strict';
-  var TOGGLES={toggle:1,note_done:1,material_done:1};
+  var TOGGLES={toggle:1,note_done:1,material_done:1,item_done:1};
   var toastTimer=null;
   function toast(text,actions){
     var t=document.getElementById('gsz-toast');

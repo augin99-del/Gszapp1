@@ -35,6 +35,13 @@ Die Startseite ist der heutige Tag: ein Block je Objekt und Tätigkeit, in der g
   15 Uhr fertig sein. To-dos zur Wohnung stehen bei der Reinigung unter „Mitnehmen“.
 - Steht beim Kalender „Abruf fehlgeschlagen“, gilt weiter der letzte Stand. Bleibt der Fehler, Link neu kopieren.
 
+## Bauprojekte (Mehr → Bauprojekte)
+
+- Projekt anlegen, Haus wählen, Budget eintragen – typische Gewerke sind gleich drin.
+- Handwerker einmal anlegen (Tab „Handwerker“), dann bei Gewerk, Termin und Kosten auswählen.
+- Termine erscheinen automatisch in der Woche. Rechnungen mit PDF erfassen und „Bezahlt“ tippen.
+- Mängel je Wohnung mit Foto notieren und abhaken. „Gewährleistung bis“ beim Gewerk eintragen – „Heute“ erinnert 60 Tage vorher.
+
 ## Woche
 
 Sieben Tage auf einen Blick. Tag antippen = Tagesansicht. Unter „Planung“: Woche neu vorschlagen lassen
