@@ -1,5 +1,19 @@
 # Changelog
 
+## 420 – Anfragen, Notdienst-Status, Website-Zahlen (25.11.2026)
+
+- Migration 420 (`leads`, `web_events`, `app_settings`; additiv, Marker `420_anfragen`).
+- „Anfragen“ (Mail-Bereich / Mehr): Formular-Mails der Website („Neue Website-Anfrage …“) werden beim Öffnen von
+  Heute/Anfragen automatisch übernommen (einmalig je Mail); Status Neu → Kontaktiert → Angebot → Auftrag/Abgesagt,
+  Anrufen/WhatsApp/Mail mit einem Tipp, „Als Aufgabe für heute“, Notiz, Anfragen selbst erfassen.
+- Bewertung per WhatsApp: bei Aufträgen ein Tipp → WhatsApp mit fertigem Text und Google-Bewertungslink; auch ohne Anfrage.
+- Heute: „N neue Anfragen“ und Notdienst-Schalter (Jetzt frei / Im Einsatz mit Rückrufzeit, läuft nach 2 h ab).
+- Öffentlich für die Website: `web_status.php` (Status, CORS nur für die eigene Website) und `web_track.php`
+  (cookiefreie Tageszähler: Seite, Aufruf/Anrufen/WhatsApp/Formular – keine IP, keine Kennung).
+- „Website“ (Mehr → Online): Aufrufe, Kontakt-Tipps und Seiten, die Kontakte bringen (7/30/90 Tage).
+- Neue Mail aus einer Anfrage mit vorausgefülltem Empfänger.
+- Tests: `test_leads.php`, `test_leads_browser.cjs`.
+
 ## 410 – Bauprojekte (24.11.2026)
 
 - Migration 410 (`projects`, `project_contractors`, `project_trades`, `project_files`, `project_events`, `project_costs`,

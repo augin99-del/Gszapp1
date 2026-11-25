@@ -30,6 +30,12 @@ return array (
     array (
       0 => 'id',
     ),
+    'app_settings' => 
+    array (
+      0 => 'setting_key',
+      1 => 'setting_value',
+      2 => 'updated_at',
+    ),
     'automation_state' => 
     array (
       0 => 'job_key',
@@ -336,6 +342,29 @@ return array (
       3 => 'area_units',
       4 => 'notes',
       5 => 'row_version',
+    ),
+    'leads' => 
+    array (
+      0 => 'id',
+      1 => 'source',
+      2 => 'status',
+      3 => 'service',
+      4 => 'object_type',
+      5 => 'name',
+      6 => 'company',
+      7 => 'phone',
+      8 => 'email',
+      9 => 'place',
+      10 => 'message',
+      11 => 'source_page',
+      12 => 'note',
+      13 => 'mail_message_id',
+      14 => 'property_id',
+      15 => 'task_id',
+      16 => 'review_requested_at',
+      17 => 'created_at',
+      18 => 'updated_at',
+      19 => 'row_version',
     ),
     'mail_attachments' => 
     array (
@@ -848,6 +877,13 @@ return array (
       1 => 'direction',
       2 => 'task_id',
     ),
+    'web_events' => 
+    array (
+      0 => 'day',
+      1 => 'page',
+      2 => 'event',
+      3 => 'hits',
+    ),
     'work_logs' => 
     array (
       0 => 'id',
@@ -970,5 +1006,6 @@ return array (
     19 => '390_notizen',
     20 => '400_ferienwohnung',
     21 => '410_projekte',
+    22 => '420_anfragen',
   ),
 );

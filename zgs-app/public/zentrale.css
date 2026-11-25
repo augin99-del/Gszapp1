@@ -476,3 +476,24 @@ button.link{min-height:40px;padding:0 var(--s-2);border:0;background:transparent
 .list .li a::after,.list .li a::before{content:none}
 .list .li a:hover{background:none}
 .kpi strong{font-size:clamp(20px,5.6vw,30px);white-space:nowrap}
+/* ---------- Anfragen, Notdienst-Status, Website-Zahlen ---------- */
+.lead-list{display:grid;gap:var(--s-3);margin-bottom:var(--s-5)}
+.card.lead{padding:var(--s-4) var(--s-5)}
+.card.lead.st-neu{border-left:4px solid var(--c-accent)}
+.lead-head{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s-3)}.lead-head strong{font-size:var(--fs-l);line-height:1.2}
+.lead-meta{color:var(--c-muted);font-size:var(--fs-s);margin:4px 0 var(--s-2)}
+.lead-msg{background:var(--c-bg);border-radius:var(--r-s);padding:var(--s-3);font-size:var(--fs-s);white-space:normal;overflow-wrap:anywhere}
+.lead-actions,.review-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:var(--s-2) 0}.lead-actions form,.review-row{margin:0}
+.lead .status-row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.lead .status-row form{margin:0}
+.small-note{font-size:var(--fs-xs)}
+.tag.lead-neu{background:var(--c-accent);color:#fff}.tag.lead-angebot{background:#eef2ff;color:#3730a3}.tag.lead-auftrag{background:var(--c-dark);color:#fff}
+.sos-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--s-2) var(--s-3);padding:var(--s-3) var(--s-4);margin:0 0 var(--s-4);border-radius:var(--r-m);background:var(--c-accent-soft);border:1px solid #cfe3c6;font-size:var(--fs-s)}
+.sos-bar.is-busy{background:#fff4e5;border-color:#f3d19c}
+.sos-text{display:block}.sos-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--c-accent);margin-right:6px;vertical-align:middle}.is-busy .sos-dot{background:#d97706}
+.sos-form{display:flex;gap:8px;align-items:center;margin:0}.sos-form select{width:auto;min-height:40px;margin:0;padding:6px 10px}
+.spark{display:flex;align-items:flex-end;gap:2px;height:120px}
+.spark span{flex:1;position:relative;height:100%;display:flex;align-items:flex-end}
+.spark i{display:block;width:100%;background:var(--c-line-2);border-radius:3px 3px 0 0}
+.spark b{position:absolute;left:20%;right:20%;bottom:0;background:var(--c-accent);border-radius:2px 2px 0 0}
+.web-nums{display:flex;gap:12px;font-size:var(--fs-s);white-space:nowrap}
+.sos-form select{min-width:170px}
