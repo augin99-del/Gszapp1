@@ -125,3 +125,11 @@ Nebenkostenabrechnung, SEO und **Einstellungen** (E-Mail einrichten, Sicherung u
 Mehr → Einstellungen → Sicherung und Update → „Sicherung jetzt erstellen“ → herunterladen. Empfehlung: einmal im Monat
 und vor jedem Update. Die Sicherung umfasst die Datenbank; hochgeladene Originale (`private/uploads/`) bei Bedarf
 zusätzlich per SFTP sichern.
+
+## Neu in 430 (11/2026)
+- **Mieter-Meldungen:** Objekt öffnen → „Mieter-Meldungen & Hausverwaltung“ → „QR-Meldung einrichten“ → Aushang drucken und ins Treppenhaus hängen. Neue Meldungen stehen auf „Heute“; „Als To-do übernehmen“ legt sie in die Merkliste. Abgehakt = für die Verwaltung „Erledigt“.
+- **Portal für Hausverwaltungen:** im selben Abschnitt „Portal einrichten“ → Link per Mail an die Verwaltung. Monatsbericht als PDF jederzeit abrufbar.
+- **Helfer-App:** Mehr → Helfer → Person öffnen → „Helfer-Zugang“. Der Helfer meldet sich unter gszintern.de/helfer.php an und sieht nur seine zugeteilten Aufgaben.
+- **Schlüsseldienst:** Mehr → „Schlüsseldienst: Einsätze und Umsatz“. Bei Zahlung „Rechnung“ entsteht automatisch eine Erinnerung „Rechnung offen“.
+- **Preisrechner:** Mehr → Website → „Preisrechner Treppenhausreinigung“: eigenen Stundensatz und Minutenwerte eintragen, einschalten.
+- **Bewertungskarten:** Mehr → „Bewertungskarten drucken“ (A4, 10 Karten).

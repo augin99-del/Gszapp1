@@ -497,3 +497,15 @@ button.link{min-height:40px;padding:0 var(--s-2);border:0;background:transparent
 .spark b{position:absolute;left:20%;right:20%;bottom:0;background:var(--c-accent);border-radius:2px 2px 0 0}
 .web-nums{display:flex;gap:12px;font-size:var(--fs-s);white-space:nowrap}
 .sos-form select{min-width:170px}
+/* 430: Mieter-Meldungen, Portal-Links, Schlüsseldienst-Einsätze */
+.tag.defect-neu{background:var(--c-accent);color:#fff}.tag.defect-uebernommen{background:#eef2ff;color:#3730a3}.tag.defect-erledigt{background:var(--c-dark);color:#fff}
+.defect-photo{display:block;margin:var(--s-2) 0}.defect-photo img{display:block;max-width:100%;max-height:260px;border-radius:var(--r-m);border:1px solid var(--c-line);object-fit:cover}
+.link-grid{display:grid;grid-template-columns:1fr;gap:var(--s-3);margin-top:var(--s-3)}.link-box{border:1px solid var(--c-line);border-radius:var(--r-m);padding:var(--s-3);min-width:0}.link-box h3{margin:0 0 var(--s-1);font-size:var(--fs-m,1rem)}
+.copy-field{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:var(--fs-xs)}
+@media(min-width:760px){.link-grid{grid-template-columns:1fr 1fr}}
+.month-nav{display:flex;align-items:center;justify-content:space-between;gap:var(--s-2);margin:var(--s-3) 0}.month-nav a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border-radius:999px;border:1px solid var(--c-line);text-decoration:none;font-size:1.3rem}
+.kpi.warn strong{color:var(--c-accent)}
+.bars{display:flex;align-items:flex-end;gap:4px;height:140px}.bars .bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;height:100%;text-decoration:none;min-width:0}
+.bars .bar span{display:block;background:var(--c-line-2);border-radius:4px 4px 0 0}.bars .bar.is-current span{background:var(--c-accent)}.bars .bar small{font-size:10px;text-align:center;color:var(--c-ink-2);margin-top:3px;overflow:hidden}
+.grid-2{display:grid;grid-template-columns:1fr;gap:var(--s-3)}@media(min-width:760px){.grid-2{grid-template-columns:1fr 1fr}}
+table.mini{width:100%;border-collapse:collapse}table.mini td{padding:6px 0;border-top:1px solid var(--c-line)}table.mini tr:first-child td{border-top:0}table.mini .num{text-align:right;white-space:nowrap;padding-left:var(--s-2)}

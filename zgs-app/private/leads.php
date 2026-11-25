@@ -9,7 +9,10 @@ const GSZ_LEAD_STATUS=['neu'=>'Neu','kontaktiert'=>'Kontaktiert','angebot'=>'Ang
 const GSZ_LEAD_SOURCES=['website'=>'Website','telefon'=>'Telefon','whatsapp'=>'WhatsApp','empfehlung'=>'Empfehlung','sonstiges'=>'Sonstiges'];
 const GSZ_WEB_EVENTS=['view'=>'Aufrufe','call'=>'Anrufen getippt','whatsapp'=>'WhatsApp getippt','form'=>'Formular gesendet'];
 const GSZ_SETTING_DEFAULTS=['review_url'=>'https://share.google/xetYVdtG41vnkgIap','owner_name'=>'Augin Dayan','company'=>'Zentrum Gebäudeservice',
- 'website_origin'=>'https://gebaeudeservice-zentrum.de','sos_status'=>'frei','sos_until'=>'','sos_callback'=>'20'];
+ 'website_origin'=>'https://gebaeudeservice-zentrum.de','sos_status'=>'frei','sos_until'=>'','sos_callback'=>'20',
+ // 430: Adresse der Zentrale (für QR-Codes), Telefon für Aushang/Karten, Preisrechner Treppenhausreinigung (aus, bis Sätze eingetragen sind)
+ 'zentrale_url'=>'https://gszintern.de','company_phone'=>'0176 64806595',
+ 'calc_enabled'=>'0','calc_rate'=>'','calc_base_min'=>'10','calc_floor_min'=>'5','calc_cellar_min'=>'10','calc_elevator_min'=>'5','calc_window_min'=>'3','calc_min_visit'=>'','calc_vat'=>'zzgl','calc_range_pct'=>'10'];
 
 function gszLeadsReady(PDO $pdo):bool {try{return (bool)$pdo->query("SELECT COUNT(*) FROM app_migrations WHERE version='420_anfragen'")->fetchColumn();}catch(Throwable $e){return false;}}
 function gszLText(mixed $v,int $max):string {return mb_substr(trim(preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u','',(string)$v)??''),0,$max);}
@@ -26,7 +29,7 @@ function gszSettingSet(PDO $pdo,string $key,string $value):void {
 function gszSettingsSave(PDO $pdo,int $admin,array $in):void {
  $url=trim((string)($in['review_url']??''));if($url!==''&&(!preg_match('~^https://[^\s<>"]+$~D',$url)||strlen($url)>500))throw new RuntimeException('Bewertungslink bitte als https://… einfügen.');
  $origin=rtrim(trim((string)($in['website_origin']??'')),'/');if(!preg_match('~^https://[a-z0-9.-]+$~D',$origin))throw new RuntimeException('Website-Adresse bitte wie https://example.de angeben.');
- gszSettingSet($pdo,'review_url',$url);gszSettingSet($pdo,'website_origin',$origin);gszSettingSet($pdo,'owner_name',gszLText($in['owner_name']??'',120));
+ gszSettingSet($pdo,'review_url',$url);gszSettingSet($pdo,'website_origin',$origin);gszSettingSet($pdo,'owner_name',gszLText($in['owner_name']??'',120));if(array_key_exists('company_phone',$in)){$ph=gszLText($in['company_phone'],40);if($ph!==''&&!preg_match('/^[0-9+ ()\/-]{5,40}$/D',$ph))throw new RuntimeException('Telefonnummer bitte nur mit Ziffern, Leerzeichen, +, /, -.');gszSettingSet($pdo,'company_phone',$ph);}
  gszAudit($pdo,$admin,'settings_saved',['keys'=>['review_url','website_origin','owner_name']]);
 }
 

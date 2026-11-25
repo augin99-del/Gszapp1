@@ -2,8 +2,8 @@
 
 Zuerst START-HIER.md, MODULE-STATUS.md, OFFENE-PUNKTE.md und docs/TESTBERICHT-380.md lesen. docs/archiv ist Historie.
 
-- Schema 410 (390 Merkliste `quick_notes`; 400 Ferienwohnung `stay_*`; 410 Bauprojekte `project*`; 420 Anfragen/Website `leads`, `web_events`, `app_settings`, `private/leads.php`), 76 Tabellen, Release-Kennung COMPLETE380. Migrationen sind additiv und wiederholbar; 380 (`private/migrate_380.php`)
-  entfernt ausschließlich die Finanztabellen. Neue Migrationen als 430 usw. mit eigenem Marker, Vertrag in
+- Schema 430 (390 Merkliste `quick_notes`; 400 Ferienwohnung `stay_*`; 410 Bauprojekte `project*`; 420 Anfragen/Website `leads`, `web_events`, `app_settings`, `private/leads.php`; 430 Service `property_links`, `defect_reports`, `worker_accounts`, `lock_jobs`, `work_logs.worker_id/started_at/ended_at`, `private/reports.php`, `worker_app.php`, `lock_jobs.php`, `calc.php`, `service_pdf.php`, `qr.php`), 80 Tabellen, Release-Kennung COMPLETE380. Migrationen sind additiv und wiederholbar; 380 (`private/migrate_380.php`)
+  entfernt ausschließlich die Finanztabellen. Neue Migrationen als 440 usw. mit eigenem Marker, Vertrag in
   `private/setup_schema_contracts.json` über `tests/prepare_setup_contracts.php` und `private/schema_requirements.php` über
   `tests/dev/generate_schema_requirements.php` neu erzeugen.
 - Nach jeder Codeänderung `php tests/dev/build_release_manifest.php` (Dateimanifest) – sonst verweigert das Update.

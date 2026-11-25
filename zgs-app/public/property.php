@@ -22,6 +22,10 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   elseif($action==='stay_disable'){$n=gszStayDisable($pdo,$adm,(int)$id);$_SESSION['property_notice']='Ferienwohnung beendet.'.($n?' '.$n.' künftige Reinigung(en) entfernt.':'');}
   else throw new RuntimeException('Aktion unbekannt.');
  }catch(Throwable $e){$_SESSION['property_error']=$e instanceof PDOException?'Speichern nicht möglich.':$e->getMessage();}redirect('property.php?id='.$id.'#ferienwohnung');}
+ // Mieter-Meldung per QR-Code und Portal für die Hausverwaltung (430)
+ if($action==='link_renew'||$action==='link_off'){try{require_once dirname(__DIR__).'/private/reports.php';$kind=(string)($_POST['kind']??'');gszLinkRenew($pdo,(int)$_SESSION['admin_id'],(int)$id,$kind,$action==='link_off');
+  $_SESSION['property_notice']=$action==='link_off'?'Link abgeschaltet.':($kind==='report'?'QR-Meldung eingerichtet. Jetzt den Aushang drucken und im Treppenhaus aufhängen.':'Portal eingerichtet. Den Link an die Hausverwaltung schicken.');
+ }catch(Throwable $e){$_SESSION['property_error']=$e instanceof PDOException?'Speichern nicht möglich.':$e->getMessage();}redirect('property.php?id='.$id.'#meldungen');}
  // Regelmäßige Arbeiten direkt am Objekt (z. B. Treppenhausreinigung wöchentlich)
  if($action==='rule_add'||$action==='rule_toggle'){try{require_once dirname(__DIR__).'/private/recurring_quick.php';
   if($action==='rule_add'){gszQuickRule($pdo,(int)$id,$_POST);$_SESSION['property_notice']='Regelmäßige Arbeit angelegt. Fällige Termine erscheinen auf „Heute“ und in der Woche.';}
@@ -77,6 +81,7 @@ gszPageStart($p['name'],trim($p['address'].(!empty($p['customer_name'])?' · '.$
  <label>Dauer in Minuten (optional)<input type="number" name="rule_duration" min="1" max="1440" inputmode="numeric"></label>
  <p class="hint">Treppenhausreinigung plant die Zentrale auf Mo–Mi, Außenarbeiten auf Mo–Fr. Feinheiten (Saison, Wochentage) unter <a href="recurring.php">Leistungsvorlagen</a>.</p>
  <button class="primary">Hinzufügen</button></form></details></section>
+<?php require_once dirname(__DIR__).'/private/reports_view.php';echo gszPropertyServiceSection($pdo,(int)$id,csrf());?>
 <?php require_once dirname(__DIR__).'/private/stays_view.php';echo gszStaySection($pdo,(int)$id,csrf());?>
 <?php if(wasteAutoReady($pdo)):$connection=wasteConnection($pdo,(int)$id);?><section class="card"><h2>Abfall</h2><p><?php if($nextPickup):?>Nächste Abholung: <strong><?=e($dayLabel($nextPickup['collection_date']))?></strong> · <?=e(implode(', ',array_map(fn($f)=>WASTE_BLOCK_LABELS[$f]??$f,explode(',',(string)$nextPickup['f']))))?><?php else:?>Keine Abholung eingetragen.<?php endif?><br><span class="muted">Kalender: <?=e($connection?wasteConnectionStatus($connection):'noch nicht eingerichtet')?></span></p><p><a href="waste_setup.php?id=<?=(int)$id?>"><?=$connection?'Tonnen und Kalender ändern':'Abfallkalender einrichten'?></a> · <a href="waste.php?property_id=<?=(int)$id?>">Alle Abholungen</a></p></section><?php endif?>
 <?php require_once dirname(__DIR__).'/private/dashboard_service.php';gszObjectPanel($pdo,(int)$id);?>

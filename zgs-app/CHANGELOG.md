@@ -1,5 +1,14 @@
 # Changelog
 
+## 430 – Service-Stufe (25.11.2026)
+- Mieter-Meldungen per QR-Code: geheimer Link je Haus, Formular ohne Anmeldung/Cookies mit Foto (ohne Standortdaten neu gespeichert), Begrenzung je Haus, Aushang-PDF mit QR-Code; in der Zentrale „Mieter-Meldungen“, Übernahme als To-do, Hinweis auf Heute
+- Portal für Hausverwaltungen: geheimer Link je Objekt mit erledigten Arbeiten, Fotos, Meldungen, nächsten Terminen; Monatsbericht als PDF
+- Helfer-App (/helfer.php): eigener Zugang je Mitarbeiter, nur eigene Aufgaben, Start/Fertig, Vorher-/Nachher-Fotos, Sperre nach 5 Fehlversuchen, kein GPS
+- Schlüsseldienst-Einsätze: Erfassung in Sekunden, Umsatz je Monat/Ort/Kanal, 12-Monats-Balken, Rechnung → Erinnerung in der Merkliste, Bewertung per WhatsApp, aus Anfragen übernehmbar
+- Preisrechner Treppenhausreinigung: Sätze unter Website einstellbar, öffentlicher Endpunkt web_calc.php (aus, bis eingeschaltet)
+- Bewertungskarten 85 × 55 mm mit QR-Code als Druck-PDF; QR-Erzeuger ohne Fremdbibliothek (private/qr.php)
+- Migration 430 (additiv, Marker 430_service), 80 Tabellen; Tests test_service.php, test_service_browser.cjs
+
 ## 420 – Anfragen, Notdienst-Status, Website-Zahlen (25.11.2026)
 
 - Migration 420 (`leads`, `web_events`, `app_settings`; additiv, Marker `420_anfragen`).

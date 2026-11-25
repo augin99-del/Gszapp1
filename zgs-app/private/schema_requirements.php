@@ -59,6 +59,20 @@ return array (
       7 => 'row_version',
       8 => 'archived_at',
     ),
+    'defect_reports' => 
+    array (
+      0 => 'id',
+      1 => 'property_id',
+      2 => 'location',
+      3 => 'message',
+      4 => 'contact',
+      5 => 'photo_name',
+      6 => 'photo_mime',
+      7 => 'status',
+      8 => 'note_id',
+      9 => 'handled_at',
+      10 => 'created_at',
+    ),
     'documents' => 
     array (
       0 => 'id',
@@ -366,6 +380,25 @@ return array (
       18 => 'updated_at',
       19 => 'row_version',
     ),
+    'lock_jobs' => 
+    array (
+      0 => 'id',
+      1 => 'job_date',
+      2 => 'job_time',
+      3 => 'place',
+      4 => 'kind',
+      5 => 'amount_cents',
+      6 => 'payment',
+      7 => 'channel',
+      8 => 'customer',
+      9 => 'phone',
+      10 => 'note',
+      11 => 'lead_id',
+      12 => 'note_id',
+      13 => 'review_requested_at',
+      14 => 'created_at',
+      15 => 'row_version',
+    ),
     'mail_attachments' => 
     array (
       0 => 'id',
@@ -626,6 +659,14 @@ return array (
       11 => 'waste_out_offset',
       12 => 'waste_in_offset',
     ),
+    'property_links' => 
+    array (
+      0 => 'property_id',
+      1 => 'report_token',
+      2 => 'portal_token',
+      3 => 'report_since',
+      4 => 'portal_since',
+    ),
     'quick_notes' => 
     array (
       0 => 'id',
@@ -884,6 +925,17 @@ return array (
       2 => 'event',
       3 => 'hits',
     ),
+    'worker_accounts' => 
+    array (
+      0 => 'worker_id',
+      1 => 'login',
+      2 => 'password_hash',
+      3 => 'active',
+      4 => 'failed_logins',
+      5 => 'locked_until',
+      6 => 'last_login_at',
+      7 => 'created_at',
+    ),
     'work_logs' => 
     array (
       0 => 'id',
@@ -894,6 +946,9 @@ return array (
       5 => 'description',
       6 => 'notes',
       7 => 'created_at',
+      8 => 'worker_id',
+      9 => 'started_at',
+      10 => 'ended_at',
     ),
     'work_log_photos' => 
     array (
@@ -1007,5 +1062,6 @@ return array (
     20 => '400_ferienwohnung',
     21 => '410_projekte',
     22 => '420_anfragen',
+    23 => '430_service',
   ),
 );

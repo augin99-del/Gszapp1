@@ -33,6 +33,7 @@ gszPageStart('Anfragen','Von der Website, per Telefon oder WhatsApp – nichts g
   <p class="lead-meta"><?=e(trim(($l['service']?:'Anfrage').($l['place']?' · '.$l['place']:'').' · '.GSZ_LEAD_SOURCES[$l['source']].' · '.$when($l['created_at']),' ·'))?><?=$l['company']&&$l['name']?' · '.e($l['company']):''?><?=$l['object_type']?' · '.e($l['object_type']):''?></p>
   <?php if($l['message']):?><p class="lead-msg"><?=nl2br(e($l['message']))?></p><?php endif?>
   <div class="lead-actions"><?php if($l['phone']):?><a class="btn small primary" href="tel:<?=e(preg_replace('/[^0-9+]/','',$l['phone']))?>">Anrufen</a><?php if($wa):?><a class="btn small" href="https://wa.me/<?=e($wa)?>" target="_blank" rel="noopener">WhatsApp</a><?php endif?><?php endif?><?php if($l['email']):?><a class="btn small" href="compose.php?to=<?=e(rawurlencode($l['email']))?>&amp;subject=<?=e(rawurlencode('Ihre Anfrage bei Zentrum Gebäudeservice'))?>">Mail</a><?php endif?>
+   <?php if(preg_match('/schl(ü|ue)ssel|tür|aufsperr/iu',(string)$l['service'].' '.(string)$l['message'])):?><a class="btn small" href="einsaetze.php?lead=<?=(int)$l['id']?>#neu">Als Einsatz erfassen</a><?php endif?>
    <?php if(!$l['task_id']):?><form method="post"><?=$f('task',(int)$l['id'])?><button class="small">Als Aufgabe für heute</button></form><?php else:?><span class="muted small-note">Aufgabe angelegt</span><?php endif?></div>
   <div class="status-row"><?php foreach(GSZ_LEAD_STATUS as $k=>$lab):if($k===$l['status'])continue;?><form method="post"><?=$f('status',(int)$l['id'])?><input type="hidden" name="status" value="<?=e($k)?>"><button class="small ghost"><?=e($lab)?></button></form><?php endforeach?></div>
   <?php if($l['status']==='auftrag'&&$wa):?><form method="post" class="review-row" target="_blank"><?=$f('review',(int)$l['id'])?><button class="small primary">★ Bewertung per WhatsApp anfragen</button><?=$l['review_requested_at']?'<span class="muted small-note">angefragt am '.e((new DateTimeImmutable($l['review_requested_at']))->format('d.m.')).'</span>':''?></form><?php endif?>
@@ -46,10 +47,12 @@ gszPageStart('Anfragen','Von der Website, per Telefon oder WhatsApp – nichts g
  <label>Worum geht es?<textarea name="message" rows="3" maxlength="5000"></textarea></label><button class="primary">Speichern</button></form></details>
 <details class="card"><summary>Bewertung anfragen – ohne Anfrage (z. B. nach einer Türöffnung)</summary><form method="post" target="_blank"><?=$f('review_free')?>
  <div class="grid-3"><label>Vorname (optional)<input name="name" maxlength="60"></label><label>Handynummer (optional)<input name="phone" type="tel" maxlength="40"></label></div>
- <p class="hint">Öffnet WhatsApp mit fertigem Text und deinem Google-Bewertungslink. Ohne Nummer wählst du den Kontakt in WhatsApp selbst.</p><button class="primary">WhatsApp öffnen</button></form></details>
+ <p class="hint">Öffnet WhatsApp mit fertigem Text und deinem Google-Bewertungslink. Ohne Nummer wählst du den Kontakt in WhatsApp selbst.</p><button class="primary">WhatsApp öffnen</button></form>
+ <p class="hint">Zum Mitgeben nach dem Einsatz: <a href="bewertungskarten.php" target="_blank" rel="noopener">Bewertungskarten mit QR-Code drucken</a> (10 Karten 85 × 55 mm auf A4, mit Schnittmarken – am besten auf 250-g-Karton).</p></details>
 <details class="card"><summary>Einstellungen</summary><form method="post"><?=$f('settings')?>
  <label>Google-Bewertungslink<input name="review_url" maxlength="500" value="<?=e(gszSetting($pdo,'review_url'))?>"></label>
  <label>Dein Name in Nachrichten<input name="owner_name" maxlength="120" value="<?=e(gszSetting($pdo,'owner_name'))?>"></label>
+ <label>Telefon für Aushang und Karten<input name="company_phone" maxlength="40" value="<?=e(gszSetting($pdo,'company_phone'))?>"></label>
  <label>Website (für Notdienst-Status und Zahlen)<input name="website_origin" maxlength="120" value="<?=e(gszSetting($pdo,'website_origin'))?>"></label><button class="small primary">Speichern</button></form>
  <p class="hint">Vorschau der Bewertungsnachricht:</p><pre><?=e(gszReviewText($pdo,'Max'))?></pre></details>
 <?php gszPageEnd();
