@@ -132,4 +132,4 @@ zusätzlich per SFTP sichern.
 - **Helfer-App:** Mehr → Helfer → Person öffnen → „Helfer-Zugang“. Der Helfer meldet sich unter gszintern.de/helfer.php an und sieht nur seine zugeteilten Aufgaben.
 - **Schlüsseldienst:** Mehr → „Schlüsseldienst: Einsätze und Umsatz“. Bei Zahlung „Rechnung“ entsteht automatisch eine Erinnerung „Rechnung offen“.
 - **Preisrechner:** Mehr → Website → „Preisrechner Treppenhausreinigung“: eigenen Stundensatz und Minutenwerte eintragen, einschalten.
-- **Bewertungskarten:** Mehr → „Bewertungskarten drucken“ (A4, 10 Karten).
+- **Bewertungskarten:** Mehr → „Bewertungen: per WhatsApp anfragen, Karten drucken“ (A4, 10 Karten).

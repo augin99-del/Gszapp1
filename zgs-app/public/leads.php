@@ -25,6 +25,10 @@ $f=fn(string $a,int $id=0)=>'<input type="hidden" name="csrf" value="'.e($csrf).
 $when=fn(string $ts)=>(new DateTimeImmutable($ts.' UTC'))->setTimezone(new DateTimeZone('Europe/Berlin'))->format('d.m., H:i');
 gszPageStart('Anfragen','Von der Website, per Telefon oder WhatsApp – nichts geht verloren.');?>
 <?php if($imported):?><p class="notice flash" role="status"><?=$imported===1?'1 neue Anfrage von der Website übernommen.':$imported.' neue Anfragen von der Website übernommen.'?></p><?php endif?>
+<?php $reviewBox=function()use($f){?><details class="card" id="bewertung"<?=isset($_GET['bewertung'])?' open':''?>><summary>Bewertung anfragen – ohne Anfrage (z. B. nach einer Türöffnung)</summary><form method="post" target="_blank"><?=$f('review_free')?>
+ <div class="grid-3"><label>Vorname (optional)<input name="name" maxlength="60"></label><label>Handynummer (optional)<input name="phone" type="tel" maxlength="40"></label></div>
+ <p class="hint">Öffnet WhatsApp mit fertigem Text und deinem Google-Bewertungslink. Ohne Nummer wählst du den Kontakt in WhatsApp selbst.</p><button class="primary">WhatsApp öffnen</button></form>
+ <p class="hint">Zum Mitgeben nach dem Einsatz: <a href="bewertungskarten.php" target="_blank" rel="noopener">Bewertungskarten mit QR-Code drucken</a> (10 Karten 85 × 55 mm auf A4, mit Schnittmarken – am besten auf 250-g-Karton).</p></details><?php };if(isset($_GET['bewertung']))$reviewBox();?>
 <nav class="seg-tabs" aria-label="Status"><a href="leads.php"<?=$status===null?' aria-current="page"':''?>>Offen <span class="count"><?=$counts['neu']+$counts['kontaktiert']+$counts['angebot']?></span></a><?php foreach(['auftrag','abgesagt'] as $k):?><a href="leads.php?status=<?=$k?>"<?=$status===$k?' aria-current="page"':''?>><?=e(GSZ_LEAD_STATUS[$k])?> <span class="count"><?=$counts[$k]?></span></a><?php endforeach?></nav>
 <?php if(!$leads):?><div class="empty"><strong><?=$status?'Keine Einträge.':'Keine offenen Anfragen.'?></strong>Anfragen über das Kontaktformular der Website erscheinen hier automatisch, sobald die Mail abgerufen ist.</div><?php endif?>
 <div class="lead-list"><?php foreach($leads as $l):$wa=gszWaNumber((string)$l['phone']);?>
@@ -45,10 +49,7 @@ gszPageStart('Anfragen','Von der Website, per Telefon oder WhatsApp – nichts g
  <div class="grid-3"><label>Leistung<input name="service" maxlength="120" list="svc" placeholder="z. B. Treppenhausreinigung"></label><label>Ort<input name="place" maxlength="190"></label><label>E-Mail<input name="email" type="email" maxlength="190"></label></div>
  <datalist id="svc"><option value="Schlüsseldienst"><option value="Treppenhausreinigung"><option value="Hausmeisterservice"><option value="Gebäudereinigung"><option value="Außenanlagenpflege"><option value="Winterdienst"></datalist>
  <label>Worum geht es?<textarea name="message" rows="3" maxlength="5000"></textarea></label><button class="primary">Speichern</button></form></details>
-<details class="card"><summary>Bewertung anfragen – ohne Anfrage (z. B. nach einer Türöffnung)</summary><form method="post" target="_blank"><?=$f('review_free')?>
- <div class="grid-3"><label>Vorname (optional)<input name="name" maxlength="60"></label><label>Handynummer (optional)<input name="phone" type="tel" maxlength="40"></label></div>
- <p class="hint">Öffnet WhatsApp mit fertigem Text und deinem Google-Bewertungslink. Ohne Nummer wählst du den Kontakt in WhatsApp selbst.</p><button class="primary">WhatsApp öffnen</button></form>
- <p class="hint">Zum Mitgeben nach dem Einsatz: <a href="bewertungskarten.php" target="_blank" rel="noopener">Bewertungskarten mit QR-Code drucken</a> (10 Karten 85 × 55 mm auf A4, mit Schnittmarken – am besten auf 250-g-Karton).</p></details>
+<?php if(!isset($_GET['bewertung']))$reviewBox();?>
 <details class="card"><summary>Einstellungen</summary><form method="post"><?=$f('settings')?>
  <label>Google-Bewertungslink<input name="review_url" maxlength="500" value="<?=e(gszSetting($pdo,'review_url'))?>"></label>
  <label>Dein Name in Nachrichten<input name="owner_name" maxlength="120" value="<?=e(gszSetting($pdo,'owner_name'))?>"></label>
