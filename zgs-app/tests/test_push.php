@@ -64,4 +64,24 @@ gszSettingSet($p,'weather_tasks','auto');$alerts['alerts'][]=['id'=>5,'alert_id'
 $http2=fn(string $u)=>json_encode($alerts);$tk=gszWeatherTick($p,true,$http2,$sender);pu($tk['planned']===1&&$tk['pushed']===1&&str_contains(json_decode($decrypt(end($calls)[1]),true)['body'],'eingeplant'),'auto mode plans and says so in the push');
 pu(gszWeatherTick($p,true,fn()=>null,$sender)['new']===0&&count(gszWeatherActive($p))===3,'service down: nothing lost');
 gszSettingSet($p,'weather_points','Rheda:51.84,8.30;kaputt;Gütersloh:51.9,8.38');pu(count(gszWeatherPoints($p))===2,'several places, invalid lines ignored');
+// Geplante Nachrichten (Mein Tag, Tonnen, Termine, Mail, System, Frost) – feste Uhrzeiten
+require_once dirname(__DIR__).'/private/push_digest.php';$tz=new DateTimeZone('Europe/Berlin');$d=(new DateTimeImmutable('today',$tz));$day=$d->format('Y-m-d');$tm=$d->modify('+1 day')->format('Y-m-d');
+$p->exec('DELETE FROM push_subscriptions');gszPushSubscribe($p,1,$sub,'iPhone');$calls=[];$last=function()use(&$calls,$decrypt){$c=end($calls);return $c?json_decode($decrypt($c[1]),true):[];};
+$p->prepare("INSERT INTO tasks(property_id,title,due_date) VALUES(1,'A',?),(1,'B',?),(1,'Alt',?)")->execute([$day,$day,$d->modify('-2 day')->format('Y-m-d')]);
+$p->prepare("INSERT INTO planning_appointments(title,day,start_time,end_time,address,reminder_minutes) VALUES('Besichtigung WEG',?,'10:00:00','11:00:00','Musterweg 1',30)")->execute([$day]);
+$p->exec("INSERT INTO quick_notes(kind,title) VALUES('invoice','Rechnung X')");
+pu(gszPushDigests($p,$d->setTime(5,50),$sender)===[],'nothing before 06:30');
+$k=gszPushDigests($p,$d->setTime(6,45),$sender);pu(in_array('day:'.$day,$k,true)&&str_contains($last()['body'],'Aufgaben')&&str_contains($last()['body'],'1 von Vortagen offen')&&str_contains($last()['body'],'Termin 10:00 Besichtigung WEG')&&str_contains($last()['body'],'1 Rechnung offen'),'morning summary: '.($last()['body']??''));
+pu(gszPushDigests($p,$d->setTime(7,15),$sender)===[],'morning summary only once');
+pu(in_array('appt:'.$p->query('SELECT id FROM planning_appointments')->fetchColumn().':'.$day,gszPushDigests($p,$d->setTime(9,35),$sender),true)&&str_starts_with($last()['title'],'📅 10:00 Besichtigung WEG'),'appointment reminder 30 min before');
+
+try{$p->prepare("INSERT INTO waste_events(property_id,collection_date,fraction,event_hash,status,address) VALUES(1,?,'gelb',?,'geprueft',''),(2,?,'gelb',?,'geprueft',''),(1,?,'papier',?,'geprueft','')")->execute([$tm,hash('sha256','h1'),$tm,hash('sha256','h2'),$tm,hash('sha256','h3')]);$wasteOk=true;}catch(Throwable $e){$wasteOk=false;fwrite(STDERR,'waste insert: '.$e->getMessage()."\n");}
+if($wasteOk){$k=gszPushDigests($p,$d->setTime(18,10),$sender);pu(in_array('waste:'.$tm,$k,true)&&$last()['body']==='Gelbe Tonne (2 Objekte) · Papier (1 Objekt)','evening bins: '.($last()['body']??''));}
+gszSettingSet($p,'push_frost','1');$p->exec("UPDATE weather_alerts SET planned_at=planned_at");$k=gszPushDigests($p,$d->setTime(12,0),$sender);pu((bool)array_filter($k,fn($x)=>str_starts_with($x,'frost:dwd-frost-1')),'frost hint when switched on');
+gszSettingSet($p,'push_day','0');pu(!array_filter(gszPushDigests($p,$d->modify('+1 day')->setTime(6,40),$sender),fn($x)=>str_starts_with($x,'day:')),'switched-off kind stays quiet');
+$p->exec("INSERT INTO automation_state(job_key,status,last_finished,last_error_code) VALUES('mail','BLOCKED',UTC_TIMESTAMP(),'GSZ_MAIL_FAILED') ON DUPLICATE KEY UPDATE status='BLOCKED',last_finished=UTC_TIMESTAMP(),last_error_code='GSZ_MAIL_FAILED'");
+pu((bool)array_filter(gszPushDigests($p,$d->setTime(13,0),$sender),fn($x)=>str_starts_with($x,'system:job:mail')),'system warning for a stopped background job');
+gszSettingSet($p,'push_mail','1');$p->prepare("INSERT INTO mail_messages(folder_id,uidvalidity,remote_uid,message_id,sender,recipients,subject,sent_at,body) VALUES(1,1,50,'<m50@x.invalid>','a@x.invalid','b@x.invalid','Hallo',NOW(),'x')")->execute();
+gszPushDigests($p,$d->setTime(13,5),$sender);$before=count($calls);$p->prepare("INSERT INTO mail_messages(folder_id,uidvalidity,remote_uid,message_id,sender,recipients,subject,sent_at,body) VALUES(1,1,51,'<m51@x.invalid>','a@x.invalid','b@x.invalid','Neu',NOW(),'x'),(1,1,52,'<m52@x.invalid>','a@x.invalid','b@x.invalid','Neu2',NOW(),'x')")->execute();
+gszPushDigests($p,$d->setTime(13,10),$sender);pu(count($calls)===$before+1&&$last()['title']==='✉️ 2 neue Mails','new mails summarised (no flood on first run)');
 echo "Push PASS ($n checks; RFC 8291 encryption, VAPID, dedupe, DWD warnings, winter service).\n";

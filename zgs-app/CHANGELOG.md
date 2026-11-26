@@ -2,6 +2,7 @@
 
 ## 440 – Push und Glättewarnung (26.11.2026)
 - Push-Benachrichtigungen (Web Push, eigene VAPID-Schlüssel, Verschlüsselung RFC 8291, kein Fremddienst): neue Anfragen, Mieter-Meldungen, Glätte-/Schneewarnungen; je Art abschaltbar; Geräteverwaltung und Testnachricht (Mehr → Benachrichtigungen)
+- Weitere Push-Arten mit Schaltern: Frost-Hinweis, „Mein Tag“ (morgens), Tonnen für morgen (abends), Termin-Erinnerungen, fehlende Mieten, neue Mails, Systemüberwachung (private/push_digest.php)
 - DWD-Warnungen über api.brightsky.dev (ohne Schlüssel, höchstens alle 15 Min.): Karte auf Heute; Glätte/Glatteis/Schnee → Push und Winterdienst-Aufgaben (nachfragen/automatisch/aus) für Objekte mit Regelaufgabe „Winterdienst“; Frost nur als Hinweis
 - „Wecker“ tick.php mit geheimem Schlüssel für externe Aufrufe (z. B. cron-job.org) – ersetzt den fehlenden STRATO-Cronjob: Wetter, Mailabruf, Anfragen, Regelaufgaben
 - App-Manifest und Service Worker (nur Push, kein Cache)

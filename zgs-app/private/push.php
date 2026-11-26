@@ -7,7 +7,19 @@ declare(strict_types=1);
  * - Inhalte bleiben kurz und ohne Telefonnummern/Adressen; Details sieht man erst nach dem Antippen in der Zentrale.
  */
 require_once __DIR__.'/platform.php';require_once __DIR__.'/leads.php';
-const GSZ_PUSH_KINDS=['leads'=>'Neue Anfragen','reports'=>'Neue Mieter-Meldungen','weather'=>'Glätte- und Schneewarnungen (DWD)','test'=>'Test'];
+/** Arten: Schlüssel => [Titel, Beschreibung, Symbol]. Reihenfolge = Anzeige in den Einstellungen. */
+const GSZ_PUSH_KINDS=[
+ 'weather'=>['Winterdienst','Glätte, Glatteis und Schnee (amtliche DWD-Warnung)','❄️'],
+ 'frost'=>['Frost-Hinweis','Leichter oder strenger Frost (DWD) – ohne Winterdienst-Einsatz','🌡️'],
+ 'day'=>['Mein Tag','Morgens: Aufgaben, Überfälliges, Termine, offene Rechnungen','☀️'],
+ 'waste'=>['Tonnen','Abends: welche Tonnen morgen an wie vielen Objekten abgeholt werden','🗑️'],
+ 'appt'=>['Termine','Erinnerung vor jedem Termin','📅'],
+ 'leads'=>['Anfragen','Neue Anfrage über das Website-Formular','📩'],
+ 'reports'=>['Mieter-Meldungen','Neue Meldung per QR-Code aus einem Haus','🛠'],
+ 'rent'=>['Mieten','Ab dem 6.: Mieten fehlen oder sind unvollständig','🏠'],
+ 'mail'=>['E-Mail','Neue Mails im Posteingang','✉️'],
+ 'system'=>['Systemüberwachung','Mail-Passwort abgelehnt oder Hintergrundaufgabe gestoppt','⚠️'],
+ 'test'=>['Test','Testnachricht','✅']];
 
 function gszPushReady(PDO $pdo):bool {try{return (bool)$pdo->query("SELECT COUNT(*) FROM app_migrations WHERE version='440_push'")->fetchColumn();}catch(Throwable $e){return false;}}
 function gszB64u(string $b):string {return rtrim(strtr(base64_encode($b),'+/','-_'),'=');}

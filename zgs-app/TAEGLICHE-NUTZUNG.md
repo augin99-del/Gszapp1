@@ -139,5 +139,6 @@ zusätzlich per SFTP sichern.
 
 ## Neu in 440 (11/2026)
 - **Push aufs Handy:** Zentrale am iPhone in Safari öffnen → Teilen → „Zum Home-Bildschirm“ → über das neue Symbol öffnen → Mehr → Benachrichtigungen → „Benachrichtigungen auf diesem Gerät aktivieren“ → „Test-Benachrichtigung senden“.
+- **Welche Nachrichten?** Mehr → Benachrichtigungen → „Wobei benachrichtigen?“: Winterdienst, Frost, Mein Tag (06:30), Tonnen (18:00), Termine, Anfragen, Mieter-Meldungen, Mieten, E-Mail, Systemüberwachung – je mit Schalter, Uhrzeiten einstellbar.
 - **Glättewarnung:** erscheint auf Heute (❄️). „Winterdienst für N Objekte einplanen“ legt dringende Aufgaben am Warntag (06:00) an. Winterdienst-Objekte = Objekte mit Regelaufgabe „Winterdienst“.
 - **Wecker:** Mehr → Benachrichtigungen → „Wecker-Adresse erzeugen“ und bei cron-job.org alle 15 Minuten eintragen – sonst kommen Warnungen nur, wenn die Zentrale offen ist.
