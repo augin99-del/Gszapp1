@@ -34,7 +34,7 @@
         "private/http_security.php": "55da5cc258223046155345f0dc7b84fe8cc69047492e5beec74943e1c213466e",
         "private/install.php": "e12a52a32598edf7970d18b7d23c47dd75b2e3927ededa948626c8078dcdcf87",
         "private/install_core.php": "6fae5551154b2177be932170fb3961aa9626e4d367ffa9319359d99082d1b09c",
-        "private/layout.php": "fd03d7eb54c6551306de5cccc4b05d2d2b2feec6660801debabae0ec1aec3451",
+        "private/layout.php": "fdb7073a54579dcfb30aaf7bd2b38c5452b067940ab74752c312115f2ab14ea7",
         "private/leads.php": "1cf857ab4071dad8ba6197eb64e7e40a9d34f166f84c21076616b06f44a1e616",
         "private/lock_jobs.php": "3750485622331968cd1559a327ed6f2e84be575fc7ed7eb1a3771e3d102d5e3b",
         "private/mail_check_cli.php": "5b1037c934cf41a27b23a61f6a37c8ea4e8fb4bd202859760bc9197932776ef7",
@@ -133,7 +133,7 @@
         "private/stays_view.php": "b06acff5625996db2f0a9977deef5aef7f739ef9f74871740d4a8d285a529be5",
         "private/system_check.php": "8db56c3081751e324c00a0d34e35346142c4366db42bf62718f368ab60250a7c",
         "private/system_check_cli.php": "c4ac7891f73387e1f5855eeef692c0725815630d07268cf36a2c4eb0b5c3be5c",
-        "private/ui.php": "722f35e742ec60247111fc62ce6629d537ee6e33426ccdf5f03ee423a67a23f7",
+        "private/ui.php": "7e6732f103c5e8601838a9b7de7888b50717ee3eba0e20a3ab6b75f3d5616d3f",
         "private/vendor/imapengine/BIBLIOTHEKEN.md": "107a66b22738a633d4270151f15eb1852885f418fecc3f0b1c0bf4f3fda89e1b",
         "private/vendor/imapengine/composer.json": "3e7755445a720809eacb65e69b1e4032f7a349b4e592acaf260ed44872078ad5",
         "private/vendor/imapengine/composer.lock": "36fe48ea796760700bf814c1b8e3973fc609838f8d031ef1f94a95af7cac0f64",
@@ -2315,7 +2315,7 @@
         "public/worklog_photo.php": "5080a93ca875e754d774bbdb41689a72dee7922a6ebb9c67e964480029e75b15",
         "public/worklog_photos.php": "32e114e13a94a5bebf18bf5beb025e34bdbc225b494316bdcf26553d1d6bd6b4",
         "public/worklogs.php": "53554eb214d523ff21443a75263016e1d3bed9312ee24ffae10f5981cef2c722",
-        "public/zentrale.css": "1f088975b3f52842533cb7790f6e435a2ce8def21ac30e1197cda35e521bd269",
+        "public/zentrale.css": "c327026f2a1a98767e7efaa8a108891e179909e55c9e4eb0faf99109a05a7831",
         "public/zentrale.js": "5bfdf0d3fa9b18fa916e4c02fd03832defb7327825c85d2fde4afc59c58cbb70"
     }
 }
