@@ -79,7 +79,12 @@ function gszDefectSubmit(PDO $pdo,array $property,array $in,?array $photo=null,?
  if($kind===''&&mb_strlen($text)<3)throw new RuntimeException('Bitte antippen, was los ist – oder kurz beschreiben.');
  if($kind==='Sonstiges'&&mb_strlen($text)<3)throw new RuntimeException('Bitte kurz beschreiben, was los ist.');
  $message=$kind!==''&&$kind!=='Sonstiges'?$kind.($text!==''?': '.$text:''):$text;
- $location=gszRText($in['location']??'',120);$contact=gszRText($in['contact']??'',190);
+ $location=gszRText($in['location']??'',120);
+ // Name und Telefon sind Pflicht (Rückfragen); gespeichert zusammen in „contact“.
+ $cname=gszRText($in['name']??'',120);$cphone=gszRText($in['phone']??'',60);
+ if(mb_strlen($cname)<2)throw new RuntimeException('Bitte Ihren Namen angeben.');
+ if(!preg_match('/^[0-9+ ()\/-]{6,40}$/D',$cphone)||strlen(preg_replace('/\D/','',$cphone))<6)throw new RuntimeException('Bitte eine Telefonnummer für Rückfragen angeben.');
+ $contact=mb_substr($cname.' · '.$cphone,0,190);
  $now??=time();$q=$pdo->prepare('SELECT SUM(created_at>=?) h,COUNT(*) d FROM defect_reports WHERE property_id=? AND created_at>=?');$q->execute([gmdate('Y-m-d H:i:s',$now-3600),$property['id'],gmdate('Y-m-d H:i:s',$now-86400)]);$c=$q->fetch(PDO::FETCH_ASSOC);
  if((int)$c['h']>=GSZ_DEFECT_LIMIT_HOUR||(int)$c['d']>=GSZ_DEFECT_LIMIT_DAY)throw new RuntimeException('Für dieses Haus sind gerade sehr viele Meldungen eingegangen. Bitte später erneut versuchen oder anrufen.');
  $name=null;$mime=null;if(is_array($photo)&&($photo['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_NO_FILE)[$name,$mime]=gszStoreCleanPhoto($photo,gszDefectPhotoDir());

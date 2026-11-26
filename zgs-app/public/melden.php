@@ -17,7 +17,6 @@ $tile=function(string $name,array $items)use($old):string{$o='';$i=0;foreach(arr
 gszPublicStart('Schaden melden',$company);
 if($done!==null):?>
 <section class="pub-card pub-done" role="status"><div class="pub-check" aria-hidden="true"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h1>Danke! Ihre Meldung ist angekommen.</h1>
-<?php if($done>0):?><p class="pub-ref">Meldungsnummer <strong><?=(int)$done?></strong></p><?php endif?>
 <p>Wir kümmern uns darum.<?=$hv?' Die Hausverwaltung sieht den Stand ebenfalls.':''?></p>
 <a class="pub-btn ghost" href="melden.php?k=<?=pe($token)?>">Noch etwas melden</a></section>
 <?php else:?>
@@ -31,11 +30,12 @@ if($done!==null):?>
   <label class="pub-label" for="msg">Kurz beschreiben <small>(optional – z. B. „2. OG, Licht flackert“)</small></label><textarea id="msg" name="message" maxlength="1900" rows="3" placeholder="Was genau? Wo genau?"><?=pe($old['message']??'')?></textarea></fieldset>
  <fieldset class="pub-step"><legend><span class="n">3</span> Foto <small>(hilft uns sehr)</small></legend>
   <label class="pub-photo" for="photo"><input type="file" id="photo" name="photo" accept="image/*" data-photo><span data-photo-label><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg> Foto aufnehmen oder auswählen</span><img alt="" hidden data-photo-preview></label></fieldset>
- <details class="pub-step pub-more"<?=($old['contact']??'')!==''?' open':''?>><summary><span class="n">4</span> Rückfragen erlaubt? <small>(optional)</small></summary>
-  <label class="pub-label" for="contact">Name oder Wohnung und Telefon</label><input id="contact" name="contact" maxlength="190" autocomplete="name" placeholder="z. B. Müller, 2. OG links, 0176 …" value="<?=pe($old['contact']??'')?>"></details>
+ <fieldset class="pub-step"><legend><span class="n">4</span> Ihre Kontaktdaten <small>(für Rückfragen)</small></legend>
+  <div class="pub-two"><label class="pub-label" for="cname">Name<input id="cname" name="name" required minlength="2" maxlength="120" autocomplete="name" placeholder="z. B. Müller, 2. OG links" value="<?=pe($old['name']??'')?>"></label>
+  <label class="pub-label" for="cphone">Telefon<input id="cphone" name="phone" type="tel" required minlength="6" maxlength="40" autocomplete="tel" inputmode="tel" pattern="[0-9+ ()/\-]{6,40}" placeholder="z. B. 0176 1234567" value="<?=pe($old['phone']??'')?>"></label></div></fieldset>
  <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
  <div class="pub-send-bar"><button class="pub-send" data-send>Meldung senden</button></div>
- <p class="pub-note">Ihre Angaben gehen nur an <?=pe($company)?><?=$hv?' und die Hausverwaltung dieses Hauses':''?> – zur Erledigung der Meldung. Fotos speichern wir ohne Standortdaten. Keine Cookies. <a href="<?=pe(gszSetting($pdo,'website_origin'))?>/datenschutz/" rel="noopener">Datenschutz</a></p>
+ <p class="pub-note">Name und Telefon brauchen wir für Rückfragen. Ihre Angaben gehen nur an <?=pe($company)?><?=$hv?' und die Hausverwaltung dieses Hauses':''?> – zur Erledigung der Meldung. Fotos speichern wir ohne Standortdaten. Keine Cookies. <a href="<?=pe(gszSetting($pdo,'website_origin'))?>/datenschutz/" rel="noopener">Datenschutz</a></p>
 </form>
 <p class="pub-note pub-lang">EN: Tap where and what – add a photo – send. · TR: Yeri ve sorunu seçin, fotoğraf ekleyin, gönderin. · Gefahr für Leib und Leben: 112</p>
 <?php endif;gszPublicEnd($phone);

@@ -36,7 +36,7 @@ gszPushSubscribe($p,1,$sub,'iPhone');
 $p->exec('UPDATE push_subscriptions SET fail_count=20');
 $p->exec("INSERT INTO mail_folders(name) VALUES('INBOX')");$p->prepare("INSERT INTO mail_messages(folder_id,uidvalidity,remote_uid,message_id,sender,recipients,subject,sent_at,body) VALUES(1,1,1,'<a@x.invalid>','a@x.invalid','b@x.invalid','Neue Website-Anfrage – Treppenhausreinigung',NOW(),?)")->execute(["Neue Anfrage über gebaeudeservice-zentrum.de\n\nLeistung: Treppenhausreinigung\nName: Erika Muster\nPLZ / Ort: 00000 Musterstadt\nNachricht: Test"]);
 pu(gszLeadsFromMail($p)===1,'lead imported');$ev=$p->query("SELECT * FROM push_events WHERE kind='leads'")->fetch();pu($ev&&$ev['title']==='📩 Neue Anfrage: Treppenhausreinigung'&&str_contains($ev['body'],'Erika Muster')&&str_starts_with($ev['url'],'leads.php#anfrage-'),'new lead → push event');
-$p->exec("INSERT INTO properties(name,address) VALUES('Musterweg 1','Musterweg 1'),('Ohne Winterdienst','x')");$t=gszLinkRenew($p,1,1,'report');gszDefectSubmit($p,gszLinkProperty($p,'report',$t),['kind'=>'Licht defekt','location'=>'Keller']);
+$p->exec("INSERT INTO properties(name,address) VALUES('Musterweg 1','Musterweg 1'),('Ohne Winterdienst','x')");$t=gszLinkRenew($p,1,1,'report');gszDefectSubmit($p,gszLinkProperty($p,'report',$t),['name'=>'Mieter Test','phone'=>'0176 0000000','kind'=>'Licht defekt','location'=>'Keller']);
 pu((bool)$p->query("SELECT COUNT(*) FROM push_events WHERE kind='reports' AND title='🛠 Mieter-Meldung: Musterweg 1' AND body='Keller: Licht defekt'")->fetchColumn(),'new tenant report → push event');
 $p->exec('UPDATE push_subscriptions SET fail_count=0');
 // DWD-Warnungen (Format wie api.brightsky.dev)

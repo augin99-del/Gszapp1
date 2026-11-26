@@ -15,7 +15,7 @@ $when=fn(string $ts)=>(new DateTimeImmutable($ts.' UTC'))->setTimezone(new DateT
 $btn=fn(int $id,string $a,string $label,string $cls='')=>'<form method="post" action="portal.php?k='.$k.'"><input type="hidden" name="id" value="'.$id.'"><input type="hidden" name="action" value="'.$a.'"><button class="'.$cls.'">'.$label.'</button></form>';
 $card=function(array $d,bool $open)use($k,$when,$btn):string{$st=gszDefectState($d);$id=(int)$d['id'];
  $h='<article class="pub-card pub-defect'.($open?'':' is-done').'" id="m'.$id.'"><div class="pub-row"><strong>'.pe($d['location']!==''?$d['location']:'Meldung').'</strong><span class="pub-tag '.pe($st).'">'.pe(GSZ_DEFECT_STATUS[$st]).'</span></div>';
- $h.='<p class="pub-msg">'.nl2br(pe((string)$d['message'])).'</p><p class="pub-note">Nr. '.$id.' · gemeldet am '.pe($when((string)$d['created_at'])).'</p>';
+ $h.='<p class="pub-msg">'.nl2br(pe((string)$d['message'])).'</p><p class="pub-note">Gemeldet am '.pe($when((string)$d['created_at'])).'</p>';
  if($d['photo_name'])$h.='<a class="pub-defect-photo" href="portal_photo.php?k='.$k.'&amp;d='.$id.'"><img src="portal_photo.php?k='.$k.'&amp;d='.$id.'" alt="Foto zur Meldung" loading="lazy"></a>';
  $h.=$open?$btn($id,'done','✓ Erledigt – abhaken','pub-done-btn'):$btn($id,'reopen','Doch nicht erledigt – wieder öffnen','ghost');
  return $h.'</article>';};

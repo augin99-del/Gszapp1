@@ -2,6 +2,7 @@
 
 ## Gestaltung und Kunde beim Objekt (26.11.2026)
 - Zentrale im Markenauftritt der Website: grüner aktiver Menüpunkt, ruhigere Karten, Begrüßung und Kennzahlen auf Heute, farbige Kante je Arbeitsart (Reinigung, Tonnen, Außen, Winter, Termin)
+- Meldeformular: Name und Telefon sind Pflicht (auch serverseitig geprüft), keine Meldungsnummer mehr (Bestätigung und Portal)
 - Meldeformular für Mieter: grüner Kopfbereich mit Haus, Linien-Symbole statt Emojis, Notfall-Knopf, fester Senden-Knopf
 - Neues Objekt: Kunde (z. B. Hausverwaltung) gleich mit anlegen; Kontaktdaten auch als Ansprechpartner am Objekt
 

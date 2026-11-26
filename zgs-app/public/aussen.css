@@ -73,3 +73,4 @@ input[type=file]{padding:10px;background:var(--bg)}button,.pub-btn{display:inlin
 .pub-send{margin:0}
 .pub-done{padding:34px 20px}.pub-check{display:flex;align-items:center;justify-content:center;line-height:1}
 @media (prefers-color-scheme:dark){.pub-send-bar{background:linear-gradient(180deg,rgba(15,23,29,0),var(--bg) 35%)}.tile i{background:#173a2e;color:#c9f0b8}}
+.pub-two{display:grid;gap:0 12px;clear:both}@media(min-width:560px){.pub-two{grid-template-columns:1fr 1fr}}.pub-two .pub-label{margin-top:0}
