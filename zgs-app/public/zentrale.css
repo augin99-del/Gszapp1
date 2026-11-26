@@ -510,3 +510,10 @@ button.link{min-height:40px;padding:0 var(--s-2);border:0;background:transparent
 .grid-2{display:grid;grid-template-columns:1fr;gap:var(--s-3)}@media(min-width:760px){.grid-2{grid-template-columns:1fr 1fr}}
 table.mini{width:100%;border-collapse:collapse}table.mini td{padding:6px 0;border-top:1px solid var(--c-line)}table.mini tr:first-child td{border-top:0}table.mini .num{text-align:right;white-space:nowrap;padding-left:var(--s-2)}
 .delete-now,button.delete-now{background:#b3261e;color:#fff;border-color:#b3261e}
+/* 440: DWD-Warnungen auf Heute */
+.wx-card{display:grid;gap:var(--s-2);margin:0 0 var(--s-4)}
+.wx{border-radius:var(--r-m);padding:var(--s-3) var(--s-4);background:#fff7e6;border:1px solid #f3d9a4}
+.wx.is-winter{background:#e8f1fb;border-color:#b5cff0}
+.wx-head{display:flex;gap:var(--s-3);align-items:center}.wx-ico{font-size:1.6rem;line-height:1}.wx-head strong{display:block}.wx-head small{color:var(--c-ink-2)}
+.wx p{margin:var(--s-2) 0 0;font-size:var(--fs-s,.92rem)}.wx form{margin-top:var(--s-2)}.wx-done{font-weight:700;color:#1d4f91}
+[data-push] [data-push-on]{margin:var(--s-2) 0 var(--s-4)}[data-push] h3{margin-top:var(--s-4)}

@@ -1,5 +1,12 @@
 # Changelog
 
+## 440 – Push und Glättewarnung (26.11.2026)
+- Push-Benachrichtigungen (Web Push, eigene VAPID-Schlüssel, Verschlüsselung RFC 8291, kein Fremddienst): neue Anfragen, Mieter-Meldungen, Glätte-/Schneewarnungen; je Art abschaltbar; Geräteverwaltung und Testnachricht (Mehr → Benachrichtigungen)
+- DWD-Warnungen über api.brightsky.dev (ohne Schlüssel, höchstens alle 15 Min.): Karte auf Heute; Glätte/Glatteis/Schnee → Push und Winterdienst-Aufgaben (nachfragen/automatisch/aus) für Objekte mit Regelaufgabe „Winterdienst“; Frost nur als Hinweis
+- „Wecker“ tick.php mit geheimem Schlüssel für externe Aufrufe (z. B. cron-job.org) – ersetzt den fehlenden STRATO-Cronjob: Wetter, Mailabruf, Anfragen, Regelaufgaben
+- App-Manifest und Service Worker (nur Push, kein Cache)
+- Migration 440 (push_subscriptions, push_events, weather_alerts; Marker 440_push), 83 Tabellen; Tests test_push.php, test_push_browser.cjs
+
 ## 430 – Service-Stufe (25.11.2026)
 - Mieter-Meldungen per QR-Code: geheimer Link je Haus, Formular ohne Anmeldung/Cookies mit Foto (ohne Standortdaten neu gespeichert), Begrenzung je Haus, Aushang-PDF mit QR-Code; in der Zentrale „Mieter-Meldungen“, Übernahme als To-do, Hinweis auf Heute
 - Portal für Hausverwaltungen: geheimer Link je Objekt mit erledigten Arbeiten, Fotos, Meldungen, nächsten Terminen; Monatsbericht als PDF

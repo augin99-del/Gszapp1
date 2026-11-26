@@ -1,5 +1,10 @@
 # Cronjobs (STRATO)
 
+> **Empfohlen ohne STRATO-Cronjob (ab 440): externer „Wecker“.** In der Zentrale unter Mehr → Benachrichtigungen →
+> „Wecker“ eine geheime Adresse `https://…/tick.php?k=…` erzeugen und bei einem kostenlosen Dienst (z. B. cron-job.org)
+> alle 15 Minuten aufrufen lassen. Der Aufruf prüft DWD-Warnungen, ruft Mails ab, übernimmt Website-Anfragen, legt
+> Regelaufgaben an und verschickt dazu Push-Benachrichtigungen. Ohne gültigen Schlüssel antwortet er mit 403.
+
 > **Ohne Cronjob (STRATO Hosting Basic hat keine Cronjob-Verwaltung, Stand 22.11.2026):** Die Zentrale erledigt die
 > Hintergrundaufgaben beim Öffnen. „Heute“ startet Regelaufgaben, Wochenvorschlag, Erinnerungen und Abfallabgleich
 > höchstens einmal pro Stunde; „Mail“ ruft den Posteingang höchstens alle 5 Minuten ab (nie bei abgelehntem Passwort).

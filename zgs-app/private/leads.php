@@ -12,6 +12,9 @@ const GSZ_SETTING_DEFAULTS=['review_url'=>'https://share.google/xetYVdtG41vnkgIa
  'website_origin'=>'https://gebaeudeservice-zentrum.de','sos_status'=>'frei','sos_until'=>'','sos_callback'=>'20',
  // 430: Adresse der Zentrale (für QR-Codes), Telefon für Aushang/Karten, Preisrechner Treppenhausreinigung (aus, bis Sätze eingetragen sind)
  'zentrale_url'=>'https://gszintern.de','company_phone'=>'0176 64806595',
+ // 440: Push-Benachrichtigungen und DWD-Warnungen (Orte als „Name:Breite,Länge;…“), Winterdienst bei Warnung: ask|auto|off
+ 'push_leads'=>'1','push_reports'=>'1','push_weather'=>'1','push_contact'=>'info@gebaeudeservice-zentrum.de','tick_token'=>'',
+ 'weather_points'=>'Gütersloh:51.9069,8.3786','weather_tasks'=>'ask','weather_task_time'=>'06:00','weather_checked'=>'','tick_last'=>'',
  'calc_enabled'=>'0','calc_rate'=>'','calc_base_min'=>'10','calc_floor_min'=>'5','calc_cellar_min'=>'10','calc_elevator_min'=>'5','calc_window_min'=>'3','calc_min_visit'=>'','calc_vat'=>'zzgl','calc_range_pct'=>'10'];
 
 function gszLeadsReady(PDO $pdo):bool {try{return (bool)$pdo->query("SELECT COUNT(*) FROM app_migrations WHERE version='420_anfragen'")->fetchColumn();}catch(Throwable $e){return false;}}
@@ -107,7 +110,7 @@ function gszLeadsFromMail(PDO $pdo,int $limit=200):int {
  $q=$pdo->query("SELECT m.id,m.body FROM mail_messages m LEFT JOIN leads l ON l.mail_message_id=m.id WHERE l.id IS NULL AND m.subject LIKE 'Neue Website-Anfrage%' ORDER BY m.id DESC LIMIT ".max(1,min(500,$limit)));$n=0;
  $ins=$pdo->prepare("INSERT IGNORE INTO leads(source,service,object_type,name,company,phone,email,place,message,source_page,mail_message_id) VALUES('website',?,?,?,?,?,?,?,?,?,?)");
  foreach($q->fetchAll(PDO::FETCH_ASSOC) as $m){$f=gszParseFormMail((string)$m['body']);if(!$f)continue;
-  $ins->execute([mb_substr($f['service']??'',0,120),mb_substr($f['object_type']??'',0,120),mb_substr($f['name']??'',0,190),mb_substr($f['company']??'',0,190),mb_substr($f['phone']??'',0,80),mb_substr($f['email']??'',0,190),mb_substr($f['place']??'',0,190),mb_substr($f['message']??'',0,5000),mb_substr($f['source_page']??'',0,255),$m['id']]);$n+=$ins->rowCount();}
+  $ins->execute([mb_substr($f['service']??'',0,120),mb_substr($f['object_type']??'',0,120),mb_substr($f['name']??'',0,190),mb_substr($f['company']??'',0,190),mb_substr($f['phone']??'',0,80),mb_substr($f['email']??'',0,190),mb_substr($f['place']??'',0,190),mb_substr($f['message']??'',0,5000),mb_substr($f['source_page']??'',0,255),$m['id']]);if($ins->rowCount()){$n++;$lid=(int)$pdo->lastInsertId();try{require_once __DIR__.'/push.php';gszPushNotify($pdo,'leads','lead:'.$lid,'📩 Neue Anfrage'.(($f['service']??'')!==''?': '.$f['service']:''),trim(($f['name']??'').(($f['place']??'')!==''?' · '.$f['place']:''),' ·')?:'Über das Kontaktformular der Website','leads.php#anfrage-'.$lid);}catch(Throwable $e){}}}
  return $n;
 }
 

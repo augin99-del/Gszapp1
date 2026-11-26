@@ -74,7 +74,9 @@ function gszDefectSubmit(PDO $pdo,array $property,array $in,?array $photo=null,?
  $name=null;$mime=null;if(is_array($photo)&&($photo['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_NO_FILE)[$name,$mime]=gszStoreCleanPhoto($photo,gszDefectPhotoDir());
  try{$pdo->prepare('INSERT INTO defect_reports(property_id,location,message,contact,photo_name,photo_mime) VALUES(?,?,?,?,?,?)')->execute([$property['id'],$location,$message,$contact,$name,$mime]);}
  catch(Throwable $e){if($p=gszDefectPhotoPath($name))@unlink($p);throw $e;}
- $id=(int)$pdo->lastInsertId();gszAudit($pdo,null,'defect_reported',['id'=>$id,'property'=>$property['id']]);return $id;
+ $id=(int)$pdo->lastInsertId();gszAudit($pdo,null,'defect_reported',['id'=>$id,'property'=>$property['id']]);
+ try{require_once __DIR__.'/push.php';gszPushNotify($pdo,'reports','defect:'.$id,'🛠 Mieter-Meldung: '.$property['name'],mb_strimwidth(($location!==''?$location.': ':'').$message,0,140,'…'),'meldungen.php#meldung-'.$id);}catch(Throwable $e){}
+ return $id;
 }
 function gszDefect(PDO $pdo,int $id):?array {$q=$pdo->prepare('SELECT d.*,p.name property_name,p.address property_address,n.done_at note_done FROM defect_reports d JOIN properties p ON p.id=d.property_id LEFT JOIN quick_notes n ON n.id=d.note_id WHERE d.id=?');$q->execute([$id]);return $q->fetch(PDO::FETCH_ASSOC)?:null;}
 /** Sichtbarer Status: eine übernommene Meldung gilt als erledigt, sobald ihr To-do abgehakt ist. */

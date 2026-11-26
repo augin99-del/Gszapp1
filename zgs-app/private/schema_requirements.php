@@ -667,6 +667,30 @@ return array (
       3 => 'report_since',
       4 => 'portal_since',
     ),
+    'push_events' => 
+    array (
+      0 => 'event_key',
+      1 => 'kind',
+      2 => 'title',
+      3 => 'body',
+      4 => 'url',
+      5 => 'delivered',
+      6 => 'created_at',
+    ),
+    'push_subscriptions' => 
+    array (
+      0 => 'id',
+      1 => 'admin_id',
+      2 => 'endpoint_hash',
+      3 => 'endpoint',
+      4 => 'p256dh',
+      5 => 'auth',
+      6 => 'label',
+      7 => 'created_at',
+      8 => 'last_ok_at',
+      9 => 'fail_count',
+      10 => 'last_error',
+    ),
     'quick_notes' => 
     array (
       0 => 'id',
@@ -918,6 +942,21 @@ return array (
       1 => 'direction',
       2 => 'task_id',
     ),
+    'weather_alerts' => 
+    array (
+      0 => 'alert_id',
+      1 => 'event_code',
+      2 => 'event',
+      3 => 'headline',
+      4 => 'description',
+      5 => 'severity',
+      6 => 'onset',
+      7 => 'expires',
+      8 => 'area',
+      9 => 'winter',
+      10 => 'fetched_at',
+      11 => 'planned_at',
+    ),
     'web_events' => 
     array (
       0 => 'day',
@@ -1063,5 +1102,6 @@ return array (
     21 => '410_projekte',
     22 => '420_anfragen',
     23 => '430_service',
+    24 => '440_push',
   ),
 );
