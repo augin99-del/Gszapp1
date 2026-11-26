@@ -10,7 +10,7 @@ function gszNavSection(string $page):string {
  return match(true){
   in_array($page,['index.php','notes.php'],true)=>'heute',
   in_array($page,['planner.php','route.php','appointments.php','task.php'],true)=>'woche',
-  in_array($page,['objects.php','property.php','waste_setup.php','object_import.php','meldungen.php'],true)=>'objekte',
+  in_array($page,['objects.php','property.php','waste_setup.php','object_import.php','meldungen.php','haeuser.php'],true)=>'objekte',
   str_starts_with($page,'estate')||in_array($page,['projects.php','project.php'],true)=>'immobilien',
   in_array($page,['mail.php','compose.php','leads.php'],true)=>'mail',
   default=>'mehr'};

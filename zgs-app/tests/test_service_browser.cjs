@@ -66,9 +66,21 @@ try{const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,heigh
  ok((await p.textContent('main')).includes('erscheint jetzt auf der Website'),'calculator enabled');
  r=await c.request.get(base+'/web_calc.php?floors=3&entrances=1&rhythm=weekly&cellar=1',{headers:{Origin:'https://gebaeudeservice-zentrum.de'}});j=await r.json();
  ok(j.enabled&&j.low===80&&j.high===105&&j.text.includes('zzgl. MwSt.')&&r.headers()['access-control-allow-origin']==='https://gebaeudeservice-zentrum.de'&&!r.headers()['set-cookie'],'calculator endpoint with CORS');
+ // Häuser-Übersicht: alle Häuser, für alle einrichten, alle Aushänge in einem PDF, erneuern
+ q("INSERT INTO properties(name,address) VALUES('Zweites Haus','Teststraße 2'),('Drittes Haus','Teststraße 3')");
+ await p.goto(base+'/objects.php');await p.getByRole('link',{name:/Häuser: QR-Meldung/}).tap();await p.waitForURL(/haeuser\.php/);
+ let hs=await p.textContent('main');ok(hs.includes('Zweites Haus')&&hs.includes('Drittes Haus')&&(await p.locator('article.house-row').count())===q('SELECT COUNT(*) n FROM properties')[0].n,'overview lists all houses');
+ const missing=q('SELECT COUNT(*) n FROM properties p LEFT JOIN property_links l ON l.property_id=p.id WHERE l.report_token IS NULL')[0].n;await Promise.all([p.waitForNavigation(),p.getByRole('button',{name:'QR-Meldung für alle übrigen einrichten'}).tap()]);ok(missing>=2&&(await p.textContent('main')).includes('für '+missing+' Häuser eingerichtet'),'set up for all remaining');
+ const total=q('SELECT COUNT(*) n FROM properties')[0].n;ok(q('SELECT COUNT(*) n FROM property_links WHERE report_token IS NOT NULL')[0].n===total,'every house has a QR link');
+ r=await c.request.get(base+'/haeuser.php?pdf=1');const all=(await r.body()).toString('latin1');ok(r.status()===200&&all.startsWith('%PDF')&&(all.match(/\/Type \/Page\b/g)||[]).length===total,'all notices in one PDF, one page per house');
+ const row=p.locator('article.house-row').filter({hasText:'Zweites Haus'});const oldTok=q("SELECT l.report_token t FROM property_links l JOIN properties p ON p.id=l.property_id WHERE p.name='Zweites Haus'")[0].t;
+ await Promise.all([p.waitForNavigation(),row.locator('.link-box').first().getByRole('button',{name:'Erneuern'}).tap()]);const newTok=q("SELECT l.report_token t FROM property_links l JOIN properties p ON p.id=l.property_id WHERE p.name='Zweites Haus'")[0].t;
+ ok(newTok&&newTok!==oldTok&&(await tc.request.get(base+'/melden.php?k='+oldTok)).status()===404,'renew invalidates old link');
+ await Promise.all([p.waitForNavigation(),p.locator('article.house-row').filter({hasText:'Drittes Haus'}).locator('.link-box').nth(1).getByRole('button',{name:'Einrichten'}).tap()]);
+ ok(await p.locator('article.house-row').filter({hasText:'Drittes Haus'}).locator('[data-copy]').count()===1,'portal per house from the overview');
  // F: Bewertungskarten
  r=await c.request.get(base+'/bewertungskarten.php');ok(r.status()===200&&(await r.body()).slice(0,4).toString()==='%PDF','review cards PDF');
- for(const u of ['/meldungen.php','/einsaetze.php','/website.php',`/property.php?id=${pid}`,'/workers.php?id='+wid])for(const w of [390,1440]){await p.setViewportSize({width:w,height:900});await p.goto(base+u);ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'fits '+w+' '+u);}
+ for(const u of ['/haeuser.php','/objects.php','/meldungen.php','/einsaetze.php','/website.php',`/property.php?id=${pid}`,'/workers.php?id='+wid])for(const w of [390,1440]){await p.setViewportSize({width:w,height:900});await p.goto(base+u);ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'fits '+w+' '+u);}
  for(const u of [path,new URL(portal).pathname+new URL(portal).search])for(const w of [390,1440]){await t.setViewportSize({width:w,height:900});await t.goto(base+u);ok(await t.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'public fits '+w);}
  ok(errors.length===0,'no JavaScript errors: '+errors.join(' | '));console.log(`Service browser PASS (${n} checks; synthetic data).`);
 }finally{await b.close()}})().catch(e=>{console.error(e);process.exit(1)});

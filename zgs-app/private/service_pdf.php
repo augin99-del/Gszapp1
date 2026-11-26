@@ -15,9 +15,12 @@ final class GszServicePdf extends tFPDF {
 function gszPdfNew(string $footer=''):GszServicePdf {$p=new GszServicePdf();$p->footerText=$footer;$p->SetMargins(18,16,18);$p->SetAutoPageBreak(true,18);$p->SetTitle('Zentrum Gebäudeservice',true);$p->SetCreator('GSZ-Zentrale',true);return $p;}
 
 /** A4-Aushang fürs Treppenhaus: „Schaden melden“ mit großem QR-Code. */
-function gszAushangPdf(PDO $pdo,array $prop,string $token):string {
+function gszAushangPdf(PDO $pdo,array $prop,string $token):string {$p=gszPdfNew();$p->SetAutoPageBreak(false);gszAushangPage($p,$pdo,$prop,$token);return $p->Output('S');}
+/** Alle Aushänge in einem PDF: je Haus eine Seite. $list: Zeilen mit id, name, address, report_token. */
+function gszAushangAllPdf(PDO $pdo,array $list):string {$p=gszPdfNew();$p->SetAutoPageBreak(false);$n=0;foreach($list as $r)if(!empty($r['report_token'])){gszAushangPage($p,$pdo,$r,(string)$r['report_token']);$n++;}if(!$n)throw new RuntimeException('Noch kein Haus mit QR-Meldung eingerichtet.');return $p->Output('S');}
+function gszAushangPage(GszServicePdf $p,PDO $pdo,array $prop,string $token):void {
  $url=gszReportUrl($pdo,$token);$company=gszSetting($pdo,'company');$phone=gszSetting($pdo,'company_phone');
- $p=gszPdfNew();$p->SetAutoPageBreak(false);$p->AddPage();
+ $p->AddPage();
  $p->SetFillColor(11,110,79);$p->Rect(0,0,210,14,'F');$p->SetY(4);$p->SetTextColor(255,255,255);$p->SetFont('DejaVu','',11);$p->Cell(0,6,$p->safe($company.' · Ihr Hausmeisterservice'),0,1,'C');
  $p->SetY(30);$p->para(13,'Schaden oder Mangel im Haus?',28,'C',[20,33,43]);$p->Ln(1);$p->para(9,'Einfach hier melden – in einer Minute.',17,'C',[11,110,79]);
  gszQrPdf($p,$url,52,66,106);
@@ -28,7 +31,6 @@ function gszAushangPdf(PDO $pdo,array $prop,string $token):string {
  if($phone!=='')$p->para(7,'Notfall (Wasserrohrbruch, Sturmschaden): '.$phone,13,'C',[179,38,30]);
  $p->para(5,'Bei Gefahr für Leib und Leben: 112',10,'C',[91,107,120]);
  $p->SetY(266);$p->para(4,'Ohne App, ohne Anmeldung. Ihre Angaben dienen nur der Erledigung der Meldung.',8,'C',[110,120,128]);$p->para(4,$url,7,'C',[150,158,165]);
- return $p->Output('S');
 }
 
 /** Bild für das PDF vorbereiten: JPEG/PNG direkt, WebP über GD in ein temporäres JPEG. */

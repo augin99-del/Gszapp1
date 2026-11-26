@@ -127,6 +127,7 @@ und vor jedem Update. Die Sicherung umfasst die Datenbank; hochgeladene Original
 zusätzlich per SFTP sichern.
 
 ## Neu in 430 (11/2026)
+- **Alle Häuser auf einen Blick:** Objekte → „Häuser: QR-Meldung & Portal“ – je Haus einrichten, erneuern, abschalten; „Alle Aushänge drucken“ gibt ein PDF mit je einer Seite pro Haus.
 - **Mieter-Meldungen:** Objekt öffnen → „Mieter-Meldungen & Hausverwaltung“ → „QR-Meldung einrichten“ → Aushang drucken und ins Treppenhaus hängen. Neue Meldungen stehen auf „Heute“; „Als To-do übernehmen“ legt sie in die Merkliste. Abgehakt = für die Verwaltung „Erledigt“.
 - **Portal für Hausverwaltungen:** im selben Abschnitt „Portal einrichten“ → Link per Mail an die Verwaltung. Monatsbericht als PDF jederzeit abrufbar.
 - **Helfer-App:** Mehr → Helfer → Person öffnen → „Helfer-Zugang“. Der Helfer meldet sich unter gszintern.de/helfer.php an und sieht nur seine zugeteilten Aufgaben.

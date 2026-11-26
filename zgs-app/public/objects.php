@@ -5,6 +5,7 @@ $error=$_SESSION['operations_error']??'';unset($_SESSION['operations_error']);if
 $q=trim(mb_substr((string)($_GET['q']??''),0,80));$customers=$pdo->query('SELECT id,name FROM customers ORDER BY name LIMIT 500')->fetchAll();
 $s=$pdo->prepare("SELECT p.id,p.name,(SELECT COUNT(*) FROM tasks t WHERE t.property_id=p.id AND t.done=0 AND t.due_date<=CURDATE()) due FROM properties p WHERE ?='' OR p.name LIKE ? ORDER BY p.name LIMIT 500");$s->execute([$q,'%'.$q.'%']);$objects=$s->fetchAll();
 gszPageStart('Objekte');?>
+<p class="lead-actions"><a class="btn small" href="haeuser.php">Häuser: QR-Meldung &amp; Portal</a><a class="btn small" href="meldungen.php">Mieter-Meldungen</a></p>
 <form class="search" method="get" role="search"><label class="sr-only" for="q">Objekt suchen</label><input id="q" type="search" name="q" value="<?=e($q)?>" placeholder="Objekt suchen"></form>
 <?php if($objects):?><div class="list"><?php foreach($objects as $o):?><a href="property.php?id=<?=(int)$o['id']?>"><span class="name"><?=e($o['name'])?></span><?php if((int)$o['due']):?><span class="pill"><?=(int)$o['due']===1?'1 offen heute':(int)$o['due'].' offen heute'?></span><?php endif?></a><?php endforeach?></div>
 <?php else:?><div class="empty"><strong><?=$q!==''?'Kein Objekt gefunden.':'Noch keine Objekte.'?></strong><?=$q!==''?'Suchbegriff prüfen.':'Lege dein erstes Objekt an.'?></div><?php endif?>

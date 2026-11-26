@@ -111,3 +111,16 @@ function gszPortalData(PDO $pdo,int $property,string $month,?string $today=null)
 }
 function gszMonthName(string $month):string {return ['','Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'][(int)substr($month,5,2)].' '.substr($month,0,4);}
 function gszPortalMonths(?string $today=null):array {$d=new DateTimeImmutable(($today??(new DateTimeImmutable('today',new DateTimeZone('Europe/Berlin')))->format('Y-m-d')));$d=$d->modify('first day of this month');$o=[];for($i=0;$i<6;$i++)$o[]=$d->modify("-$i months")->format('Y-m');return $o;}
+
+/** Übersicht aller Häuser mit Stand von QR-Meldung und Portal, offenen Meldungen und Kontakt der Verwaltung. */
+function gszLinksOverview(PDO $pdo,string $q=''):array {
+ $w='';$a=[];if(($q=trim($q))!==''){$w=' WHERE p.name LIKE ? OR p.address LIKE ?';$a=['%'.$q.'%','%'.$q.'%'];}
+ $s=$pdo->prepare("SELECT p.id,p.name,p.address,p.contact_name,p.contact_email,l.report_token,l.portal_token,l.report_since,l.portal_since,
+  (SELECT COUNT(*) FROM defect_reports d LEFT JOIN quick_notes n ON n.id=d.note_id WHERE d.property_id=p.id AND (d.status='neu' OR (d.status='uebernommen' AND n.done_at IS NULL))) open_reports
+  FROM properties p LEFT JOIN property_links l ON l.property_id=p.id$w ORDER BY p.name,p.id LIMIT 1000");$s->execute($a);return $s->fetchAll(PDO::FETCH_ASSOC);
+}
+/** Richtet für alle Häuser ohne Link einen ein (kind report|portal). Rückgabe: Anzahl neu eingerichtet. */
+function gszLinksSetupAll(PDO $pdo,int $admin,string $kind):int {
+ if(!in_array($kind,['report','portal'],true))throw new RuntimeException('Unbekannter Link.');$n=0;
+ foreach(gszLinksOverview($pdo) as $r)if(empty($r[$kind.'_token'])){gszLinkRenew($pdo,$admin,(int)$r['id'],$kind);$n++;}return $n;
+}

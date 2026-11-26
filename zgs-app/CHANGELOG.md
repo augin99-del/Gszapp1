@@ -6,6 +6,7 @@
 - Helfer-App (/helfer.php): eigener Zugang je Mitarbeiter, nur eigene Aufgaben, Start/Fertig, Vorher-/Nachher-Fotos, Sperre nach 5 Fehlversuchen, kein GPS
 - Schlüsseldienst-Einsätze: Erfassung in Sekunden, Umsatz je Monat/Ort/Kanal, 12-Monats-Balken, Rechnung → Erinnerung in der Merkliste, Bewertung per WhatsApp, aus Anfragen übernehmbar
 - Preisrechner Treppenhausreinigung: Sätze unter Website einstellbar, öffentlicher Endpunkt web_calc.php (aus, bis eingeschaltet)
+- Seite „Häuser: QR & Portal“ (haeuser.php): alle Häuser auf einen Blick, einrichten/erneuern/abschalten je Haus, „für alle einrichten“, alle Aushänge in einem PDF
 - Bewertungskarten 85 × 55 mm mit QR-Code als Druck-PDF; QR-Erzeuger ohne Fremdbibliothek (private/qr.php)
 - Migration 430 (additiv, Marker 430_service), 80 Tabellen; Tests test_service.php, test_service_browser.cjs
 
