@@ -31,6 +31,11 @@ try{const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,heigh
  r=await c.request.get(base+'/tick.php?k='+k);const j=await r.json();ok(r.status()===200&&j.ok===true&&!r.headers()['set-cookie'],'wake-up runs without login/cookie: '+JSON.stringify(j));
  await p.reload();ok(!(await p.locator('#wecker').textContent()).includes('noch nie'),'last wake-up shown');
  await Promise.all([p.waitForNavigation(),p.locator('#geraete').getByRole('button',{name:'Entfernen'}).tap()]);ok(q('SELECT COUNT(*) n FROM push_subscriptions')[0].n==0,'device removed');
+ // Premium-Rahmen: Suche (Strg+K), + Neu, Glocke, Cockpit
+ await p.setViewportSize({width:1440,height:900});await p.goto(base+'/index.php');ok(await p.locator('.deskbar .deskbar-bell').count()===1&&await p.locator('.side-areas a').count()>=6&&await p.locator('.cockpit-rail .widget').count()>=3,'desktop shell with areas, bell and cockpit');
+ await p.keyboard.press('Control+k');await p.locator('#cmdk input').fill('winterdienst');await p.waitForTimeout(600);ok(await p.locator('#cmdk').evaluate(d=>d.open)&&(await p.locator('#cmdk .cmdk-item').count())>=1,'Ctrl+K search finds results');
+ await Promise.all([p.waitForNavigation(),p.keyboard.press('Enter')]);ok(!/index\.php$/.test(p.url()),'Enter opens the first hit: '+p.url());
+ let sj=await (await c.request.get(base+'/suche.php?q=Neuer%20Kunde',{headers:{Accept:'application/json'}})).json();ok(sj.results.some(r=>r.url.includes('neu=kunde')),'search offers actions');
  for(const u of ['/benachrichtigungen.php','/index.php'])for(const w of [390,1440]){await p.setViewportSize({width:w,height:900});await p.goto(base+u);ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'fits '+w+' '+u);}
  ok(errors.length===0,'no JavaScript errors: '+errors.join(' | '));console.log(`Push browser PASS (${n} checks; synthetic data, no real push service).`);
 }finally{await b.close()}})().catch(e=>{console.error('Error after: '+globalThis.__last);console.error(e);process.exit(1)});
