@@ -7,6 +7,9 @@ $admin=(int)$_SESSION['admin_id'];
 if($_SERVER['REQUEST_METHOD']==='POST'){checkCsrf();$id=(int)($_POST['id']??0);$r=(string)($_POST['return']??'');$back=preg_match('/^(meldungen\.php(\?filter=[a-z]+)?|property\.php\?id=\d+)(#[a-z0-9-]+)?$/D',$r)?$r:'meldungen.php';
  try{switch((string)($_POST['action']??'')){
   case 'note':gszDefectToNote($pdo,$admin,$id);$_SESSION['app_notice']='Als To-do in die Merkliste übernommen.';break;
+  case 'done':gszDefectDone($pdo,$admin,$id);$_SESSION['app_notice']='Meldung abgehakt.';break;
+  case 'reopen':gszDefectReopen($pdo,$admin,$id);$_SESSION['app_notice']='Meldung wieder geöffnet.';break;
+  case 'delete':gszDefectDelete($pdo,$admin,$id);$_SESSION['app_notice']='Meldung gelöscht.';break;
   case 'status':gszDefectSetStatus($pdo,$admin,$id,(string)($_POST['status']??''));$_SESSION['app_notice']='Status: '.(GSZ_DEFECT_STATUS[$_POST['status']]??'').'.';break;
   default:throw new RuntimeException('Aktion unbekannt.');}
  }catch(Throwable $e){gszUiError($e);}redirect($back);}

@@ -28,7 +28,12 @@ $note=gszDefectToNote($p,1,$id);$nr=$p->query("SELECT * FROM quick_notes WHERE i
 sv(gszDefectToNote($p,1,$id)===$note&&gszDefectState(gszDefect($p,$id))==='uebernommen','taking over twice is harmless');
 $p->exec("UPDATE quick_notes SET done_at=NOW() WHERE id=$note");sv(gszDefectState(gszDefect($p,$id))==='erledigt','report done as soon as the to-do is ticked');
 $open=gszDefects($p,'offen',1);sv(!in_array($id,array_column($open,'id'))&&count($open)===GSZ_DEFECT_LIMIT_HOUR,'open list excludes done');
-gszDefectSetStatus($p,1,(int)$open[0]['id'],'verworfen');svThrows(fn()=>gszDefectSetStatus($p,1,$id,'quatsch'),'bad status');
+gszDefectSetStatus($p,1,(int)$open[0]['id'],'verworfen');
+// Abhaken, wieder öffnen, löschen
+$p->exec("UPDATE quick_notes SET done_at=NULL WHERE id=$note");gszDefectDone($p,1,$id);sv(gszDefect($p,$id)['status']==='erledigt'&&$p->query("SELECT done_at FROM quick_notes WHERE id=$note")->fetchColumn()!==null,'tick off: report done, to-do done too');
+gszDefectReopen($p,1,$id);sv(gszDefectState(gszDefect($p,$id))==='uebernommen'&&$p->query("SELECT done_at FROM quick_notes WHERE id=$note")->fetchColumn()===null,'reopen: back to in progress, to-do open');
+$plain=(int)$open[1]['id'];gszDefectDone($p,1,$plain);gszDefectReopen($p,1,$plain);sv(gszDefect($p,$plain)['status']==='neu','reopen without to-do → new');
+gszDefectDelete($p,1,$id);sv(gszDefect($p,$id)===null&&(int)$p->query("SELECT COUNT(*) FROM quick_notes WHERE id=$note")->fetchColumn()===1,'delete removes report, keeps the to-do');svThrows(fn()=>gszDefectDelete($p,1,$id),'deleting twice');svThrows(fn()=>gszDefectSetStatus($p,1,$id,'quatsch'),'bad status');
 // B: Portal und Monatsbericht
 $pt=gszLinkRenew($p,1,1,'portal');sv(gszLinkProperty($p,'portal',$pt)['name']==='Musterweg 1'&&gszLinkProperty($p,'report',$t2)!==null,'portal link next to report link');
 $month=substr($today,0,7);$p->prepare("INSERT INTO tasks(property_id,title,due_date,done,completed_on) VALUES(1,'Treppenhausreinigung',?,1,?)")->execute([$today,$today]);

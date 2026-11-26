@@ -96,6 +96,26 @@ function gszDefectToNote(PDO $pdo,int $admin,int $id):int {
   gszAudit($pdo,$admin,'defect_to_note',['id'=>$id,'note'=>$note]);$pdo->commit();return $note;
  }catch(Throwable $e){$pdo->rollBack();if($photo)gszNoteRemovePhoto($photo);throw $e;}
 }
+/** Abhaken: Meldung erledigt; ein zugehöriges To-do in der Merkliste wird mit erledigt. */
+function gszDefectDone(PDO $pdo,int $admin,int $id):void {
+ $d=gszDefect($pdo,$id);if(!$d)throw new RuntimeException('Meldung nicht gefunden.');
+ $pdo->prepare("UPDATE defect_reports SET status='erledigt',handled_at=UTC_TIMESTAMP() WHERE id=?")->execute([$id]);
+ if($d['note_id'])$pdo->prepare('UPDATE quick_notes SET done_at=NOW(),row_version=row_version+1 WHERE id=? AND done_at IS NULL')->execute([$d['note_id']]);
+ gszAudit($pdo,$admin,'defect_done',['id'=>$id,'note'=>$d['note_id']]);
+}
+/** Wieder öffnen: mit To-do → „In Arbeit“ (To-do wieder offen), sonst „Neu“. */
+function gszDefectReopen(PDO $pdo,int $admin,int $id):void {
+ $d=gszDefect($pdo,$id);if(!$d)throw new RuntimeException('Meldung nicht gefunden.');
+ if($d['note_id']){$pdo->prepare("UPDATE defect_reports SET status='uebernommen' WHERE id=?")->execute([$id]);$pdo->prepare('UPDATE quick_notes SET done_at=NULL,row_version=row_version+1 WHERE id=?')->execute([$d['note_id']]);}
+ else $pdo->prepare("UPDATE defect_reports SET status='neu',handled_at=NULL WHERE id=?")->execute([$id]);
+ gszAudit($pdo,$admin,'defect_reopened',['id'=>$id]);
+}
+/** Endgültig löschen (inkl. Foto). Ein schon angelegtes To-do in der Merkliste bleibt bestehen. */
+function gszDefectDelete(PDO $pdo,int $admin,int $id):void {
+ $d=gszDefect($pdo,$id);if(!$d)throw new RuntimeException('Meldung nicht gefunden.');
+ $pdo->prepare('DELETE FROM defect_reports WHERE id=?')->execute([$id]);if($f=gszDefectPhotoPath($d['photo_name']))@unlink($f);
+ gszAudit($pdo,$admin,'defect_deleted',['id'=>$id,'property'=>(int)$d['property_id']]);
+}
 function gszDefectSetStatus(PDO $pdo,int $admin,int $id,string $status):void {
  if(!in_array($status,['neu','erledigt','verworfen'],true))throw new RuntimeException('Status unbekannt.');
  $q=$pdo->prepare('UPDATE defect_reports SET status=?,handled_at=IF(?=\'neu\',NULL,UTC_TIMESTAMP()) WHERE id=?');$q->execute([$status,$status,$id]);if(!$q->rowCount()&&!gszDefect($pdo,$id))throw new RuntimeException('Meldung nicht gefunden.');

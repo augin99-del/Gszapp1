@@ -31,6 +31,11 @@ try{const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,heigh
  r=await tc.request.get(base+'/'+img);ok(r.status()===403,'tenant cannot open the admin photo URL');
  await Promise.all([p.waitForNavigation(),card.getByRole('button',{name:'Als To-do übernehmen'}).tap()]);ok((await p.textContent('main')).includes('Als To-do in die Merkliste übernommen'),'taken over');
  ok(q("SELECT title FROM quick_notes WHERE kind='todo' ORDER BY id DESC LIMIT 1")[0].title==='Treppenhaus: Licht defekt: Licht im 2. OG geht nicht.','to-do in Merkliste');
+ // Abhaken und Löschen
+ q(`INSERT INTO defect_reports(property_id,location,message) VALUES(${pid},'Keller','Tür klemmt'),(${pid},'Müllplatz','Deckel kaputt')`);await p.goto(base+'/meldungen.php');
+ card=p.locator('.card.defect').filter({hasText:'Tür klemmt'});await Promise.all([p.waitForNavigation(),card.getByRole('button',{name:'✓ Erledigt'}).tap()]);ok((await p.textContent('main')).includes('Meldung abgehakt')&&q("SELECT status FROM defect_reports WHERE message='Tür klemmt'")[0].status==='erledigt'&&await p.locator('.card.defect').filter({hasText:'Tür klemmt'}).count()===0,'tick off removes it from the open list');
+ card=p.locator('.card.defect').filter({hasText:'Deckel kaputt'});await card.locator('details.move summary',{hasText:'Löschen'}).tap();await Promise.all([p.waitForNavigation(),card.getByRole('button',{name:'Endgültig löschen'}).tap()]);ok((await p.textContent('main')).includes('Meldung gelöscht')&&q("SELECT COUNT(*) n FROM defect_reports WHERE message='Deckel kaputt'")[0].n==0,'delete after confirmation');
+ await p.goto(base+'/meldungen.php?filter=erledigt');await Promise.all([p.waitForNavigation(),p.locator('.card.defect').filter({hasText:'Tür klemmt'}).getByRole('button',{name:'Wieder öffnen'}).tap()]);ok(q("SELECT status FROM defect_reports WHERE message='Tür klemmt'")[0].status==='neu','reopen');
  // B: Portal für die Verwaltung
  await p.goto(base+`/property.php?id=${pid}`);await Promise.all([p.waitForNavigation(),p.locator('#meldungen').getByRole('button',{name:'Portal einrichten'}).tap()]);
  const portal=await p.locator('#meldungen [data-copy]').inputValue();ok(/\/portal\.php\?k=[A-Za-z0-9_-]{32}$/.test(portal),'portal link');ok(await p.locator('#meldungen a[href^="compose.php?to=hv%40example.invalid"]').count()===1,'send link by mail');

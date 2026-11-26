@@ -509,3 +509,4 @@ button.link{min-height:40px;padding:0 var(--s-2);border:0;background:transparent
 .bars .bar span{display:block;background:var(--c-line-2);border-radius:4px 4px 0 0}.bars .bar.is-current span{background:var(--c-accent)}.bars .bar small{font-size:10px;text-align:center;color:var(--c-ink-2);margin-top:3px;overflow:hidden}
 .grid-2{display:grid;grid-template-columns:1fr;gap:var(--s-3)}@media(min-width:760px){.grid-2{grid-template-columns:1fr 1fr}}
 table.mini{width:100%;border-collapse:collapse}table.mini td{padding:6px 0;border-top:1px solid var(--c-line)}table.mini tr:first-child td{border-top:0}table.mini .num{text-align:right;white-space:nowrap;padding-left:var(--s-2)}
+.delete-now,button.delete-now{background:#b3261e;color:#fff;border-color:#b3261e}

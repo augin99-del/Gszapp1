@@ -10,9 +10,11 @@ function gszRenderDefect(array $d,string $csrf,string $return,bool $showProperty
  $h.='<p class="lead-msg">'.nl2br(e($d['message'])).'</p>';
  if($d['photo_name'])$h.='<a class="defect-photo" href="defect_photo.php?id='.(int)$d['id'].'" target="_blank" rel="noopener"><img src="defect_photo.php?id='.(int)$d['id'].'" alt="Foto zur Meldung" loading="lazy"></a>';
  $h.='<div class="lead-actions">';
- if($st==='neu')$h.=$f('note').'<button class="small primary">Als To-do übernehmen</button></form>'.$f('status','<input type="hidden" name="status" value="erledigt">').'<button class="small">Schon erledigt</button></form>'.$f('status','<input type="hidden" name="status" value="verworfen">').'<button class="small ghost">Verwerfen</button></form>';
- elseif($st==='uebernommen')$h.='<a class="btn small" href="notes.php#notiz-'.(int)$d['note_id'].'">To-do in der Merkliste</a><span class="muted small-note">wird „erledigt“, sobald das To-do abgehakt ist</span>';
- else $h.=$f('status','<input type="hidden" name="status" value="neu">').'<button class="small ghost">Wieder öffnen</button></form>';
+ if($st==='neu')$h.=$f('note').'<button class="small primary">Als To-do übernehmen</button></form>';
+ elseif($st==='uebernommen')$h.='<a class="btn small" href="notes.php#notiz-'.(int)$d['note_id'].'">To-do ansehen</a>';
+ if(in_array($st,['neu','uebernommen'],true))$h.=$f('done').'<button class="small'.($st==='uebernommen'?' primary':'').'">✓ Erledigt</button></form>';
+ else $h.=$f('reopen').'<button class="small ghost">Wieder öffnen</button></form>';
+ $h.='<details class="move"><summary>Löschen</summary><div class="move-sheet">'.$f('delete').'<p class="hint">Meldung'.($d['photo_name']?' und Foto':'').' endgültig löschen? Sie verschwindet auch aus dem Portal der Verwaltung.'.($d['note_id']?' Das To-do in der Merkliste bleibt.':'').'</p><button class="small delete-now">Endgültig löschen</button></form></div></details>';
  return $h.'</div></article>';
 }
 /** Abschnitt auf der Objektseite: Meldungen, QR-Aushang, Portal für die Hausverwaltung. */
