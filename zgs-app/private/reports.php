@@ -12,6 +12,17 @@ const GSZ_DEFECT_PLACES=['Treppenhaus'=>'🪜','Eingang / Haustür'=>'🚪','Kel
 const GSZ_DEFECT_KINDS=['Licht defekt'=>'💡','Tür / Schloss'=>'🔑','Wasser / Feuchtigkeit'=>'💧','Heizung'=>'🔥','Müll / Tonnen'=>'♻️','Verschmutzung'=>'🧽','Etwas ist kaputt'=>'🔨','Sonstiges'=>'💬'];
 const GSZ_DEFECT_LIMIT_HOUR=6;const GSZ_DEFECT_LIMIT_DAY=20;
 
+/** Einheitliche Linien-Symbole (24×24, Strich) für das Meldeformular – statt Emojis. */
+const GSZ_DEFECT_ICONS=[
+ 'Treppenhaus'=>'M4 20h4v-4h4v-4h4V8h4','Eingang / Haustür'=>'M6 3h12v18H6z M15 12h.01','Keller'=>'M3 7l9-4 9 4-9 4-9-4z M3 7v10l9 4 9-4V7 M12 11v10',
+ 'Dachboden'=>'M3 11l9-7 9 7 M5 10v10h14V10 M10 20v-5h4v5','Aufzug'=>'M5 3h14v18H5z M9 9l3-3 3 3 M9 15l3 3 3-3','Außenanlage / Garten'=>'M12 22v-7 M7 10a5 5 0 1 1 10 0 5 5 0 0 1-10 0z',
+ 'Müllplatz'=>'M4 7h16 M10 11v6 M14 11v6 M6 7l1 13h10l1-13 M9 7V4h6v3','Garage / Stellplätze'=>'M5 15l1.5-5h11L19 15 M4 15h16v4H4z M7 19v2 M17 19v2','Sonstiges'=>'M12 21s-6-6-6-11a6 6 0 0 1 12 0c0 5-6 11-6 11z M12 10h.01',
+ 'Licht defekt'=>'M9 18h6 M10 21h4 M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z','Tür / Schloss'=>'M15 7a4 4 0 1 1-3.9 4.9L3 20v-3h3v-3h3l2.1-2.1 M16 7h.01',
+ 'Wasser / Feuchtigkeit'=>'M12 3s-6 7-6 11a6 6 0 0 0 12 0c0-4-6-11-6-11z','Heizung'=>'M3 6h18 M3 18h18 M6 6v12 M10 6v12 M14 6v12 M18 6v12','Müll / Tonnen'=>'M4 7h16 M10 11v6 M14 11v6 M6 7l1 13h10l1-13 M9 7V4h6v3',
+ 'Verschmutzung'=>'M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z','Etwas ist kaputt'=>'M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z',
+ 'Sonstiges (Art)'=>'M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z'];
+function gszDefectIcon(string $label,bool $kind=false):string {$d=GSZ_DEFECT_ICONS[$kind&&$label==='Sonstiges'?'Sonstiges (Art)':$label]??GSZ_DEFECT_ICONS['Sonstiges'];
+ return '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'.$d.'"/></svg>';}
 function gszServiceReady(PDO $pdo):bool {try{return (bool)$pdo->query("SELECT COUNT(*) FROM app_migrations WHERE version='430_service'")->fetchColumn();}catch(Throwable $e){return false;}}
 function gszRText(mixed $v,int $max):string {return mb_substr(trim(preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u','',(string)$v)??''),0,$max);}
 function gszToken():string {return rtrim(strtr(base64_encode(random_bytes(24)),'+/','-_'),'=');}

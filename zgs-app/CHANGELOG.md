@@ -1,5 +1,10 @@
 # Changelog
 
+## Gestaltung und Kunde beim Objekt (26.11.2026)
+- Zentrale im Markenauftritt der Website: grüner aktiver Menüpunkt, ruhigere Karten, Begrüßung und Kennzahlen auf Heute, farbige Kante je Arbeitsart (Reinigung, Tonnen, Außen, Winter, Termin)
+- Meldeformular für Mieter: grüner Kopfbereich mit Haus, Linien-Symbole statt Emojis, Notfall-Knopf, fester Senden-Knopf
+- Neues Objekt: Kunde (z. B. Hausverwaltung) gleich mit anlegen; Kontaktdaten auch als Ansprechpartner am Objekt
+
 ## 440 – Push und Glättewarnung (26.11.2026)
 - Push-Benachrichtigungen (Web Push, eigene VAPID-Schlüssel, Verschlüsselung RFC 8291, kein Fremddienst): neue Anfragen, Mieter-Meldungen, Glätte-/Schneewarnungen; je Art abschaltbar; Geräteverwaltung und Testnachricht (Mehr → Benachrichtigungen)
 - Weitere Push-Arten mit Schaltern: Frost-Hinweis, „Mein Tag“ (morgens), Tonnen für morgen (abends), Termin-Erinnerungen, fehlende Mieten, neue Mails, Systemüberwachung (private/push_digest.php)

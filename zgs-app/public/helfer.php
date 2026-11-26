@@ -23,7 +23,7 @@ $tz=new DateTimeZone('Europe/Berlin');$today=(new DateTimeImmutable('today',$tz)
 $hm=fn(?string $ts)=>$ts?(new DateTimeImmutable($ts.' UTC'))->setTimezone($tz)->format('H:i'):'';
 $hidden=fn(string $a)=>'<input type="hidden" name="csrf" value="'.e($csrf).'"><input type="hidden" name="action" value="'.e($a).'">';
 header("Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'");
-?><!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="GSZ Helfer"><title>Helfer · GSZ</title><link rel="stylesheet" href="aussen.css?v=3"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"></head><body>
+?><!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="GSZ Helfer"><title>Helfer · GSZ</title><link rel="stylesheet" href="aussen.css?v=4"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"></head><body>
 <header class="pub-head"><span class="pub-logo">GSZ Helfer</span></header><main class="pub">
 <?php foreach(['worker_error'=>'pub-err','worker_notice'=>'pub-ok'] as $k=>$cls)if(!empty($_SESSION[$k])){echo '<p class="pub-card '.$cls.'" role="'.($cls==='pub-err'?'alert':'status').'">'.e($_SESSION[$k]).'</p>';unset($_SESSION[$k]);}
 if(!$wid):?>

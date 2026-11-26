@@ -17,7 +17,7 @@ try{const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,heigh
  // Mieter: ohne Anmeldung, ohne Cookie, mit Foto
  const tc=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,height:844},isMobile:true,hasTouch:true});const t=await tc.newPage();t.on('pageerror',e=>errors.push(e.message));
  const path=new URL(formUrl).pathname+new URL(formUrl).search;r=await t.goto(base+path);ok(r.status()===200&&!r.headers()['set-cookie']&&(r.headers()['x-robots-tag']||'').includes('noindex'),'public form: no cookie, noindex');
- ok((await t.textContent('main')).includes('Schaden melden'),'form visible');
+ ok((await t.textContent('main')).includes('Was ist im Haus kaputt'),'form visible');
  ok(await t.locator('.pub-logo-img').count()===1&&(await t.locator('label.tile').count())>=16&&await t.locator('a.pub-sos[href^="tel:"]').count()===1,'tile form with logo and emergency call');
  await t.locator('label.tile',{hasText:'Treppenhaus'}).tap();await t.locator('label.tile',{hasText:'Licht defekt'}).tap();ok(await t.locator('#location-1').isChecked()&&await t.locator('input[name=kind][value="Licht defekt"]').isChecked(),'tiles selectable by tap');
  await t.locator('[name=message]').fill('Licht im 2. OG geht nicht.');await t.locator('.pub-more summary').tap();await t.locator('[name=contact]').fill('Whg. 4');
@@ -79,6 +79,13 @@ try{const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,heigh
  ok((await p.textContent('main')).includes('erscheint jetzt auf der Website'),'calculator enabled');
  r=await c.request.get(base+'/web_calc.php?floors=3&entrances=1&rhythm=weekly&cellar=1',{headers:{Origin:'https://gebaeudeservice-zentrum.de'}});j=await r.json();
  ok(j.enabled&&j.low===80&&j.high===105&&j.text.includes('zzgl. MwSt.')&&r.headers()['access-control-allow-origin']==='https://gebaeudeservice-zentrum.de'&&!r.headers()['set-cookie'],'calculator endpoint with CORS');
+ // Neues Objekt mit neuem Kunden in einem Schritt
+ await p.setViewportSize({width:390,height:844});await p.goto(base+'/objects.php');const nf=p.locator('details.card').filter({hasText:'Neues Objekt'});if(!(await nf.evaluate(d=>d.open)))await nf.locator('summary').first().tap();
+ await nf.locator('[name=name]').fill('Neubau Testweg 7');await nf.locator('[name=address]').fill('Testweg 7, 33330 Gütersloh');await nf.locator('.new-customer summary').tap();
+ await nf.locator('[name=new_customer_name]').fill('Hausverwaltung Beispiel GmbH');await nf.locator('[name=new_customer_contact]').fill('Frau Muster');await nf.locator('[name=new_customer_phone]').fill('05241 000000');await nf.locator('[name=new_customer_email]').fill('verwaltung@example.invalid');
+ await Promise.all([p.waitForNavigation(),nf.getByRole('button',{name:'Objekt anlegen'}).tap()]);
+ const np=q("SELECT p.*,c.name cname,c.email cmail FROM properties p JOIN customers c ON c.id=p.customer_id WHERE p.name='Neubau Testweg 7'");
+ ok(np.length===1&&np[0].cname==='Hausverwaltung Beispiel GmbH'&&np[0].cmail==='verwaltung@example.invalid'&&np[0].contact_name==='Frau Muster'&&np[0].contact_email==='verwaltung@example.invalid'&&/property\.php\?id=/.test(p.url()),'object and new customer created together, contact on the object');
  // Häuser-Übersicht: alle Häuser, für alle einrichten, alle Aushänge in einem PDF, erneuern
  q("INSERT INTO properties(name,address) VALUES('Zweites Haus','Teststraße 2'),('Drittes Haus','Teststraße 3')");
  await p.goto(base+'/objects.php');await p.getByRole('link',{name:/Häuser: QR-Meldung/}).tap();await p.waitForURL(/haeuser\.php/);
