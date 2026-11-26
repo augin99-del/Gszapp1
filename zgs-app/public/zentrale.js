@@ -78,3 +78,30 @@
     if(el.name==='due'){var d=fs.querySelector('input[name=due_date]');if(d)d.value='';}
   });
 })();
+/* Globale Suche (⌘K / Strg+K): Objekte, Kunden, Anfragen, Aufgaben, Meldungen, Einsätze und Aktionen. Ohne JS: Ergebnisseite suche.php. */
+(function(){
+  'use strict';
+  var dlg=document.getElementById('cmdk');if(!dlg||typeof dlg.showModal!=='function')return;
+  var input=dlg.querySelector('input'),list=dlg.querySelector('.cmdk-list'),items=[],sel=0,timer=null,seq=0;
+  function esc(s){var d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML;}
+  function render(res){
+    items=res;sel=0;var html='',last='';
+    if(!res.length){list.innerHTML='<p class="cmdk-empty">Nichts gefunden – anders schreiben oder Enter für die Ergebnisseite.</p>';return;}
+    res.forEach(function(r,i){if(r.group!==last){html+='<p class="cmdk-group">'+esc(r.group)+'</p>';last=r.group;}
+      html+='<a class="cmdk-item" role="option" href="'+esc(r.url)+'" data-i="'+i+'"><span class="t">'+esc(r.title)+'</span>'+(r.sub?'<span class="s">'+esc(r.sub)+'</span>':'')+'</a>';});
+    list.innerHTML=html;mark();
+  }
+  function mark(){var els=list.querySelectorAll('.cmdk-item');els.forEach(function(el,i){el.setAttribute('aria-selected',i===sel?'true':'false');});if(els[sel])els[sel].scrollIntoView({block:'nearest'});}
+  function load(){var my=++seq,q=input.value;fetch('suche.php?q='+encodeURIComponent(q),{headers:{'Accept':'application/json'},credentials:'same-origin'}).then(function(r){return r.ok?r.json():{results:[]};}).then(function(j){if(my===seq)render(j.results||[]);}).catch(function(){});}
+  function open(text){if(!dlg.open)dlg.showModal();input.value=text||'';input.focus();load();}
+  document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&(e.key==='k'||e.key==='K')){e.preventDefault();open('');}});
+  document.querySelectorAll('[data-cmdk]').forEach(function(b){b.addEventListener('click',function(e){e.preventDefault();open('');});});
+  document.querySelectorAll('[data-cmdk-input]').forEach(function(i){i.addEventListener('focus',function(){var v=i.value;i.blur();open(v);});});
+  input.addEventListener('input',function(){clearTimeout(timer);timer=setTimeout(load,120);});
+  input.addEventListener('keydown',function(e){
+    if(e.key==='ArrowDown'){e.preventDefault();if(sel<items.length-1){sel++;mark();}}
+    else if(e.key==='ArrowUp'){e.preventDefault();if(sel>0){sel--;mark();}}
+    else if(e.key==='Enter'&&items[sel]){e.preventDefault();location.href=items[sel].url;}
+  });
+  dlg.addEventListener('click',function(e){if(e.target===dlg)dlg.close();});
+})();

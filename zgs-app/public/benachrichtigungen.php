@@ -20,10 +20,12 @@ if($_SERVER['REQUEST_METHOD']==='POST'){checkCsrf();$a=(string)($_POST['action']
   default:throw new RuntimeException('Aktion unbekannt.');}
  }catch(Throwable $e){if($ajax){http_response_code(400);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);exit;}gszUiError($e);}
  redirect('benachrichtigungen.php'.(in_array($a,['weather','check'],true)?'#wetter':($a==='winter'?'#winterdienst':($a==='tick'?'#wecker':'#geraete'))));}
-$devices=gszPushDevices($pdo);$csrf=csrf();$recent=gszPushRecent($pdo,8);$wx=gszWeatherActive($pdo);$wp=gszWinterProperties($pdo);
+if(isset($_GET['gelesen'])){require_once dirname(__DIR__).'/private/shell.php';gszBellSeen($pdo);}
+$devices=gszPushDevices($pdo);$csrf=csrf();$recent=gszPushRecent($pdo,20);$wx=gszWeatherActive($pdo);$wp=gszWinterProperties($pdo);
 $tz=new DateTimeZone('Europe/Berlin');$fmt=fn(?string $t)=>$t?(new DateTimeImmutable($t.' UTC'))->setTimezone($tz)->format('d.m., H:i'):'–';
 $tok=gszSetting($pdo,'tick_token');$tickUrl=$tok!==''?rtrim(gszSetting($pdo,'zentrale_url'),'/').'/tick.php?k='.$tok:'';$tickLast=gszSetting($pdo,'tick_last');
 gszPageStart('Benachrichtigungen','Push aufs Handy bei Anfragen, Mieter-Meldungen und Glättewarnungen.');?>
+<?php if($recent):?><section class="card" id="verlauf"><h2>Zuletzt benachrichtigt</h2><div class="list feed"><?php foreach(array_slice($recent,0,12) as $r):?><a href="<?=e($r['url'])?>"><span class="feed-ico" aria-hidden="true"><?=e(GSZ_PUSH_KINDS[$r['kind']][2]??'•')?></span><span class="name"><?=e($r['title'])?><span class="sub"><?=e($r['body'])?> · <?=e($fmt($r['created_at']))?></span></span></a><?php endforeach?></div></section><?php endif?>
 <section class="card" id="geraete" data-push data-key="<?=e(gszPushPublicKey())?>" data-csrf="<?=e($csrf)?>"><h2>Dieses Gerät</h2>
  <p class="hint">Am iPhone funktioniert das nur, wenn die Zentrale als App auf dem Home-Bildschirm liegt (Safari → Teilen → „Zum Home-Bildschirm“) und von dort geöffnet wird.</p>
  <button type="button" class="primary" data-push-on>Benachrichtigungen auf diesem Gerät aktivieren</button><p data-push-msg hidden></p>
