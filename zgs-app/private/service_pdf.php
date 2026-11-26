@@ -10,6 +10,18 @@ final class GszServicePdf extends tFPDF {
  public function Footer(){if($this->footerText==='')return;$this->SetY(-13);$this->SetFont('DejaVu','',8);$this->SetTextColor(110,120,128);$this->Cell(0,5,$this->safe($this->footerText.' · Seite '.$this->PageNo()),0,0,'C');$this->SetTextColor(0,0,0);}
  /** Ersetzt Zeichen, die die Schrift nicht kennt (z. B. Emojis aus Mieter-Meldungen), durch „?“. */
  public function safe(string $t):string {$t=mb_check_encoding($t,'UTF-8')?$t:'';$cw=$this->CurrentFont['cw']??null;if(!$cw)return $t;$o='';foreach(mb_str_split($t) as $ch){$c=mb_ord($ch,'UTF-8');$o.=($c===10||($c<=65535&&isset($cw[$c*2+1])&&(ord($cw[$c*2])|ord($cw[$c*2+1]))))?$ch:'?';}return $o;}
+ /** Abgerundetes Rechteck (style: D, F, FD). */
+ public function RoundedRect(float $x,float $y,float $w,float $h,float $r,string $style='D'):void {
+  $k=$this->k;$hp=$this->h;$op=$style==='F'?'f':(($style==='FD'||$style==='DF')?'B':'S');$a=4/3*(sqrt(2)-1);
+  $arc=fn($x1,$y1,$x2,$y2,$x3,$y3)=>$this->_out(sprintf('%.2F %.2F %.2F %.2F %.2F %.2F c',$x1*$k,($hp-$y1)*$k,$x2*$k,($hp-$y2)*$k,$x3*$k,($hp-$y3)*$k));
+  $this->_out(sprintf('%.2F %.2F m',($x+$r)*$k,($hp-$y)*$k));$xc=$x+$w-$r;$yc=$y+$r;$this->_out(sprintf('%.2F %.2F l',$xc*$k,($hp-$y)*$k));$arc($xc+$r*$a,$yc-$r,$xc+$r,$yc-$r*$a,$xc+$r,$yc);
+  $xc=$x+$w-$r;$yc=$y+$h-$r;$this->_out(sprintf('%.2F %.2F l',($x+$w)*$k,($hp-$yc)*$k));$arc($xc+$r,$yc+$r*$a,$xc+$r*$a,$yc+$r,$xc,$yc+$r);
+  $xc=$x+$r;$yc=$y+$h-$r;$this->_out(sprintf('%.2F %.2F l',$xc*$k,($hp-($y+$h))*$k));$arc($xc-$r*$a,$yc+$r,$xc-$r,$yc+$r*$a,$xc-$r,$yc);
+  $xc=$x+$r;$yc=$y+$r;$this->_out(sprintf('%.2F %.2F l',$x*$k,($hp-$yc)*$k));$arc($xc-$r,$yc-$r*$a,$xc-$r*$a,$yc-$r,$xc,$yc-$r);$this->_out($op);
+ }
+ public function Circle(float $x,float $y,float $r,string $style='F'):void {$this->RoundedRect($x-$r,$y-$r,2*$r,2*$r,$r,$style);}
+ /** Text in eine feste Box (x,w), zentriert oder links. */
+ public function boxText(float $x,float $y,float $w,float $lh,string $t,float $size,array $rgb=[0,0,0],string $align='C'):float {$this->SetFont('DejaVu','',$size);$this->SetTextColor(...$rgb);$this->SetXY($x,$y);$this->MultiCell($w,$lh,$this->safe($t),0,$align);$this->SetTextColor(0,0,0);return $this->GetY();}
  public function para(float $h,string $t,int $size=10,string $align='L',array $rgb=[0,0,0]):void {$this->SetFont('DejaVu','',$size);$this->SetTextColor(...$rgb);$this->MultiCell(0,$h,$this->safe($t),0,$align);$this->SetTextColor(0,0,0);}
 }
 function gszPdfNew(string $footer=''):GszServicePdf {$p=new GszServicePdf();$p->footerText=$footer;$p->SetMargins(18,16,18);$p->SetAutoPageBreak(true,18);$p->SetTitle('Zentrum Gebäudeservice',true);$p->SetCreator('GSZ-Zentrale',true);return $p;}
@@ -20,17 +32,32 @@ function gszAushangPdf(PDO $pdo,array $prop,string $token):string {$p=gszPdfNew(
 function gszAushangAllPdf(PDO $pdo,array $list):string {$p=gszPdfNew();$p->SetAutoPageBreak(false);$n=0;foreach($list as $r)if(!empty($r['report_token'])){gszAushangPage($p,$pdo,$r,(string)$r['report_token']);$n++;}if(!$n)throw new RuntimeException('Noch kein Haus mit QR-Meldung eingerichtet.');return $p->Output('S');}
 function gszAushangPage(GszServicePdf $p,PDO $pdo,array $prop,string $token):void {
  $url=gszReportUrl($pdo,$token);$company=gszSetting($pdo,'company');$phone=gszSetting($pdo,'company_phone');
+ $G=[63,143,47];$GD=[43,106,32];$INK=[13,16,14];$MUT=[102,112,104];$SOFT=[237,245,233];$RED=[179,38,30];
  $p->AddPage();
- $p->SetFillColor(11,110,79);$p->Rect(0,0,210,14,'F');$p->SetY(4);$p->SetTextColor(255,255,255);$p->SetFont('DejaVu','',11);$p->Cell(0,6,$p->safe($company.' · Ihr Hausmeisterservice'),0,1,'C');
- $p->SetY(30);$p->para(13,'Schaden oder Mangel im Haus?',28,'C',[20,33,43]);$p->Ln(1);$p->para(9,'Einfach hier melden – in einer Minute.',17,'C',[11,110,79]);
- gszQrPdf($p,$url,52,66,106);
- $p->SetY(176);$p->para(7,'1. QR-Code mit der Handy-Kamera scannen',13,'C');$p->para(7,'2. Kurz beschreiben, gern mit Foto',13,'C');$p->para(7,'3. Absenden – fertig. Wir kümmern uns.',13,'C');
- $p->Ln(4);$p->para(5,'z. B. Licht defekt · Haustür schließt nicht · Wasserfleck · Müllplatz · Schäden im Treppenhaus',10,'C',[91,107,120]);
- $p->SetDrawColor(217,225,231);$p->Line(30,222,180,222);$p->SetY(227);
- $p->para(6,'Haus: '.$prop['name'].($prop['address']!==''?' · '.$prop['address']:''),11,'C');
- if($phone!=='')$p->para(7,'Notfall (Wasserrohrbruch, Sturmschaden): '.$phone,13,'C',[179,38,30]);
- $p->para(5,'Bei Gefahr für Leib und Leben: 112',10,'C',[91,107,120]);
- $p->SetY(266);$p->para(4,'Ohne App, ohne Anmeldung. Ihre Angaben dienen nur der Erledigung der Meldung.',8,'C',[110,120,128]);$p->para(4,$url,7,'C',[150,158,165]);
+ // Kopf: Logo auf Weiß, darunter grünes Band mit der Botschaft
+ $logo=dirname(__DIR__).'/public/assets/gsz-logo-horizontal.png';if(is_file($logo)){try{$p->Image($logo,18,10,58);}catch(Throwable $e){}}
+ $p->boxText(110,13,82,5,'Ihr Hausmeisterservice'."\n".'für dieses Haus',9.5,$MUT,'R');
+ $p->SetFillColor(...$G);$p->Rect(0,32,210,46,'F');
+ $p->boxText(14,39,182,13,'Schaden im Haus?',34,[255,255,255]);
+ $p->boxText(14,55,182,8,'Einfach per Handy melden – in 1 Minute.',17,[230,247,222]);
+ $p->boxText(14,65,182,6,'Ohne App · ohne Anmeldung · kostenlos',11,[214,240,203]);
+ // QR-Karte
+ $p->SetFillColor(255,255,255);$p->SetDrawColor(...$G);$p->SetLineWidth(1.4);$p->RoundedRect(50,86,110,124,7,'FD');$p->SetLineWidth(0.2);
+ gszQrPdf($p,$url,57,91,96);
+ $p->SetFillColor(...$G);$p->RoundedRect(64,189,82,14,7,'F');$p->boxText(64,192.6,82,7,'Kamera drauf halten',13,[255,255,255]);
+ // Drei Schritte
+ $steps=[['1','Code scannen','Handy-Kamera öffnen und auf den Code richten'],['2','Kurz beschreiben','Ort und Problem antippen, gern ein Foto dazu'],['3','Absenden','Fertig – wir kümmern uns darum']];
+ foreach($steps as $i=>[$n,$t,$d]){$cx=40+$i*65;$p->SetFillColor(...$SOFT);$p->Circle($cx,226,8,'F');$p->boxText($cx-8,221.8,16,8,$n,17,$GD);$p->boxText($cx-30,236,60,6,$t,12.5,$INK);$p->boxText($cx-30,242.5,60,4.4,$d,8.6,$MUT);}
+ // Beispiele
+ $p->boxText(18,256,174,5,'Licht defekt · Haustür klemmt · Wasserfleck · Müllplatz · Schaden im Treppenhaus',9.5,$MUT);
+ // Notfall
+ $p->SetFillColor(253,236,234);$p->RoundedRect(18,263,174,17,4,'F');
+ $p->boxText(22,265,166,4.6,'Notfall? Wasserrohrbruch, Heizungsausfall, Sturmschaden – bitte sofort anrufen:',9.5,$RED);
+ $p->boxText(22,270.4,166,7,($phone!==''?$phone.'   ·   ':'').'Gefahr für Leib und Leben: 112',14,$RED);
+ // Fuß: Haus, Sprachen, Link
+ $p->boxText(18,282,174,4.2,'Haus: '.$prop['name'].($prop['address']!==''?', '.$prop['address']:'').' · '.$company,8.6,$INK);
+ $p->boxText(18,286.4,174,3.8,'EN: Report a problem in the building – scan the code.   TR: Binadaki bir sorunu bildirin – kodu tarayın.',7.6,$MUT);
+ $p->boxText(18,290.4,174,3.6,$url,6.6,[150,158,152]);
 }
 
 /** Bild für das PDF vorbereiten: JPEG/PNG direkt, WebP über GD in ein temporäres JPEG. */

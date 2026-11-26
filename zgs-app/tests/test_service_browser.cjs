@@ -17,9 +17,11 @@ try{const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,heigh
  // Mieter: ohne Anmeldung, ohne Cookie, mit Foto
  const tc=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,height:844},isMobile:true,hasTouch:true});const t=await tc.newPage();t.on('pageerror',e=>errors.push(e.message));
  const path=new URL(formUrl).pathname+new URL(formUrl).search;r=await t.goto(base+path);ok(r.status()===200&&!r.headers()['set-cookie']&&(r.headers()['x-robots-tag']||'').includes('noindex'),'public form: no cookie, noindex');
- ok((await t.textContent('main')).includes('Schaden oder Mangel melden'),'form visible');
- await t.locator('[name=location]').selectOption('Treppenhaus');await t.locator('[name=message]').fill('Licht im 2. OG geht nicht.');await t.locator('[name=contact]').fill('Whg. 4');
- await t.locator('[name=photo]').setInputFiles({name:'IMG_0001.jpg',mimeType:'image/jpeg',buffer:jpg});await Promise.all([t.waitForNavigation(),t.getByRole('button',{name:'Meldung senden'}).tap()]);
+ ok((await t.textContent('main')).includes('Schaden melden'),'form visible');
+ ok(await t.locator('.pub-logo-img').count()===1&&(await t.locator('label.tile').count())>=16&&await t.locator('a.pub-sos[href^="tel:"]').count()===1,'tile form with logo and emergency call');
+ await t.locator('label.tile',{hasText:'Treppenhaus'}).tap();await t.locator('label.tile',{hasText:'Licht defekt'}).tap();ok(await t.locator('#location-1').isChecked()&&await t.locator('input[name=kind][value="Licht defekt"]').isChecked(),'tiles selectable by tap');
+ await t.locator('[name=message]').fill('Licht im 2. OG geht nicht.');await t.locator('.pub-more summary').tap();await t.locator('[name=contact]').fill('Whg. 4');
+ await t.locator('[name=photo]').setInputFiles({name:'IMG_0001.jpg',mimeType:'image/jpeg',buffer:jpg});ok(await t.locator('[data-photo-preview]').isVisible(),'photo preview shown');await Promise.all([t.waitForNavigation(),t.getByRole('button',{name:'Meldung senden'}).tap()]);ok(/Meldungsnummer \d+/.test(await t.textContent('main')),'confirmation shows report number');
  ok((await t.textContent('main')).includes('Ihre Meldung ist angekommen'),'tenant sees confirmation');ok((await tc.cookies()).length===0,'tenant got no cookies');
  r=await t.goto(base+'/melden.php?k='+'A'.repeat(32));ok(r.status()===404,'wrong link → 404');
  // Zentrale: Heute-Hinweis, Foto ohne Metadaten, als To-do übernehmen
@@ -28,7 +30,7 @@ try{const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,heigh
  const img=await card.locator('.defect-photo img').getAttribute('src');const photo=await (await c.request.get(base+'/'+img)).body();ok(photo.slice(0,2).toString('hex')==='ffd8'&&!photo.includes('GPS-SECRET'),'photo stored without metadata');
  r=await tc.request.get(base+'/'+img);ok(r.status()===403,'tenant cannot open the admin photo URL');
  await Promise.all([p.waitForNavigation(),card.getByRole('button',{name:'Als To-do übernehmen'}).tap()]);ok((await p.textContent('main')).includes('Als To-do in die Merkliste übernommen'),'taken over');
- ok(q("SELECT title FROM quick_notes WHERE kind='todo' ORDER BY id DESC LIMIT 1")[0].title==='Treppenhaus: Licht im 2. OG geht nicht.','to-do in Merkliste');
+ ok(q("SELECT title FROM quick_notes WHERE kind='todo' ORDER BY id DESC LIMIT 1")[0].title==='Treppenhaus: Licht defekt: Licht im 2. OG geht nicht.','to-do in Merkliste');
  // B: Portal für die Verwaltung
  await p.goto(base+`/property.php?id=${pid}`);await Promise.all([p.waitForNavigation(),p.locator('#meldungen').getByRole('button',{name:'Portal einrichten'}).tap()]);
  const portal=await p.locator('#meldungen [data-copy]').inputValue();ok(/\/portal\.php\?k=[A-Za-z0-9_-]{32}$/.test(portal),'portal link');ok(await p.locator('#meldungen a[href^="compose.php?to=hv%40example.invalid"]').count()===1,'send link by mail');

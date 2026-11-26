@@ -7,7 +7,9 @@ declare(strict_types=1);
  */
 require_once __DIR__.'/platform.php';
 const GSZ_DEFECT_STATUS=['neu'=>'Neu','uebernommen'=>'In Arbeit','erledigt'=>'Erledigt','verworfen'=>'Verworfen'];
-const GSZ_DEFECT_PLACES=['Treppenhaus','Eingang / Haustür','Keller','Dachboden','Aufzug','Licht / Beleuchtung','Außenanlage / Garten','Müllplatz','Garage / Stellplätze','Sonstiges'];
+/** Orte und Arten für die Kacheln im Meldeformular (Symbol => Text). */
+const GSZ_DEFECT_PLACES=['Treppenhaus'=>'🪜','Eingang / Haustür'=>'🚪','Keller'=>'📦','Dachboden'=>'🏠','Aufzug'=>'🛗','Außenanlage / Garten'=>'🌳','Müllplatz'=>'🗑️','Garage / Stellplätze'=>'🚗','Sonstiges'=>'📍'];
+const GSZ_DEFECT_KINDS=['Licht defekt'=>'💡','Tür / Schloss'=>'🔑','Wasser / Feuchtigkeit'=>'💧','Heizung'=>'🔥','Müll / Tonnen'=>'♻️','Verschmutzung'=>'🧽','Etwas ist kaputt'=>'🔨','Sonstiges'=>'💬'];
 const GSZ_DEFECT_LIMIT_HOUR=6;const GSZ_DEFECT_LIMIT_DAY=20;
 
 function gszServiceReady(PDO $pdo):bool {try{return (bool)$pdo->query("SELECT COUNT(*) FROM app_migrations WHERE version='430_service'")->fetchColumn();}catch(Throwable $e){return false;}}
@@ -62,7 +64,10 @@ function gszDefectPhotoPath(?string $name):?string {if(!$name||!preg_match('/^[a
 /** Öffentliche Meldung über den QR-Link. Begrenzung je Objekt statt IP-Speicherung. */
 function gszDefectSubmit(PDO $pdo,array $property,array $in,?array $photo=null,?int $now=null):int {
  if(trim((string)($in['website']??''))!=='')throw new DomainException('spam');
- $message=gszRText($in['message']??'',2000);if(mb_strlen($message)<3)throw new RuntimeException('Bitte kurz beschreiben, was kaputt ist.');
+ $text=gszRText($in['message']??'',1900);$kind=gszRText($in['kind']??'',60);if(!array_key_exists($kind,GSZ_DEFECT_KINDS))$kind='';
+ if($kind===''&&mb_strlen($text)<3)throw new RuntimeException('Bitte antippen, was los ist – oder kurz beschreiben.');
+ if($kind==='Sonstiges'&&mb_strlen($text)<3)throw new RuntimeException('Bitte kurz beschreiben, was los ist.');
+ $message=$kind!==''&&$kind!=='Sonstiges'?$kind.($text!==''?': '.$text:''):$text;
  $location=gszRText($in['location']??'',120);$contact=gszRText($in['contact']??'',190);
  $now??=time();$q=$pdo->prepare('SELECT SUM(created_at>=?) h,COUNT(*) d FROM defect_reports WHERE property_id=? AND created_at>=?');$q->execute([gmdate('Y-m-d H:i:s',$now-3600),$property['id'],gmdate('Y-m-d H:i:s',$now-86400)]);$c=$q->fetch(PDO::FETCH_ASSOC);
  if((int)$c['h']>=GSZ_DEFECT_LIMIT_HOUR||(int)$c['d']>=GSZ_DEFECT_LIMIT_DAY)throw new RuntimeException('Für dieses Haus sind gerade sehr viele Meldungen eingegangen. Bitte später erneut versuchen oder anrufen.');
