@@ -9,6 +9,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){checkCsrf();$a=(string)($_POST['action']
   switch($a){
    case 'add':$id=gszLeadSave($pdo,$admin,$_POST);$_SESSION['app_notice']='Anfrage gespeichert.';break;
    case 'status':gszLeadStatus($pdo,$admin,$id,(string)($_POST['status']??''));$_SESSION['app_notice']='Status: '.GSZ_LEAD_STATUS[$_POST['status']].'.';break;
+   case 'delete':gszLeadDelete($pdo,$admin,$id);$_SESSION['app_notice']='Anfrage gelöscht.';break;
    case 'note':gszLeadNote($pdo,$id,(string)($_POST['note']??''));$_SESSION['app_notice']='Notiz gespeichert.';break;
    case 'task':gszLeadToTask($pdo,$admin,$id);$_SESSION['app_notice']='Als Aufgabe für heute angelegt.';break;
    case 'review':$l=gszLead($pdo,$id);if(!$l)throw new RuntimeException('Anfrage nicht gefunden.');gszLeadReviewed($pdo,$id);header('Location: '.gszReviewLink($pdo,(string)$l['phone'],(string)$l['name']),true,303);exit;
@@ -43,6 +44,7 @@ gszPageStart('Anfragen','Von der Website, per Telefon oder WhatsApp – nichts g
   <?php if($l['status']==='auftrag'&&$wa):?><form method="post" class="review-row" target="_blank"><?=$f('review',(int)$l['id'])?><button class="small primary">★ Bewertung per WhatsApp anfragen</button><?=$l['review_requested_at']?'<span class="muted small-note">angefragt am '.e((new DateTimeImmutable($l['review_requested_at']))->format('d.m.')).'</span>':''?></form><?php endif?>
   <details class="move"><summary>Notiz<?=$l['note']!==''?': '.e(mb_strimwidth($l['note'],0,40,'…')):''?></summary><div class="move-sheet"><form method="post"><?=$f('note',(int)$l['id'])?><label class="sr-only" for="n<?=(int)$l['id']?>">Notiz</label><input id="n<?=(int)$l['id']?>" name="note" maxlength="1000" value="<?=e($l['note'])?>"><button class="small">Speichern</button></form></div></details>
   <?php if($l['source_page']):?><p class="hint">Gesendet von: <?=e($l['source_page'])?></p><?php endif?>
+  <details class="move lead-delete"><summary>Löschen / Spam</summary><div class="move-sheet"><form method="post"><?=$f('delete',(int)$l['id'])?><p class="hint">Anfrage endgültig löschen? Name, Telefon und Nachricht werden entfernt.<?=$l['task_id']?' Die angelegte Aufgabe bleibt.':''?></p><button class="small delete-now">Endgültig löschen</button></form></div></details>
  </article><?php endforeach?></div>
 <details class="card" id="neu"><summary>Anfrage selbst erfassen (Telefon, WhatsApp …)</summary><form method="post"><?=$f('add')?>
  <div class="grid-3"><label>Name<input name="name" maxlength="190"></label><label>Telefon<input name="phone" type="tel" maxlength="80"></label><label>Woher?<select name="source"><?php foreach(GSZ_LEAD_SOURCES as $k=>$lab):if($k==='website')continue;?><option value="<?=e($k)?>"><?=e($lab)?></option><?php endforeach?></select></label></div>

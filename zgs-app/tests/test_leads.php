@@ -39,4 +39,10 @@ ld(gszWebCount($p,'/','view')&&gszWebCount($p,'/standorte/verl/','call')&&gszWeb
 ld(!gszWebCount($p,'/<script>','view')&&!gszWebCount($p,'https://evil.example/','view')&&!gszWebCount($p,'/','hack'),'bad page/event refused');
 $st=gszWebStats($p,30);ld($st['totals']['view']===1&&$st['totals']['call']===2&&$st['totals']['form']===1&&$st['pages'][0]['page']==='/standorte/verl/'&&(int)$st['pages'][0]['calls']===2,'stats per page');
 ld(!$p->query("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='web_events' AND COLUMN_NAME REGEXP 'ip|agent|session|user'")->fetchColumn(),'no personal columns in web_events');
+// Löschen (Spam): Website-Anfrage kommt beim nächsten Abruf nicht wieder, keine Personendaten bleiben
+$wid=(int)$p->query("SELECT id FROM leads WHERE source='website' LIMIT 1")->fetchColumn();gszLeadDelete($p,1,$wid);
+ld(gszLead($p,$wid)===null&&!in_array($wid,array_column(gszLeads($p),'id'))&&!in_array($wid,array_column(gszLeads($p,'abgesagt'),'id')),'deleted lead hidden everywhere');
+ld(gszLeadsFromMail($p)===0,'deleted website lead is not re-imported from the mail');$row=$p->query("SELECT * FROM leads WHERE id=$wid")->fetch();ld($row['name']===''&&$row['phone']===''&&$row['email']===''&&$row['message']===null,'no personal data kept');
+$own=gszLeadSave($p,1,['source'=>'telefon','name'=>'Spam GmbH','phone'=>'0800 000']);gszLeadDelete($p,1,$own);ld(!(int)$p->query("SELECT COUNT(*) FROM leads WHERE id=$own")->fetchColumn(),'own lead removed completely');
+ldThrows(fn()=>gszLeadDelete($p,1,$wid),'deleting twice');ld(gszLeadCounts($p)['abgesagt']===0,'counts ignore deleted');
 echo "Anfragen PASS ($n checks; form mails, status, review via WhatsApp, emergency status, cookie-free counts).\n";

@@ -45,3 +45,9 @@ input[type=file]{padding:10px;background:var(--bg)}button,.pub-btn{display:inlin
 .pub-ref{font-size:1.05rem;background:var(--bg);display:inline-block;padding:6px 14px;border-radius:99px;margin:4px 0 10px}.pub-done .pub-btn{margin-top:10px}
 .pub-lang{text-align:center;margin-top:4px}
 @media (prefers-color-scheme:dark){.tile span,.pub-step{background:var(--card)}.pub-house{background:#173a2e;color:#c9f0b8}.pub-sos{background:#3a1512;color:#f6c9c4}.pub-sos b,.pub-sos span{color:#ff8f84}.tile input:checked+span{background:#173a2e;color:#c9f0b8}.pub-photo span{background:#0f171d;color:#c9f0b8}.pub-head{background:#fff}}
+/* Meldungs-Portal der Hausverwaltung */
+.pub-kpis-2{grid-template-columns:1fr 1fr;margin:0 0 6px}
+.pub-defect .pub-msg{margin:8px 0 4px;font-size:1.02rem}.pub-defect.is-done{opacity:.8}
+.pub-defect-photo img{display:block;width:100%;max-height:300px;object-fit:cover;border-radius:12px;margin:10px 0 4px;background:var(--bg)}
+.pub-defect form{margin-top:12px}.pub-done-btn{min-height:52px}
+.pub-donelist{margin:16px 0}.pub-donelist summary{cursor:pointer;font-weight:800;font-size:1.05rem;padding:12px 0}

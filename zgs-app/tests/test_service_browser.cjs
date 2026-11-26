@@ -1,6 +1,6 @@
 const {chromium}=require('playwright');const {execFileSync}=require('child_process');
 // Schema 430 (Wunsch 25.11.2026): QR-Meldung, Portal, Helfer-App, Schlüsseldienst-Einsätze, Preisrechner, Bewertungskarten. Synthetische Daten.
-(async()=>{const base=process.env.GSZ_TEST_URL;if(!base||!/^https:\/\/127\.0\.0\.1:/.test(base))throw Error('Loopback fixture only');let n=0;const ok=(v,s)=>{n++;if(!v)throw Error(s)};
+(async()=>{const base=process.env.GSZ_TEST_URL;if(!base||!/^https:\/\/127\.0\.0\.1:/.test(base))throw Error('Loopback fixture only');let n=0;const ok=(v,s)=>{n++;globalThis.__last=s;if(!v)throw Error(s)};
 const q=sql=>JSON.parse(execFileSync('php',['-r',`$p=new PDO(getenv('GSZ_TEST_DSN'),'root','',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);$s=$p->query(${JSON.stringify(sql)});echo json_encode($s->columnCount()?$s->fetchAll():[]);`]).toString());
 // Testfoto mit erfundenen GPS-Daten im Dateinamen-Bereich: echtes JPEG mit EXIF-Kommentar
 const jpg=execFileSync('php',['-r','$i=imagecreatetruecolor(320,240);imagefill($i,0,0,imagecolorallocate($i,200,40,40));ob_start();imagejpeg($i);$j=ob_get_clean();$c="Exif\\0\\0GPS-SECRET-51.9N-8.38E";echo substr($j,0,2)."\\xFF\\xE1".pack("n",strlen($c)+2).$c.substr($j,2);']);
@@ -41,8 +41,14 @@ try{const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,heigh
  const portal=await p.locator('#meldungen [data-copy]').inputValue();ok(/\/portal\.php\?k=[A-Za-z0-9_-]{32}$/.test(portal),'portal link');ok(await p.locator('#meldungen a[href^="compose.php?to=hv%40example.invalid"]').count()===1,'send link by mail');
  q(`INSERT INTO work_logs(property_id,performed_on,description,duration_minutes) VALUES(${pid},CURDATE(),'Glasreinigung Eingang',30)`);
  r=await t.goto(base+new URL(portal).pathname+new URL(portal).search);ok(r.status()===200&&!r.headers()['set-cookie'],'portal public, no cookie');const pm=await t.textContent('main');
- ok(pm.includes('Glasreinigung Eingang')&&pm.includes('Licht im 2. OG')&&pm.includes('In Arbeit'),'portal shows work and report status');ok(await t.locator('.pub-photos img').count()===1,'portal shows the report photo');
- r=await tc.request.get(await t.locator('a.pub-btn').getAttribute('href').then(h=>base+'/'+h));ok(r.status()===200&&(await r.body()).slice(0,4).toString()==='%PDF','monthly report download');
+ ok(!pm.includes('Glasreinigung')&&pm.includes('Licht im 2. OG')&&pm.includes('In Arbeit')&&!/Termine|Monatsbericht|Erledigte Arbeiten/.test(pm),'portal shows only tenant reports, no work/appointments');ok(await t.locator('.pub-defect-photo img').count()===1,'portal shows the report photo');
+ const kk=new URL(portal).searchParams.get('k');const lc=t.locator('article.pub-defect').filter({hasText:'Licht im 2. OG'});await Promise.all([t.waitForNavigation(),lc.getByRole('button',{name:/Erledigt – abhaken/}).tap()]);
+ ok((await t.textContent('main')).includes('Erledigt – danke')&&q("SELECT status FROM defect_reports WHERE message LIKE '%Licht im 2. OG%'")[0].status==='erledigt'&&q("SELECT done_at FROM quick_notes WHERE title LIKE 'Treppenhaus: Licht defekt%'")[0].done_at!==null,'property manager ticks off in the portal, to-do done too');
+ if(!(await t.locator('.pub-donelist').evaluate(d=>d.open)))await t.locator('.pub-donelist summary').tap();await Promise.all([t.waitForNavigation(),t.locator('article.pub-defect').filter({hasText:'Licht im 2. OG'}).getByRole('button',{name:/wieder öffnen/}).tap()]);ok(q("SELECT status FROM defect_reports WHERE message LIKE '%Licht im 2. OG%'")[0].status==='uebernommen','reopen from the portal');
+ const other=q(`SELECT id FROM defect_reports WHERE property_id<>${pid} LIMIT 1`);q(`INSERT INTO defect_reports(property_id,message) SELECT id,'Fremde Meldung' FROM properties WHERE id<>${pid} LIMIT 1`);const fid=q("SELECT id FROM defect_reports WHERE message='Fremde Meldung'")[0].id;
+ r=await tc.request.post(base+'/portal.php?k='+kk,{form:{id:String(fid),action:'done'},maxRedirects:0});ok(r.status()===303&&(r.headers()['location']||'').includes('ok=fehler')&&q(`SELECT status FROM defect_reports WHERE id=${fid}`)[0].status==='neu','cannot tick reports of another house');
+ r=await tc.request.post(base+'/portal.php?k='+kk,{headers:{Origin:'https://evil.example'},form:{id:String(fid),action:'done'},maxRedirects:0});ok(r.status()===403,'foreign origin rejected');
+ const wp=q('SELECT f.id FROM work_log_photos f LIMIT 1');if(wp.length){r=await tc.request.get(base+'/portal_photo.php?k='+kk+'&f='+wp[0].id);ok(r.status()===404,'work photos not reachable via portal');}
  r=await tc.request.get(base+'/portal_photo.php?k='+new URL(portal).searchParams.get('k')+'&d=999999');ok(r.status()===404,'portal cannot fetch foreign photos');
  // C: Helfer-Zugang und Helfer-App
  q("INSERT INTO operations_workers(name,kind) VALUES('Max Helfer','employee')");const wid=q("SELECT MAX(id) id FROM operations_workers")[0].id;
@@ -90,4 +96,4 @@ try{const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,heigh
  for(const u of ['/haeuser.php','/objects.php','/meldungen.php','/einsaetze.php','/website.php',`/property.php?id=${pid}`,'/workers.php?id='+wid])for(const w of [390,1440]){await p.setViewportSize({width:w,height:900});await p.goto(base+u);ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'fits '+w+' '+u);}
  for(const u of [path,new URL(portal).pathname+new URL(portal).search])for(const w of [390,1440]){await t.setViewportSize({width:w,height:900});await t.goto(base+u);ok(await t.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'public fits '+w);}
  ok(errors.length===0,'no JavaScript errors: '+errors.join(' | '));console.log(`Service browser PASS (${n} checks; synthetic data).`);
-}finally{await b.close()}})().catch(e=>{console.error(e);process.exit(1)});
+}finally{await b.close()}})().catch(e=>{console.error('Error after: '+globalThis.__last);console.error(e);process.exit(1)});

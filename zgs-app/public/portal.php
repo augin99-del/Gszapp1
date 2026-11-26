@@ -1,24 +1,31 @@
 <?php
 declare(strict_types=1);
-// Öffentlich (geheimer Link je Haus, nur für die Hausverwaltung): erledigte Arbeiten mit Fotos, Mieter-Meldungen, nächste Termine, Monatsbericht als PDF.
+// Öffentlich (geheimer Link je Haus, nur für die Hausverwaltung): Meldungs-Portal – Mieter-Meldungen sehen und abhaken. Keine Anmeldung, keine Cookies.
 require dirname(__DIR__).'/private/public_page.php';
 $pdo=gszPublicPdo();if(!$pdo){http_response_code(503);exit('Gerade nicht erreichbar. Bitte später erneut versuchen.');}
-$token=(string)($_GET['k']??'');$prop=gszLinkProperty($pdo,'portal',$token);if(!$prop)gszPublicGone();
-$months=gszPortalMonths();$m=in_array($_GET['m']??'',$months,true)?(string)$_GET['m']:$months[0];
-if(isset($_GET['pdf'])){require_once dirname(__DIR__).'/private/service_pdf.php';try{$pdf=gszMonthReportPdf($pdo,$prop,gszPortalData($pdo,$prop['id'],$m));}catch(Throwable $e){error_log('Portal-PDF: '.$e->getMessage());http_response_code(500);exit('Bericht konnte nicht erzeugt werden.');}
- header('Content-Type: application/pdf');header('Content-Disposition: attachment; filename="monatsbericht-'.$m.'.pdf"');header('Content-Length: '.strlen($pdf));echo $pdf;exit;}
-$d=gszPortalData($pdo,$prop['id'],$m);$company=gszSetting($pdo,'company');$phone=gszSetting($pdo,'company_phone');$k=pe($token);
-$fmt=fn(string $x)=>['','Mo','Di','Mi','Do','Fr','Sa','So'][(int)(new DateTimeImmutable($x))->format('N')].', '.(new DateTimeImmutable($x))->format('d.m.Y');
-$rows=[];foreach($d['logs'] as $l)$rows[]=['day'=>$l['performed_on'],'title'=>$l['description'],'min'=>(int)$l['duration_minutes'],'log'=>(int)$l['id']];foreach($d['done'] as $t)$rows[]=['day'=>$t['day'],'title'=>$t['title'],'min'=>0,'log'=>0];usort($rows,fn($a,$b)=>strcmp($b['day'],$a['day']));
-$byLog=[];foreach($d['photos'] as $f)$byLog[(int)$f['work_log_id']][]=$f;$lab=['before'=>'vorher','after'=>'nachher','other'=>'Foto'];
-gszPublicStart('Objekt-Portal',$company);?>
-<section class="pub-card"><h1><?=pe($prop['name'])?></h1><p class="pub-sub"><?=pe($prop['address'])?> · Objekt-Portal für die Hausverwaltung</p>
-<nav class="pub-months" aria-label="Monat"><?php foreach($months as $mo):?><a href="portal.php?k=<?=$k?>&amp;m=<?=pe($mo)?>"<?=$mo===$m?' aria-current="page"':''?>><?=pe(gszMonthName($mo))?></a><?php endforeach?></nav>
-<div class="pub-kpis"><div><strong><?=$d['visits']?></strong>Einsatztage</div><div><strong><?=$d['minutes']?intdiv($d['minutes'],60).':'.str_pad((string)($d['minutes']%60),2,'0',STR_PAD_LEFT):'–'?></strong>Std. dokumentiert</div><div><strong><?=count(array_filter($d['defects'],fn($x)=>gszDefectState($x)!=='erledigt'))?></strong>offene Meldungen</div></div>
-<div class="pub-actions"><a class="pub-btn" href="portal.php?k=<?=$k?>&amp;m=<?=pe($m)?>&amp;pdf=1">Monatsbericht <?=pe(gszMonthName($m))?> als PDF</a></div></section>
-<section class="pub-card"><h2>Erledigte Arbeiten</h2><?php if(!$rows):?><p class="pub-note">Für <?=pe(gszMonthName($m))?> sind keine erledigten Arbeiten erfasst.</p><?php else:?><ul class="pub-list"><?php foreach($rows as $r):?><li><div class="pub-row"><strong><?=pe($r['title'])?></strong><span class="pub-note"><?=pe($fmt($r['day']))?><?=$r['min']?' · '.$r['min'].' Min.':''?></span></div>
-<?php if($r['log']&&!empty($byLog[$r['log']])):?><div class="pub-photos"><?php foreach($byLog[$r['log']] as $f):?><figure><a href="portal_photo.php?k=<?=$k?>&amp;f=<?=(int)$f['id']?>"><img src="portal_photo.php?k=<?=$k?>&amp;f=<?=(int)$f['id']?>" alt="Foto <?=pe($lab[$f['label']]??'')?>" loading="lazy"></a><figcaption><?=pe($lab[$f['label']]??'Foto')?></figcaption></figure><?php endforeach?></div><?php endif?></li><?php endforeach?></ul><?php endif?></section>
-<section class="pub-card"><h2>Meldungen von Mietern</h2><?php if(!$d['defects']):?><p class="pub-note">Keine Meldungen.</p><?php else:?><ul class="pub-list"><?php foreach($d['defects'] as $x):$st=gszDefectState($x);?><li><div class="pub-row"><strong><?=pe($x['location']?:'Meldung')?></strong><span class="pub-tag <?=pe($st)?>"><?=pe(GSZ_DEFECT_STATUS[$st])?></span></div><p><?=nl2br(pe(mb_strimwidth((string)$x['message'],0,600,'…')))?></p><span class="pub-note">gemeldet am <?=pe((new DateTimeImmutable($x['created_at'].' UTC'))->setTimezone(new DateTimeZone('Europe/Berlin'))->format('d.m.Y'))?></span><?php if($x['photo_name']):?><div class="pub-photos"><figure><a href="portal_photo.php?k=<?=$k?>&amp;d=<?=(int)$x['id']?>"><img src="portal_photo.php?k=<?=$k?>&amp;d=<?=(int)$x['id']?>" alt="Foto zur Meldung" loading="lazy"></a></figure></div><?php endif?></li><?php endforeach?></ul><?php endif?></section>
-<section class="pub-card"><h2>Nächste Termine</h2><?php if(!$d['next']):?><p class="pub-note">In den nächsten drei Wochen ist nichts Zusätzliches geplant.</p><?php else:?><ul class="pub-list"><?php foreach($d['next'] as $t):?><li class="pub-row"><span><?=pe($t['title'])?></span><span class="pub-note"><?=pe($fmt($t['due_date']))?></span></li><?php endforeach?></ul><?php endif?></section>
-<p class="pub-note">Dieser Link gilt nur für dieses Objekt. Bitte nicht weitergeben – bei Bedarf erzeugen wir einen neuen.</p>
+$token=(string)($_GET['k']??'');$prop=gszLinkProperty($pdo,'portal',$token);if(!$prop)gszPublicGone();$k=pe($token);
+if(($_SERVER['REQUEST_METHOD']??'')==='POST'){
+ // Nur Formulare dieser Seite: fremde Herkunft wird abgewiesen (zusätzlich zum geheimen Link).
+ $o=(string)($_SERVER['HTTP_ORIGIN']??'');$host=strtolower((string)($_SERVER['HTTP_HOST']??''));$oh=strtolower((string)parse_url($o,PHP_URL_HOST)).(parse_url($o,PHP_URL_PORT)?':'.parse_url($o,PHP_URL_PORT):'');if($o!==''&&$o!=='null'&&$oh!==$host&&$oh!==preg_replace('/:443$/','',$host)){http_response_code(403);exit;}
+ $id=(int)($_POST['id']??0);$msg='';try{gszPortalDefectAction($pdo,$prop['id'],$id,(string)($_POST['action']??''));$msg=($_POST['action']??'')==='done'?'abgehakt':'geoeffnet';}catch(Throwable $e){$msg='fehler';}
+ header('Location: portal.php?k='.rawurlencode($token).'&ok='.$msg.($msg!=='fehler'?'#m'.$id:''),true,303);exit;
+}
+$list=gszPortalDefects($pdo,$prop['id']);$company=gszSetting($pdo,'company');$phone=gszSetting($pdo,'company_phone');
+$when=fn(string $ts)=>(new DateTimeImmutable($ts.' UTC'))->setTimezone(new DateTimeZone('Europe/Berlin'))->format('d.m.Y, H:i').' Uhr';
+$btn=fn(int $id,string $a,string $label,string $cls='')=>'<form method="post" action="portal.php?k='.$k.'"><input type="hidden" name="id" value="'.$id.'"><input type="hidden" name="action" value="'.$a.'"><button class="'.$cls.'">'.$label.'</button></form>';
+$card=function(array $d,bool $open)use($k,$when,$btn):string{$st=gszDefectState($d);$id=(int)$d['id'];
+ $h='<article class="pub-card pub-defect'.($open?'':' is-done').'" id="m'.$id.'"><div class="pub-row"><strong>'.pe($d['location']!==''?$d['location']:'Meldung').'</strong><span class="pub-tag '.pe($st).'">'.pe(GSZ_DEFECT_STATUS[$st]).'</span></div>';
+ $h.='<p class="pub-msg">'.nl2br(pe((string)$d['message'])).'</p><p class="pub-note">Nr. '.$id.' · gemeldet am '.pe($when((string)$d['created_at'])).'</p>';
+ if($d['photo_name'])$h.='<a class="pub-defect-photo" href="portal_photo.php?k='.$k.'&amp;d='.$id.'"><img src="portal_photo.php?k='.$k.'&amp;d='.$id.'" alt="Foto zur Meldung" loading="lazy"></a>';
+ $h.=$open?$btn($id,'done','✓ Erledigt – abhaken','pub-done-btn'):$btn($id,'reopen','Doch nicht erledigt – wieder öffnen','ghost');
+ return $h.'</article>';};
+gszPublicStart('Mieter-Meldungen',$company);$ok=(string)($_GET['ok']??'');?>
+<section class="pub-intro"><h1>Mieter-Meldungen</h1><p class="pub-house"><span aria-hidden="true">🏢</span> <?=pe($prop['name'])?><?=$prop['address']!==''&&$prop['address']!==$prop['name']?'<small>'.pe($prop['address']).'</small>':''?></p></section>
+<?php if($ok==='abgehakt'):?><p class="pub-card pub-ok" role="status">Erledigt – danke! <?=pe($company)?> sieht das sofort.</p><?php elseif($ok==='geoeffnet'):?><p class="pub-card pub-ok" role="status">Meldung ist wieder offen.</p><?php elseif($ok==='fehler'):?><p class="pub-card pub-err" role="alert">Das hat nicht geklappt. Bitte Seite neu laden.</p><?php endif?>
+<div class="pub-kpis pub-kpis-2"><div><strong><?=count($list['open'])?></strong>offen</div><div><strong><?=count($list['done'])?></strong>erledigt (60 Tage)</div></div>
+<h2>Offen</h2>
+<?php if(!$list['open']):?><section class="pub-card"><p>Keine offenen Meldungen. 👍</p></section><?php endif?>
+<?php foreach($list['open'] as $d)echo $card($d,true);?>
+<?php if($list['done']):?><details class="pub-donelist"><summary>Erledigt (<?=count($list['done'])?>)</summary><?php foreach($list['done'] as $d)echo $card($d,false);?></details><?php endif?>
+<p class="pub-note">Mieter melden über den QR-Code im Treppenhaus. Dieser Link gilt nur für dieses Haus – bitte nicht weitergeben. Bei Bedarf erzeugen wir einen neuen.</p>
 <?php gszPublicEnd($phone);

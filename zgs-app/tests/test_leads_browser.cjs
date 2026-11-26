@@ -29,6 +29,9 @@ try{const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,heigh
  r=await c.request.post(base+'/leads.php',{form:{csrf:csrfv,action:'review',id:idv,view:'auftrag'},maxRedirects:0});const loc=r.headers()['location']||'';
  ok(r.status()===303&&loc.startsWith('https://wa.me/491760000000?text=')&&decodeURIComponent(loc).includes('Hallo Erika,')&&decodeURIComponent(loc).includes('https://share.google/'),'review opens WhatsApp with text and Google link');
  await p.reload();ok((await p.locator('.card.lead').filter({hasText:'Erika Muster'}).textContent()).includes('angefragt am'),'review request remembered');
+ // Löschen (Spam)
+ await p.goto(base+'/leads.php?status=auftrag');let del=p.locator('.card.lead').filter({hasText:'Erika Muster'});await del.locator('.lead-delete summary').tap();await Promise.all([p.waitForNavigation(),del.getByRole('button',{name:'Endgültig löschen'}).tap()]);
+ ok((await p.textContent('main')).includes('Anfrage gelöscht')&&await p.locator('.card.lead').filter({hasText:'Erika Muster'}).count()===0,'lead deleted');await p.goto(base+'/leads.php');await p.goto(base+'/leads.php?status=auftrag');ok(await p.locator('.card.lead').filter({hasText:'Erika Muster'}).count()===0,'deleted lead does not come back from the mail');
  // Website-Zahlen
  await p.goto(base+'/more.php');await p.getByRole('link',{name:/Website: Aufrufe/}).tap();const m=await p.textContent('main');ok(m.includes('Seitenaufrufe')&&m.includes('Ort: Verl')&&await p.locator('.kpi strong').first().textContent()==='1','stats page: 1 view (foreign origin not counted), Verl call');
  for(const u of ['/leads.php','/website.php','/index.php'])for(const w of [390,1440]){await p.setViewportSize({width:w,height:900});await p.goto(base+u);ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'fits '+w+' '+u);}

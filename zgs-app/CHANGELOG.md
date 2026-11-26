@@ -7,6 +7,9 @@
 - Schlüsseldienst-Einsätze: Erfassung in Sekunden, Umsatz je Monat/Ort/Kanal, 12-Monats-Balken, Rechnung → Erinnerung in der Merkliste, Bewertung per WhatsApp, aus Anfragen übernehmbar
 - Preisrechner Treppenhausreinigung: Sätze unter Website einstellbar, öffentlicher Endpunkt web_calc.php (aus, bis eingeschaltet)
 - Seite „Häuser: QR & Portal“ (haeuser.php): alle Häuser auf einen Blick, einrichten/erneuern/abschalten je Haus, „für alle einrichten“, alle Aushänge in einem PDF
+- Meldungs-Portal: die Hausverwaltung sieht nur noch Mieter-Meldungen ihres Hauses und hakt sie selbst ab (keine Arbeiten/Termine/Fotos von Arbeiten mehr im Portal)
+- Mieter-Meldungen in der Zentrale: abhaken, wieder öffnen, löschen; neues Meldeformular mit Kacheln und Foto-Vorschau, neuer Aushang
+- Anfragen löschen (Spam): Website-Anfragen kommen beim nächsten Mail-Abruf nicht wieder, Personendaten werden entfernt
 - Bewertungskarten 85 × 55 mm mit QR-Code als Druck-PDF; QR-Erzeuger ohne Fremdbibliothek (private/qr.php)
 - Migration 430 (additiv, Marker 430_service), 80 Tabellen; Tests test_service.php, test_service_browser.cjs
 

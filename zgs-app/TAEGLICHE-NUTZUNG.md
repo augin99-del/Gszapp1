@@ -129,7 +129,9 @@ zusätzlich per SFTP sichern.
 ## Neu in 430 (11/2026)
 - **Alle Häuser auf einen Blick:** Objekte → „Häuser: QR-Meldung & Portal“ – je Haus einrichten, erneuern, abschalten; „Alle Aushänge drucken“ gibt ein PDF mit je einer Seite pro Haus.
 - **Mieter-Meldungen:** Objekt öffnen → „Mieter-Meldungen & Hausverwaltung“ → „QR-Meldung einrichten“ → Aushang drucken und ins Treppenhaus hängen. Neue Meldungen stehen auf „Heute“; „Als To-do übernehmen“ legt sie in die Merkliste. Abgehakt = für die Verwaltung „Erledigt“.
-- **Portal für Hausverwaltungen:** im selben Abschnitt „Portal einrichten“ → Link per Mail an die Verwaltung. Monatsbericht als PDF jederzeit abrufbar.
+- **Meldungs-Portal für Hausverwaltungen:** im selben Abschnitt „Portal einrichten“ → Link per Mail an die Verwaltung. Die Verwaltung sieht nur die Mieter-Meldungen ihres Hauses und hakt Erledigtes selbst ab. Den Monatsbericht (PDF) erstellst du bei Bedarf selbst auf der Objektseite.
+- **Meldungen abhaken/löschen:** Mehr → Mieter-Meldungen: „✓ Erledigt“, „Wieder öffnen“ (unter Erledigt), „Löschen“ mit Sicherheitsabfrage.
+- **Spam-Anfragen:** Anfragen → bei der Anfrage „Löschen / Spam“ → „Endgültig löschen“.
 - **Helfer-App:** Mehr → Helfer → Person öffnen → „Helfer-Zugang“. Der Helfer meldet sich unter gszintern.de/helfer.php an und sieht nur seine zugeteilten Aufgaben.
 - **Schlüsseldienst:** Mehr → „Schlüsseldienst: Einsätze und Umsatz“. Bei Zahlung „Rechnung“ entsteht automatisch eine Erinnerung „Rechnung offen“.
 - **Preisrechner:** Mehr → Website → „Preisrechner Treppenhausreinigung“: eigenen Stundensatz und Minutenwerte eintragen, einschalten.

@@ -97,18 +97,18 @@ function gszDefectToNote(PDO $pdo,int $admin,int $id):int {
  }catch(Throwable $e){$pdo->rollBack();if($photo)gszNoteRemovePhoto($photo);throw $e;}
 }
 /** Abhaken: Meldung erledigt; ein zugehöriges To-do in der Merkliste wird mit erledigt. */
-function gszDefectDone(PDO $pdo,int $admin,int $id):void {
+function gszDefectDone(PDO $pdo,?int $admin,int $id,string $via='zentrale'):void {
  $d=gszDefect($pdo,$id);if(!$d)throw new RuntimeException('Meldung nicht gefunden.');
  $pdo->prepare("UPDATE defect_reports SET status='erledigt',handled_at=UTC_TIMESTAMP() WHERE id=?")->execute([$id]);
  if($d['note_id'])$pdo->prepare('UPDATE quick_notes SET done_at=NOW(),row_version=row_version+1 WHERE id=? AND done_at IS NULL')->execute([$d['note_id']]);
- gszAudit($pdo,$admin,'defect_done',['id'=>$id,'note'=>$d['note_id']]);
+ gszAudit($pdo,$admin,'defect_done',['id'=>$id,'note'=>$d['note_id'],'via'=>$via]);
 }
 /** Wieder öffnen: mit To-do → „In Arbeit“ (To-do wieder offen), sonst „Neu“. */
-function gszDefectReopen(PDO $pdo,int $admin,int $id):void {
+function gszDefectReopen(PDO $pdo,?int $admin,int $id,string $via='zentrale'):void {
  $d=gszDefect($pdo,$id);if(!$d)throw new RuntimeException('Meldung nicht gefunden.');
  if($d['note_id']){$pdo->prepare("UPDATE defect_reports SET status='uebernommen' WHERE id=?")->execute([$id]);$pdo->prepare('UPDATE quick_notes SET done_at=NULL,row_version=row_version+1 WHERE id=?')->execute([$d['note_id']]);}
  else $pdo->prepare("UPDATE defect_reports SET status='neu',handled_at=NULL WHERE id=?")->execute([$id]);
- gszAudit($pdo,$admin,'defect_reopened',['id'=>$id]);
+ gszAudit($pdo,$admin,'defect_reopened',['id'=>$id,'via'=>$via]);
 }
 /** Endgültig löschen (inkl. Foto). Ein schon angelegtes To-do in der Merkliste bleibt bestehen. */
 function gszDefectDelete(PDO $pdo,int $admin,int $id):void {
@@ -148,4 +148,15 @@ function gszLinksOverview(PDO $pdo,string $q=''):array {
 function gszLinksSetupAll(PDO $pdo,int $admin,string $kind):int {
  if(!in_array($kind,['report','portal'],true))throw new RuntimeException('Unbekannter Link.');$n=0;
  foreach(gszLinksOverview($pdo) as $r)if(empty($r[$kind.'_token'])){gszLinkRenew($pdo,$admin,(int)$r['id'],$kind);$n++;}return $n;
+}
+
+/** Meldungs-Portal der Hausverwaltung: offene Meldungen und Erledigte der letzten 60 Tage (ohne Verworfene). */
+function gszPortalDefects(PDO $pdo,int $property):array {
+ $q=$pdo->prepare("SELECT d.*,n.done_at note_done FROM defect_reports d LEFT JOIN quick_notes n ON n.id=d.note_id WHERE d.property_id=? AND d.status<>'verworfen' AND (d.status IN ('neu','uebernommen') OR d.handled_at>=UTC_TIMESTAMP()-INTERVAL 60 DAY OR n.done_at>=NOW()-INTERVAL 60 DAY) ORDER BY d.created_at DESC,d.id DESC LIMIT 200");
+ $q->execute([$property]);$open=[];$done=[];foreach($q->fetchAll(PDO::FETCH_ASSOC) as $d){if(gszDefectState($d)==='erledigt')$done[]=$d;else $open[]=$d;}return ['open'=>$open,'done'=>$done];
+}
+/** Abhaken/Wieder öffnen aus dem Portal – nur für Meldungen genau dieses Hauses. */
+function gszPortalDefectAction(PDO $pdo,int $property,int $id,string $action):void {
+ $d=gszDefect($pdo,$id);if(!$d||(int)$d['property_id']!==$property||$d['status']==='verworfen')throw new RuntimeException('Meldung nicht gefunden.');
+ if($action==='done')gszDefectDone($pdo,null,$id,'portal');elseif($action==='reopen')gszDefectReopen($pdo,null,$id,'portal');else throw new RuntimeException('Aktion unbekannt.');
 }

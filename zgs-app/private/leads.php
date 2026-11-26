@@ -63,12 +63,23 @@ function gszLeadStatus(PDO $pdo,int $admin,int $id,string $status):void {
  if(!$q->rowCount()&&!gszLead($pdo,$id))throw new RuntimeException('Anfrage nicht gefunden.');gszAudit($pdo,$admin,'lead_status',['id'=>$id,'status'=>$status]);
 }
 function gszLeadNote(PDO $pdo,int $id,string $note):void {$pdo->prepare('UPDATE leads SET note=?,row_version=row_version+1 WHERE id=?')->execute([gszLText($note,1000),$id]);}
-function gszLead(PDO $pdo,int $id):?array {$q=$pdo->prepare('SELECT * FROM leads WHERE id=?');$q->execute([$id]);$r=$q->fetch(PDO::FETCH_ASSOC);return $r?:null;}
+const GSZ_LEAD_DELETED='[gelöscht]';
+function gszLead(PDO $pdo,int $id):?array {$q=$pdo->prepare('SELECT * FROM leads WHERE id=? AND note<>\''.GSZ_LEAD_DELETED.'\'');$q->execute([$id]);$r=$q->fetch(PDO::FETCH_ASSOC);return $r?:null;}
 function gszLeads(PDO $pdo,?string $status=null,int $limit=200):array {
- $sql='SELECT * FROM leads'.($status?' WHERE status=?':" WHERE status IN ('neu','kontaktiert','angebot')").' ORDER BY FIELD(status,\'neu\',\'kontaktiert\',\'angebot\',\'auftrag\',\'abgesagt\'),created_at DESC,id DESC LIMIT '.max(1,min(500,$limit));
+ $sql='SELECT * FROM leads WHERE note<>\''.GSZ_LEAD_DELETED.'\''.($status?' AND status=?':" AND status IN ('neu','kontaktiert','angebot')").' ORDER BY FIELD(status,\'neu\',\'kontaktiert\',\'angebot\',\'auftrag\',\'abgesagt\'),created_at DESC,id DESC LIMIT '.max(1,min(500,$limit));
  $q=$pdo->prepare($sql);$q->execute($status?[$status]:[]);return $q->fetchAll(PDO::FETCH_ASSOC);
 }
-function gszLeadCounts(PDO $pdo):array {$r=array_column($pdo->query('SELECT status,COUNT(*) n FROM leads GROUP BY status')->fetchAll(PDO::FETCH_ASSOC),'n','status');return array_map('intval',$r)+array_fill_keys(array_keys(GSZ_LEAD_STATUS),0);}
+function gszLeadCounts(PDO $pdo):array {$r=array_column($pdo->query("SELECT status,COUNT(*) n FROM leads WHERE note<>'".GSZ_LEAD_DELETED."' GROUP BY status")->fetchAll(PDO::FETCH_ASSOC),'n','status');return array_map('intval',$r)+array_fill_keys(array_keys(GSZ_LEAD_STATUS),0);}
+/**
+ * Anfrage löschen (z. B. Spam). Eigene Anfragen werden ganz gelöscht. Website-Anfragen behalten nur einen leeren Platzhalter
+ * ohne Personendaten, damit dieselbe Formular-Mail beim nächsten Abruf nicht erneut als Anfrage erscheint.
+ */
+function gszLeadDelete(PDO $pdo,int $admin,int $id):void {
+ $l=gszLead($pdo,$id);if(!$l)throw new RuntimeException('Anfrage nicht gefunden.');
+ if($l['mail_message_id'])$pdo->prepare("UPDATE leads SET status='abgesagt',service='',object_type='',name='',company='',phone='',email='',place='',message=NULL,source_page='',note=?,property_id=NULL,task_id=NULL,review_requested_at=NULL,row_version=row_version+1 WHERE id=?")->execute([GSZ_LEAD_DELETED,$id]);
+ else $pdo->prepare('DELETE FROM leads WHERE id=?')->execute([$id]);
+ gszAudit($pdo,$admin,'lead_deleted',['id'=>$id]);
+}
 /** Aufgabe für heute aus einer Anfrage (Rückruf/Besichtigung); einmalig je Anfrage. */
 function gszLeadToTask(PDO $pdo,int $admin,int $id):int {
  $l=gszLead($pdo,$id);if(!$l)throw new RuntimeException('Anfrage nicht gefunden.');if($l['task_id'])return (int)$l['task_id'];
