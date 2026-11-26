@@ -30,7 +30,7 @@ const GSZ_COMMANDS=[
  ['Merkliste','notes.php','Seite','todo rechnungen einkauf'],['Abfallkalender','waste.php','Seite','tonnen müll abfuhr'],
  ['Helfer','workers.php','Seite','mitarbeiter helfer app'],['Website-Zahlen & Preisrechner','website.php','Seite','website aufrufe preisrechner'],
  ['Benachrichtigungen','benachrichtigungen.php','Seite','push glätte winterdienst wecker'],['Mail','mail.php','Seite','posteingang'],
- ['Immobilien','estate_bank.php','Seite','miete konto'],['Bauprojekte','projects.php','Seite','bau sanierung'],
+ ['Immobilien','immobilien.php','Seite','miete konto häuser haus'],['Mieten & Kontoauszug','estate_bank.php','Seite','kontoauszug bank buchung zuordnen'],['Bauprojekte','projects.php','Seite','bau sanierung'],
  ['Sicherung und Update','update.php','Seite','backup update'],['Einstellungen','settings.php','Seite','einstellungen'],
 ];
 /** Globale Suche. Rückgabe: Liste [title, sub, url, group]. Max. 6 je Gruppe. */

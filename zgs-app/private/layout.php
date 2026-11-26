@@ -3,7 +3,7 @@ declare(strict_types=1);
 /** Gemeinsamer Rahmen für alle angemeldeten HTML-Seiten. Downloads, JSON, PDFs und die Anmeldung werden nie umhüllt. */
 const GSZ_NAV=[
  ['heute','Heute','index.php'],['woche','Woche','planner.php?view=week'],['objekte','Objekte','objects.php'],
- ['immobilien','Immobilien','estate_bank.php'],['mail','Mail','mail.php'],['mehr','Mehr','more.php'],
+ ['immobilien','Immobilien','immobilien.php'],['mail','Mail','mail.php'],['mehr','Mehr','more.php'],
 ];
 /** Welche Seite gehört zu welchem Hauptpunkt. Alles nicht Genannte liegt unter „Mehr“. */
 function gszNavSection(string $page):string {
@@ -11,7 +11,7 @@ function gszNavSection(string $page):string {
   in_array($page,['index.php','notes.php'],true)=>'heute',
   in_array($page,['planner.php','route.php','appointments.php','task.php'],true)=>'woche',
   in_array($page,['objects.php','property.php','waste_setup.php','object_import.php','meldungen.php','haeuser.php'],true)=>'objekte',
-  str_starts_with($page,'estate')||in_array($page,['projects.php','project.php'],true)=>'immobilien',
+  str_starts_with($page,'estate')||in_array($page,['projects.php','project.php','immobilien.php','haus.php'],true)=>'immobilien',
   in_array($page,['mail.php','compose.php','leads.php'],true)=>'mail',
   default=>'mehr'};
 }
@@ -57,7 +57,7 @@ function gszLayoutDocument(string $html,string $page,string $csrf,?array $respon
  foreach(['app_error'=>'error','app_notice'=>'notice'] as $k=>$cls)if(isset($_SESSION[$k])){$banner.='<p class="'.$cls.' flash" role="'.($cls==='error'?'alert':'status').'">'.e((string)$_SESSION[$k]).'</p>';unset($_SESSION[$k]);}
  $quick=gszLayoutQuickNote($page,$csrf);
  $logout='<form class="logout" method="post" action="index.php"><input type="hidden" name="csrf" value="'.e($csrf).'"><input type="hidden" name="action" value="logout"><button class="logout-button">Abmelden</button></form>';
- return '<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#ffffff"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="GSZ"><title>'.e($title).' · GSZ</title><link rel="icon" href="assets/favicon-32.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="zentrale.css?v=401"><script src="zentrale.js?v=401" defer></script></head><body class="p-'.e(preg_replace('/[^a-z0-9_-]/','',basename($page,'.php'))).'">'
+ return '<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#ffffff"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="GSZ"><title>'.e($title).' · GSZ</title><link rel="icon" href="assets/favicon-32.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="zentrale.css?v=402"><script src="zentrale.js?v=402" defer></script></head><body class="p-'.e(preg_replace('/[^a-z0-9_-]/','',basename($page,'.php'))).'">'
   .'<div class="shell"><aside class="side" aria-label="Hauptnavigation"><a class="side-brand" href="index.php" aria-label="Zur Startseite"><img src="assets/gsz-logo-horizontal.webp" alt="Gebäudeservice Zentrum" width="200" height="59"></a>'
   .'<button type="button" class="side-search" data-cmdk>'.gszNavIcon('search').'<span>Suchen …</span><kbd>⌘K</kbd></button><nav class="side-nav">'.$side.'</nav>'.gszLayoutAreas($page).'<div class="side-foot">'.gszLayoutUser().$logout.'</div></aside>'
   .'<div class="main"><header class="top"><a class="top-mark" href="index.php" aria-label="Zur Startseite"><img src="assets/apple-touch-icon.png" alt="" width="34" height="34"></a><span class="top-title">'.e($title).'</span><a class="top-search" href="suche.php" data-cmdk aria-label="Suchen">'.gszNavIcon('search').'</a>'.($quick!==''?'<a class="top-add" href="notes.php#neu" data-quick-note aria-label="Schnell notieren"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Notieren</a>':'').$logout.'</header>'
