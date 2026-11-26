@@ -44,9 +44,16 @@ function gszWeatherWhen(array $a):string {
  $tz=new DateTimeZone('Europe/Berlin');$f=function(?string $t)use($tz){if(!$t)return '';$d=(new DateTimeImmutable($t.' UTC'))->setTimezone($tz);$today=(new DateTimeImmutable('today',$tz));$diff=(int)$today->diff($d->setTime(0,0))->format('%r%a');return ($diff===0?'heute':($diff===1?'morgen':['','Mo','Di','Mi','Do','Fr','Sa','So'][(int)$d->format('N')].' '.$d->format('d.m.'))).' '.$d->format('H:i');};
  return trim(($a['onset']?'ab '.$f($a['onset']):'').($a['expires']?' bis '.$f($a['expires']):''));
 }
-/** Objekte mit Winterdienst (aktive Regelaufgabe Winterdienst/Streuen/Räumen). */
+/** Objekte mit Winterdienst: per Haken ausgewählt (Einstellung) oder mit aktiver Regelaufgabe Winterdienst/Streuen/Räumen. */
+function gszWinterIds(PDO $pdo):array {return array_values(array_unique(array_filter(array_map('intval',explode(',',gszSetting($pdo,'winter_properties'))))));}
 function gszWinterProperties(PDO $pdo):array {
- return $pdo->query("SELECT DISTINCT p.id,p.name,p.address FROM recurring_jobs r JOIN properties p ON p.id=r.property_id WHERE r.active=1 AND (LOWER(r.title) LIKE '%winter%' OR LOWER(r.title) LIKE '%streu%' OR LOWER(r.title) LIKE '%räum%' OR LOWER(r.title) LIKE '%glätte%') ORDER BY p.name")->fetchAll(PDO::FETCH_ASSOC);
+ $ids=gszWinterIds($pdo);$in=$ids?' OR p.id IN ('.implode(',',$ids).')':'';
+ return $pdo->query("SELECT p.id,p.name,p.address FROM properties p WHERE EXISTS(SELECT 1 FROM recurring_jobs r WHERE r.property_id=p.id AND r.active=1 AND (LOWER(r.title) LIKE '%winter%' OR LOWER(r.title) LIKE '%streu%' OR LOWER(r.title) LIKE '%räum%' OR LOWER(r.title) LIKE '%glätte%'))$in ORDER BY p.name")->fetchAll(PDO::FETCH_ASSOC);
+}
+/** Haken-Liste speichern (nur vorhandene Objekte). */
+function gszWinterSave(PDO $pdo,int $admin,array $ids):int {
+ $ids=array_values(array_unique(array_filter(array_map('intval',$ids))));if($ids){$q=$pdo->query('SELECT id FROM properties WHERE id IN ('.implode(',',$ids).')');$ids=array_map('intval',$q->fetchAll(PDO::FETCH_COLUMN));}
+ gszSettingSet($pdo,'winter_properties',implode(',',$ids));gszAudit($pdo,$admin,'winter_properties_saved',['count'=>count($ids)]);return count($ids);
 }
 /** Tag für den Einsatz: Beginn der Warnung (deutsche Zeit), frühestens heute. */
 function gszWeatherDay(array $a,?string $today=null):string {

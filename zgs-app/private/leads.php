@@ -14,7 +14,7 @@ const GSZ_SETTING_DEFAULTS=['review_url'=>'https://share.google/xetYVdtG41vnkgIa
  'zentrale_url'=>'https://gszintern.de','company_phone'=>'0176 64806595',
  // 440: Push-Benachrichtigungen und DWD-Warnungen (Orte als „Name:Breite,Länge;…“), Winterdienst bei Warnung: ask|auto|off
  'push_leads'=>'1','push_reports'=>'1','push_weather'=>'1','push_frost'=>'0','push_day'=>'1','push_waste'=>'1','push_appt'=>'1','push_rent'=>'1','push_mail'=>'0','push_system'=>'1','push_day_time'=>'06:30','push_waste_time'=>'18:00','push_mail_last'=>'','push_contact'=>'info@gebaeudeservice-zentrum.de','tick_token'=>'',
- 'weather_points'=>'Gütersloh:51.9069,8.3786','weather_tasks'=>'ask','weather_task_time'=>'06:00','weather_checked'=>'','tick_last'=>'',
+ 'weather_points'=>'Gütersloh:51.9069,8.3786','winter_properties'=>'','weather_tasks'=>'ask','weather_task_time'=>'06:00','weather_checked'=>'','tick_last'=>'',
  'calc_enabled'=>'0','calc_rate'=>'','calc_base_min'=>'10','calc_floor_min'=>'5','calc_cellar_min'=>'10','calc_elevator_min'=>'5','calc_window_min'=>'3','calc_min_visit'=>'','calc_vat'=>'zzgl','calc_range_pct'=>'10'];
 
 function gszLeadsReady(PDO $pdo):bool {try{return (bool)$pdo->query("SELECT COUNT(*) FROM app_migrations WHERE version='420_anfragen'")->fetchColumn();}catch(Throwable $e){return false;}}

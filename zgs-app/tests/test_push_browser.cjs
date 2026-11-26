@@ -21,6 +21,10 @@ try{const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,heigh
  ok(res[0]===200&&res[1].includes('"ok":true'),'device subscription saved (as the browser would)');await p.reload();ok((await p.locator('#geraete').textContent()).includes('iPhone · Safari'),'device listed');
  await Promise.all([p.waitForNavigation(),p.getByRole('button',{name:'Test-Benachrichtigung senden'}).tap()]);ok((await p.textContent('main')).includes('Kein Gerät hat den Test angenommen')&&(await p.locator('#geraete').textContent()).includes('Problem: nicht erreichbar'),'unreachable push service reported honestly');
  const kinds=p.locator('form').filter({has:p.locator('[name=push_leads]')});await kinds.locator('[name=push_reports]').uncheck();await Promise.all([p.waitForNavigation(),kinds.getByRole('button',{name:'Speichern'}).tap()]);ok(q("SELECT setting_value v FROM app_settings WHERE setting_key='push_reports'")[0].v==='0','kinds saved');
+ // Winterdienst per Haken
+ const wl=p.locator('#winterdienst');ok(await wl.locator('input[name="winter[]"]').count()>=1,'object list with switches');const other=q(`SELECT id FROM properties WHERE id<>${pid} LIMIT 1`);
+ if(other.length){await wl.locator(`input[name="winter[]"][value="${other[0].id}"]`).check();await Promise.all([p.waitForNavigation(),wl.getByRole('button',{name:'Speichern'}).tap()]);ok((await p.textContent('main')).includes('Winterdienst bei')&&q("SELECT setting_value v FROM app_settings WHERE setting_key='winter_properties'")[0].v===String(other[0].id),'winter objects saved by switch');}
+ ok(await p.locator(`#winterdienst input[value="${pid}"]`).isDisabled()&&await p.locator(`#winterdienst input[value="${pid}"]`).isChecked(),'object with rule shown as fixed');
  // Wecker
  await Promise.all([p.waitForNavigation(),p.getByRole('button',{name:'Wecker-Adresse erzeugen'}).tap()]);const url=await p.locator('#tick').inputValue();ok(/\/tick\.php\?k=[a-f0-9]{48}$/.test(url),'secret wake-up address');
  const k=new URL(url).searchParams.get('k');let r=await c.request.get(base+'/tick.php?k='+'0'.repeat(48));ok(r.status()===403,'wrong key refused');

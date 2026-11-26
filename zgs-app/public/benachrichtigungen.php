@@ -14,11 +14,12 @@ if($_SERVER['REQUEST_METHOD']==='POST'){checkCsrf();$a=(string)($_POST['action']
   case 'kinds':foreach(array_keys(GSZ_PUSH_KINDS) as $k)if($k!=='test')gszSettingSet($pdo,'push_'.$k,!empty($_POST['push_'.$k])?'1':'0');foreach(['push_day_time','push_waste_time'] as $t){$v=(string)($_POST[$t]??'');if(preg_match('/^([01]\d|2[0-3]):[0-5]\d$/D',$v))gszSettingSet($pdo,$t,$v);}$_SESSION['app_notice']='Gespeichert.';break;
   case 'weather':$pts=trim((string)($_POST['weather_points']??''));gszSettingSet($pdo,'weather_points',$pts);if($pts!==''&&!gszWeatherPoints($pdo))throw new RuntimeException('Orte bitte wie „Gütersloh:51.9069,8.3786“ angeben.');
    $m=(string)($_POST['weather_tasks']??'ask');gszSettingSet($pdo,'weather_tasks',in_array($m,['ask','auto','off'],true)?$m:'ask');$t=(string)($_POST['weather_task_time']??'');gszSettingSet($pdo,'weather_task_time',preg_match('/^([01]\d|2[0-3]):[0-5]\d$/D',$t)?$t:'');$_SESSION['app_notice']='Gespeichert.';break;
+  case 'winter':$n=gszWinterSave($pdo,$admin,(array)($_POST['winter']??[]));$_SESSION['app_notice']=$n?'Winterdienst bei '.$n.' Objekt'.($n>1?'en':'').' gespeichert.':'Keine Objekte mit Winterdienst ausgewählt.';break;
   case 'check':$r=gszWeatherTick($pdo,true);$_SESSION['app_notice']=$r['checked']?'DWD-Warnungen abgerufen'.($r['new']?': '.$r['new'].' neu.':' – nichts Neues.'):'Abruf nicht möglich (keine Orte?).';break;
   case 'tick':gszSettingSet($pdo,'tick_token',bin2hex(random_bytes(24)));gszAudit($pdo,$admin,'tick_token_renewed');$_SESSION['app_notice']='Neue Wecker-Adresse erzeugt. Bei cron-job.org die alte Adresse ersetzen.';break;
   default:throw new RuntimeException('Aktion unbekannt.');}
  }catch(Throwable $e){if($ajax){http_response_code(400);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);exit;}gszUiError($e);}
- redirect('benachrichtigungen.php'.(in_array($a,['weather','check'],true)?'#wetter':($a==='tick'?'#wecker':'#geraete')));}
+ redirect('benachrichtigungen.php'.(in_array($a,['weather','check'],true)?'#wetter':($a==='winter'?'#winterdienst':($a==='tick'?'#wecker':'#geraete'))));}
 $devices=gszPushDevices($pdo);$csrf=csrf();$recent=gszPushRecent($pdo,8);$wx=gszWeatherActive($pdo);$wp=gszWinterProperties($pdo);
 $tz=new DateTimeZone('Europe/Berlin');$fmt=fn(?string $t)=>$t?(new DateTimeImmutable($t.' UTC'))->setTimezone($tz)->format('d.m., H:i'):'–';
 $tok=gszSetting($pdo,'tick_token');$tickUrl=$tok!==''?rtrim(gszSetting($pdo,'zentrale_url'),'/').'/tick.php?k='.$tok:'';$tickLast=gszSetting($pdo,'tick_last');
@@ -39,7 +40,13 @@ gszPageStart('Benachrichtigungen','Push aufs Handy bei Anfragen, Mieter-Meldunge
   <label>Orte (Name:Breite,Länge – je Zeile)<textarea name="weather_points" rows="2" maxlength="600"><?=e(str_replace(';',"\n",gszSetting($pdo,'weather_points')))?></textarea></label>
   <div class="grid-3"><label>Bei Glättewarnung<select name="weather_tasks"><?php foreach(['ask'=>'Nachfragen','auto'=>'Automatisch einplanen','off'=>'Nur informieren'] as $k=>$l):?><option value="<?=$k?>"<?=gszSetting($pdo,'weather_tasks')===$k?' selected':''?>><?=e($l)?></option><?php endforeach?></select></label>
   <label>Uhrzeit der Einsätze<input type="time" name="weather_task_time" value="<?=e(gszSetting($pdo,'weather_task_time'))?>"></label></div><button class="small primary">Speichern</button></form>
- <p class="hint">Winterdienst-Objekte (<?=count($wp)?>): <?=$wp?e(implode(', ',array_column($wp,'name'))):'noch keins'?>. Erkannt an einer aktiven Regelaufgabe „Winterdienst“ (auch Streuen/Räumen) – auf der Objektseite unter „Regelmäßige Arbeiten“ anlegen.</p></section>
+ </section>
+<section class="card" id="winterdienst"><h2>Winterdienst bei diesen Objekten</h2><p class="hint">Haken setzen, wo du bei Glätte und Schnee raus musst. Bei einer Warnung plant die Zentrale genau diese Objekte ein – sonst entstehen keine Aufgaben.</p>
+ <?php $all=$pdo->query('SELECT id,name,address FROM properties ORDER BY name LIMIT 1000')->fetchAll();$sel=array_flip(array_column($wp,'id'));$byRule=array_diff(array_column($wp,'id'),gszWinterIds($pdo));?>
+ <?php if(!$all):?><p class="muted">Noch keine Objekte angelegt.</p><?php else:?><form method="post" class="winter-list"><?php gszFields('winter');?>
+ <p class="winter-tools"><span><?=count($wp)?> von <?=count($all)?> ausgewählt</span></p>
+ <?php foreach($all as $o):$rule=in_array((int)$o['id'],$byRule,true);?><label class="push-kind"><span class="pk-ico" aria-hidden="true">🏢</span><span class="pk-txt"><strong><?=e($o['name'])?></strong><small><?=e($o['address'])?><?=$rule?' · über Regelaufgabe „Winterdienst“':''?></small></span><input type="checkbox" role="switch" class="switch" name="winter[]" value="<?=(int)$o['id']?>"<?=isset($sel[(int)$o['id']])?' checked':''?><?=$rule?' disabled':''?>></label><?php endforeach?>
+ <button class="primary">Speichern</button></form><?php endif?></section>
 <section class="card" id="wecker"><h2>Wecker für nachts und unterwegs</h2>
  <p>Dein STRATO-Tarif hat keine Cronjobs. Damit Glättewarnungen und Anfragen auch dann ankommen, wenn die Zentrale nicht geöffnet ist, ruft ein kostenloser Dienst (z. B. <strong>cron-job.org</strong>) alle 15 Minuten diese geheime Adresse auf:</p>
  <?php if($tickUrl):?><label class="sr-only" for="tick">Wecker-Adresse</label><input id="tick" readonly class="copy-field" data-copy value="<?=e($tickUrl)?>"><p class="hint">Zuletzt geweckt: <?=e($tickLast!==''?$fmt($tickLast):'noch nie')?>.</p><?php endif?>
