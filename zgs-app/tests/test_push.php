@@ -18,7 +18,7 @@ $decrypt=function(string $body)use($ua,$uaPub,$auth):string{$salt=substr($body,0
 $sub=['endpoint'=>'https://push.example.invalid/send/abc123','keys'=>['p256dh'=>gszB64u($uaPub),'auth'=>gszB64u($auth)]];
 puThrows(fn()=>gszPushSubscribe($p,1,['endpoint'=>'http://x.invalid/a','keys'=>$sub['keys']]),'http endpoint refused');puThrows(fn()=>gszPushSubscribe($p,1,['endpoint'=>$sub['endpoint'],'keys'=>['p256dh'=>'abc','auth'=>'x']]),'bad keys refused');
 $sid=gszPushSubscribe($p,1,$sub,"iPhone · Safari\n");pu(gszPushSubscribe($p,1,$sub,'iPhone')===$sid&&count(gszPushDevices($p))===1,'same device registered once');
-pu(is_file(gszPushKeyFile())&&(fileperms(gszPushKeyFile())&0777)===0600&&strlen(gszB64uDec(gszPushPublicKey()))===65,'VAPID key stored privately (0600)');
+$vk=gszPushPublicKey();pu(is_file(gszPushKeyFile())&&(fileperms(gszPushKeyFile())&0777)===0600&&strlen(gszB64uDec($vk))===65&&gszPushPublicKey()===$vk,'VAPID key stored privately (0600)');
 $calls=[];$sender=function(string $ep,string $body,array $h)use(&$calls){$calls[]=[$ep,$body,$h];return 201;};
 pu(gszPushNotify($p,'test','t1','✅ Test','Hallo äöü','benachrichtigungen.php',$sender)===1&&count($calls)===1,'test push delivered');
 [$ep,$body,$h]=$calls[0];$msg=json_decode($decrypt($body),true);pu($ep===$sub['endpoint']&&$msg['title']==='✅ Test'&&$msg['body']==='Hallo äöü'&&$msg['url']==='benachrichtigungen.php','payload decrypts on the device');
