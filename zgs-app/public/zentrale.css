@@ -590,3 +590,4 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea{bo
 input:focus,select:focus,textarea:focus{border-color:var(--c-accent);box-shadow:0 0 0 3px rgba(63,143,47,.15);outline:none}
 .block.is-appointment::before{background:#7c3aed}.block.is-preview::before{background:#cbd5d0}
 @media(max-width:759px){.day-kpis{gap:var(--s-2)}.dk{padding:var(--s-3) var(--s-3);flex-direction:row;align-items:baseline;flex-wrap:wrap;column-gap:8px}.dk strong{font-size:1.5rem}.dk span{font-size:var(--fs-xs)}.dk small{width:100%}}
+.obj-actions{display:flex;flex-wrap:wrap;gap:var(--s-2);margin-bottom:var(--s-4)}.created-card{border-color:#b9dcae;background:linear-gradient(180deg,#fff,#f4faf1)}.created-card .lead-actions{display:flex;flex-wrap:wrap;gap:var(--s-2);margin:0}

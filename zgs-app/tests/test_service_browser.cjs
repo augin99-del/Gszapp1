@@ -80,12 +80,14 @@ try{const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,heigh
  r=await c.request.get(base+'/web_calc.php?floors=3&entrances=1&rhythm=weekly&cellar=1',{headers:{Origin:'https://gebaeudeservice-zentrum.de'}});j=await r.json();
  ok(j.enabled&&j.low===80&&j.high===105&&j.text.includes('zzgl. MwSt.')&&r.headers()['access-control-allow-origin']==='https://gebaeudeservice-zentrum.de'&&!r.headers()['set-cookie'],'calculator endpoint with CORS');
  // Neues Objekt mit neuem Kunden in einem Schritt
- await p.setViewportSize({width:390,height:844});await p.goto(base+'/objects.php');const nf=p.locator('details.card').filter({hasText:'Neues Objekt'});if(!(await nf.evaluate(d=>d.open)))await nf.locator('summary').first().tap();
- await nf.locator('[name=name]').fill('Neubau Testweg 7');await nf.locator('[name=address]').fill('Testweg 7, 33330 Gütersloh');await nf.locator('.new-customer summary').tap();
+ await p.setViewportSize({width:390,height:844});await p.goto(base+'/objects.php');await p.getByRole('link',{name:'+ Neuer Kunde mit Objekt'}).tap();await p.waitForURL(/neu=kunde/);const nf=p.locator('#neu');ok(await nf.evaluate(d=>d.open)&&await nf.locator('.new-customer').evaluate(d=>d.open),'one tap opens form with customer part');
+ await nf.locator('[name=name]').fill('Neubau Testweg 7');await nf.locator('[name=address]').fill('Testweg 7, 33330 Gütersloh');
  await nf.locator('[name=new_customer_name]').fill('Hausverwaltung Beispiel GmbH');await nf.locator('[name=new_customer_contact]').fill('Frau Muster');await nf.locator('[name=new_customer_phone]').fill('05241 000000');await nf.locator('[name=new_customer_email]').fill('verwaltung@example.invalid');
  await Promise.all([p.waitForNavigation(),nf.getByRole('button',{name:'Objekt anlegen'}).tap()]);
  const np=q("SELECT p.*,c.name cname,c.email cmail FROM properties p JOIN customers c ON c.id=p.customer_id WHERE p.name='Neubau Testweg 7'");
  ok(np.length===1&&np[0].cname==='Hausverwaltung Beispiel GmbH'&&np[0].cmail==='verwaltung@example.invalid'&&np[0].contact_name==='Frau Muster'&&np[0].contact_email==='verwaltung@example.invalid'&&/property\.php\?id=/.test(p.url()),'object and new customer created together, contact on the object');
+ const cid=np[0].customer_id;await p.getByRole('link',{name:/Weiteres Objekt für Hausverwaltung Beispiel GmbH/}).tap();await p.waitForURL(/neu=objekt&kunde=/);ok(await p.locator('#neu select[name=customer_id]').inputValue()===String(cid),'next object: customer preselected');
+ await p.locator('#neu [name=name]').fill('Neubau Testweg 9');await Promise.all([p.waitForNavigation(),p.locator('#neu').getByRole('button',{name:'Objekt anlegen'}).tap()]);ok(q(`SELECT COUNT(*) n FROM properties WHERE customer_id=${cid}`)[0].n==2&&q('SELECT COUNT(*) n FROM customers WHERE name=\'Hausverwaltung Beispiel GmbH\'')[0].n==1,'second object for the same customer, no duplicate customer');
  // Häuser-Übersicht: alle Häuser, für alle einrichten, alle Aushänge in einem PDF, erneuern
  q("INSERT INTO properties(name,address) VALUES('Zweites Haus','Teststraße 2'),('Drittes Haus','Teststraße 3')");
  await p.goto(base+'/objects.php');await p.getByRole('link',{name:/Häuser: QR-Meldung/}).tap();await p.waitForURL(/haeuser\.php/);
