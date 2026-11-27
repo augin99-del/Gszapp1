@@ -1,5 +1,13 @@
 # Changelog
 
+
+## 27.11.2026 – Verträge je Objekt (Schema 450), Immobilien-Jahresübersicht
+- Beim Anlegen eines Objekts erstellt die Zentrale automatisch einen Vertragsentwurf (Kunde, Objekt, Leistungen aus den regelmäßigen Arbeiten).
+- Vertragsseite: Unternehmer/Verbraucher (Verbraucher automatisch max. 24 Monate, 1 Monat Frist, Widerrufsbelehrung), Preis, Laufzeit, Besonderes, PDF.
+- Status Entwurf → versendet → aktiv → gekündigt/beendet; Erinnerung auf „Heute“ 60 Tage vor Kündigungsfrist und bei unbeantworteten Verträgen.
+- Übersicht „Verträge“ mit Firmendaten für den Vertragskopf und „Entwürfe für Objekte ohne Vertrag anlegen“.
+- Immobilien: Jahresübersicht für den Steuerberater (Drucken, CSV); CSV-Exporte lassen negative Zahlen als Zahl.
+
 ## Gestaltung und Kunde beim Objekt (26.11.2026)
 - Zentrale im Markenauftritt der Website: grüner aktiver Menüpunkt, ruhigere Karten, Begrüßung und Kennzahlen auf Heute, farbige Kante je Arbeitsart (Reinigung, Tonnen, Außen, Winter, Termin)
 - Meldeformular: Name und Telefon sind Pflicht (auch serverseitig geprüft), keine Meldungsnummer mehr (Bestätigung und Portal)

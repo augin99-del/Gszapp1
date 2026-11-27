@@ -11,8 +11,8 @@ function pjThrows(callable $f,string $s):void{try{$f();pj(false,$s);}catch(Runti
 $p->exec(file_get_contents(dirname(__DIR__).'/private/fresh_install_v192.sql'));$p->exec(file_get_contents(dirname(__DIR__).'/private/migration_v200.sql'));gszMigratePhase2($p);gszMigratePhase3($p);
 foreach([230,240,250,260,270,280,290,300,310,320,330,340,350,360,370] as $v)$p->exec(file_get_contents(dirname(__DIR__).'/private/migration_v'.$v.'.sql'));
 $p->exec("INSERT INTO admins(email,password_hash) VALUES('owner@example.invalid','x')");gszMigrate380($p);require_once dirname(__DIR__).'/private/migrate_390.php';require_once dirname(__DIR__).'/private/migrate_400.php';gszMigrate390($p);gszMigrate400($p);
-$i=gszSetupInspect($p);pj($i['status']==='upgrade'&&$i['version']===400&&$i['steps']===[410,420,430,440],'400 offers the steps up to 440');pj(!gszProjectsReady($p),'not ready before update');
-pj(gszSetupMigrate($p)['version']===440&&gszSchemaCurrent($p)&&gszProjectsReady($p)&&count($p->query('SHOW TABLES')->fetchAll())===83,'migrated to 440, 83 tables');
+$i=gszSetupInspect($p);pj($i['status']==='upgrade'&&$i['version']===400&&$i['steps']===[410,420,430,440,450],'400 offers the steps up to 450');pj(!gszProjectsReady($p),'not ready before update');
+pj(gszSetupMigrate($p)['version']===450&&gszSchemaCurrent($p)&&gszProjectsReady($p)&&count($p->query('SHOW TABLES')->fetchAll())===84,'migrated to 450, 84 tables');
 gszMigrate410($p);pj(gszSetupInspect($p)['status']==='current','410 repeatable');
 $p->exec("INSERT INTO estate_buildings(name,address) VALUES('Haus Synthetik','Testweg 4, 00000 Musterstadt')");$b=(int)$p->lastInsertId();
 // Projekt

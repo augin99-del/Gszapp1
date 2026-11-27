@@ -755,3 +755,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--c-accent);box-shadow:
 .year-table tr.sum td{font-weight:700}.year-table tr.total td{font-weight:800;font-size:var(--fs-m);border-top:2px solid var(--c-ink)}
 .year-table small{color:var(--c-muted)}
 @media print{.no-print,.deskbar,.fab,.cmdk,.back-link{display:none!important}.estate-kpis .dk{box-shadow:none}.year-house{break-inside:avoid}}
+/* ── Verträge je Objekt (450) ── */
+.contract-head{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s-2) var(--s-3);margin:0 0 var(--s-3)}.contract-head .estate-actions{margin:0 0 0 auto}
+.contract-form .kind{display:grid;gap:var(--s-2);border:0;padding:0;margin:0 0 var(--s-3)}.contract-form .kind legend{font-weight:650;font-size:var(--fs-s);margin-bottom:6px}
+@media(min-width:700px){.contract-form .kind{grid-template-columns:1fr 1fr}}
+.contract-form .radio{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid var(--c-line);border-radius:var(--r-m);background:#fff;cursor:pointer}
+.contract-form .radio:has(input:checked){border-color:var(--c-accent);box-shadow:0 0 0 3px var(--c-accent-soft)}
+.contract-form .radio input{margin-top:4px}.contract-form .radio small{display:block;color:var(--c-muted);font-size:var(--fs-xs)}
+@media(min-width:760px){.form-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.form-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.status-form{display:flex;flex-wrap:wrap;align-items:flex-end;gap:var(--s-3);margin:var(--s-2) 0}.status-form label{flex:0 1 220px}
+.inline-form{margin:0 0 var(--s-4)}
+.contract-preview h3{margin:var(--s-4) 0 4px;font-size:var(--fs-m);color:#1f5e1c}.contract-preview p{margin:0 0 6px;font-size:var(--fs-s);line-height:1.55}
+.contract-card .section-head{display:flex;align-items:center;justify-content:space-between;gap:var(--s-2)}.contract-card .section-head h2{margin:0}

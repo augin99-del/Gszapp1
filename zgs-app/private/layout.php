@@ -10,13 +10,14 @@ function gszNavSection(string $page):string {
  return match(true){
   in_array($page,['index.php','notes.php'],true)=>'heute',
   in_array($page,['planner.php','route.php','appointments.php','task.php'],true)=>'woche',
-  in_array($page,['objects.php','property.php','waste_setup.php','object_import.php','meldungen.php','haeuser.php'],true)=>'objekte',
+  in_array($page,['objects.php','property.php','waste_setup.php','object_import.php','meldungen.php','haeuser.php','vertraege.php','vertrag.php'],true)=>'objekte',
   str_starts_with($page,'estate')||in_array($page,['projects.php','project.php','immobilien.php','haus.php','jahresuebersicht.php'],true)=>'immobilien',
   in_array($page,['mail.php','compose.php','leads.php'],true)=>'mail',
   default=>'mehr'};
 }
 function gszNavIcon(string $name):string {
  $paths=[
+  'doc'=>'M7 3h7l5 5v13H7z M14 3v5h5 M10 12h6 M10 16h6',
   'heute'=>'M12 3v2 M12 19v2 M4.2 4.2l1.4 1.4 M18.4 18.4l1.4 1.4 M3 12h2 M19 12h2 M4.2 19.8l1.4-1.4 M18.4 5.6l1.4-1.4 M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0z',
   'woche'=>'M8 3v4 M16 3v4 M3 10h18 M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z M7 14h2 M11 14h2 M15 14h2 M7 17h2 M11 17h2',
   'objekte'=>'M3 21h18 M5 21V6l7-3v18 M12 9h7v12 M8 9h1 M8 13h1 M8 17h1 M15 13h1 M15 17h1',
@@ -57,7 +58,7 @@ function gszLayoutDocument(string $html,string $page,string $csrf,?array $respon
  foreach(['app_error'=>'error','app_notice'=>'notice'] as $k=>$cls)if(isset($_SESSION[$k])){$banner.='<p class="'.$cls.' flash" role="'.($cls==='error'?'alert':'status').'">'.e((string)$_SESSION[$k]).'</p>';unset($_SESSION[$k]);}
  $quick=gszLayoutQuickNote($page,$csrf);
  $logout='<form class="logout" method="post" action="index.php"><input type="hidden" name="csrf" value="'.e($csrf).'"><input type="hidden" name="action" value="logout"><button class="logout-button">Abmelden</button></form>';
- return '<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#ffffff"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="GSZ"><title>'.e($title).' · GSZ</title><link rel="icon" href="assets/favicon-32.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="zentrale.css?v=402"><script src="zentrale.js?v=402" defer></script></head><body class="p-'.e(preg_replace('/[^a-z0-9_-]/','',basename($page,'.php'))).'">'
+ return '<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#ffffff"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="GSZ"><title>'.e($title).' · GSZ</title><link rel="icon" href="assets/favicon-32.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="zentrale.css?v=403"><script src="zentrale.js?v=403" defer></script></head><body class="p-'.e(preg_replace('/[^a-z0-9_-]/','',basename($page,'.php'))).'">'
   .'<div class="shell"><aside class="side" aria-label="Hauptnavigation"><a class="side-brand" href="index.php" aria-label="Zur Startseite"><img src="assets/gsz-logo-horizontal.webp" alt="Gebäudeservice Zentrum" width="200" height="59"></a>'
   .'<button type="button" class="side-search" data-cmdk>'.gszNavIcon('search').'<span>Suchen …</span><kbd>⌘K</kbd></button><nav class="side-nav">'.$side.'</nav>'.gszLayoutAreas($page).'<div class="side-foot">'.gszLayoutUser().$logout.'</div></aside>'
   .'<div class="main"><header class="top"><a class="top-mark" href="index.php" aria-label="Zur Startseite"><img src="assets/apple-touch-icon.png" alt="" width="34" height="34"></a><span class="top-title">'.e($title).'</span><a class="top-search" href="suche.php" data-cmdk aria-label="Suchen">'.gszNavIcon('search').'</a>'.($quick!==''?'<a class="top-add" href="notes.php#neu" data-quick-note aria-label="Schnell notieren"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Notieren</a>':'').$logout.'</header>'
@@ -77,8 +78,8 @@ function gszLayoutQuickNote(string $page,string $csrf):string {
 
 /** Zweite Ebene der Seitenleiste: die Bereiche fürs Tagesgeschäft, mit Zählern. */
 function gszLayoutAreas(string $page):string {
- $pdo=gszLayoutPdo();$c=['leads'=>0,'reports'=>0,'bell'=>0];if($pdo instanceof PDO){try{require_once __DIR__.'/shell.php';$c=gszShellCounts($pdo);}catch(Throwable $e){}}
- $items=[['leads.php','Anfragen','inbox',$c['leads']],['meldungen.php','Mieter-Meldungen','tool',$c['reports']],['customers.php','Kunden','users',0],['einsaetze.php','Schlüsseldienst','key',0],['haeuser.php','Häuser: QR & Portal','qr',0],['website.php','Website','chart',0]];
+ $pdo=gszLayoutPdo();$c=['leads'=>0,'reports'=>0,'bell'=>0,'contracts'=>0];if($pdo instanceof PDO){try{require_once __DIR__.'/shell.php';$c=gszShellCounts($pdo);}catch(Throwable $e){}}
+ $items=[['leads.php','Anfragen','inbox',$c['leads']],['meldungen.php','Mieter-Meldungen','tool',$c['reports']],['customers.php','Kunden','users',0],['vertraege.php','Verträge','doc',$c['contracts']??0],['einsaetze.php','Schlüsseldienst','key',0],['haeuser.php','Häuser: QR & Portal','qr',0],['website.php','Website','chart',0]];
  $h='<p class="side-label">Bereiche</p><nav class="side-areas" aria-label="Bereiche">';
  foreach($items as [$u,$l,$i,$n])$h.='<a href="'.$u.'"'.($page===$u?' aria-current="page"':'').'>'.gszNavIcon($i).'<span>'.e($l).'</span>'.($n?'<span class="count-pill">'.(int)$n.'</span>':'').'</a>';
  return $h.'</nav>';

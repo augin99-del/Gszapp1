@@ -7,7 +7,8 @@ declare(strict_types=1);
 
 /** Zähler für die Seitenleiste: neue Anfragen, offene Mieter-Meldungen, ungelesene Benachrichtigungen. */
 function gszShellCounts(PDO $pdo):array {
- $c=['leads'=>0,'reports'=>0,'bell'=>0];
+ $c=['leads'=>0,'reports'=>0,'bell'=>0,'contracts'=>0];
+ try{$c['contracts']=(int)$pdo->query("SELECT COUNT(*) FROM property_contracts WHERE status='entwurf'")->fetchColumn();}catch(Throwable $e){}
  try{$c['leads']=(int)$pdo->query("SELECT COUNT(*) FROM leads WHERE status='neu' AND note<>'[gelöscht]'")->fetchColumn();}catch(Throwable $e){}
  try{$c['reports']=(int)$pdo->query("SELECT COUNT(*) FROM defect_reports d LEFT JOIN quick_notes n ON n.id=d.note_id WHERE d.status='neu' OR (d.status='uebernommen' AND n.done_at IS NULL)")->fetchColumn();}catch(Throwable $e){}
  try{$seen=(string)$pdo->query("SELECT setting_value FROM app_settings WHERE setting_key='bell_seen'")->fetchColumn();$q=$pdo->prepare("SELECT COUNT(*) FROM push_events WHERE kind<>'test' AND created_at>? AND created_at>NOW()-INTERVAL 7 DAY");$q->execute([$seen!==''?$seen:'1970-01-01']);$c['bell']=(int)$q->fetchColumn();}catch(Throwable $e){}
@@ -30,7 +31,7 @@ const GSZ_COMMANDS=[
  ['Merkliste','notes.php','Seite','todo rechnungen einkauf'],['Abfallkalender','waste.php','Seite','tonnen müll abfuhr'],
  ['Helfer','workers.php','Seite','mitarbeiter helfer app'],['Website-Zahlen & Preisrechner','website.php','Seite','website aufrufe preisrechner'],
  ['Benachrichtigungen','benachrichtigungen.php','Seite','push glätte winterdienst wecker'],['Mail','mail.php','Seite','posteingang'],
- ['Immobilien','immobilien.php','Seite','miete konto häuser haus'],['Mieten & Kontoauszug','estate_bank.php','Seite','kontoauszug bank buchung zuordnen'],['Jahresübersicht Immobilien','jahresuebersicht.php','Seite','steuer steuerberater anlage v jahr'],['Bauprojekte','projects.php','Seite','bau sanierung'],
+ ['Immobilien','immobilien.php','Seite','miete konto häuser haus'],['Mieten & Kontoauszug','estate_bank.php','Seite','kontoauszug bank buchung zuordnen'],['Jahresübersicht Immobilien','jahresuebersicht.php','Seite','steuer steuerberater anlage v jahr'],['Verträge','vertraege.php','Seite','vertrag kündigung frist dienstleistungsvertrag'],['Bauprojekte','projects.php','Seite','bau sanierung'],
  ['Sicherung und Update','update.php','Seite','backup update'],['Einstellungen','settings.php','Seite','einstellungen'],
 ];
 /** Globale Suche. Rückgabe: Liste [title, sub, url, group]. Max. 6 je Gruppe. */
