@@ -64,7 +64,7 @@ pu(gszWinterSave($p,1,['2','999','x'])===1&&count(gszWinterProperties($p))===2,'
 $p->exec("UPDATE weather_alerts SET planned_at=NULL");pu(gszWeatherPlan($p,1,'dwd-glaette-1')===1&&(int)$p->query("SELECT COUNT(*) FROM tasks WHERE property_id=2 AND title LIKE 'Winterdienst%'")->fetchColumn()===1,'ticked object planned too');
 gszWinterSave($p,1,[]);pu(count(gszWinterProperties($p))===1,'untick removes it again');
 // Automatisch einplanen bei neuer Warnung
-gszSettingSet($p,'weather_tasks','auto');$alerts['alerts'][]=['id'=>5,'alert_id'=>'dwd-schnee-2','status'=>'actual','event_code'=>71,'event_de'=>'SCHNEEFALL','headline_de'=>'Amtliche WARNUNG vor SCHNEEFALL','description_de'=>'5 bis 10 cm.','onset'=>$future(30),'expires'=>$future(40)];
+gszSettingSet($p,'weather_tasks','auto');$alerts['alerts'][]=['id'=>5,'alert_id'=>'dwd-schnee-2','status'=>'actual','event_code'=>71,'event_de'=>'SCHNEEFALL','headline_de'=>'Amtliche WARNUNG vor SCHNEEFALL','description_de'=>'5 bis 10 cm.','onset'=>$future(60),'expires'=>$future(70)];
 $http2=fn(string $u)=>json_encode($alerts);$tk=gszWeatherTick($p,true,$http2,$sender);pu($tk['planned']>=1&&$tk['pushed']===1&&str_contains(json_decode($decrypt(end($calls)[1]),true)['body'],'eingeplant'),'auto mode plans and says so in the push');
 pu(gszWeatherTick($p,true,fn()=>null,$sender)['new']===0&&count(gszWeatherActive($p))===3,'service down: nothing lost');
 gszSettingSet($p,'weather_points','Rheda:51.84,8.30;kaputt;Gütersloh:51.9,8.38');pu(count(gszWeatherPoints($p))===2,'several places, invalid lines ignored');
