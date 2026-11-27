@@ -2,7 +2,7 @@
 declare(strict_types=1);
 /** Shared CSV/ZIP export helpers (formerly part of the removed finance export). */
 function gszCsvCell(mixed $v):string {
- $s=(string)$v;if(preg_match('/^[=+@\-\t\r]/u',$s))$s="'".$s;
+ $s=(string)$v;if(preg_match('/^[=+@\-\t\r]/u',$s)&&!preg_match('/^-?\d{1,15}(?:[.,]\d{1,6})?$/D',$s))$s="'".$s; // reine Zahlen (auch negativ) bleiben Zahlen
  return '"'.str_replace('"','""',$s).'"';
 }
 function gszCsv(array $headers,array $rows):string {$out="\xEF\xBB\xBF".implode(';',array_map('gszCsvCell',$headers))."\r\n";foreach($rows as $row)$out.=implode(';',array_map('gszCsvCell',array_values($row)))."\r\n";return $out;}

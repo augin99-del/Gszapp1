@@ -88,3 +88,20 @@ function estateRentGrid(PDO $pdo,int $building,int $year,?DateTimeImmutable $tod
  }
  return ['leases'=>$leases,'cells'=>$cells,'sum'=>$sum];
 }
+/**
+ * Jahresübersicht je Haus (Zuflussprinzip: Zahlungstag bzw. Buchungstag im Jahr). Nur bestätigte Zuordnungen zählen.
+ * Kautionen sind keine Einnahmen und stehen getrennt. Nicht zugeordnete Bankumsätze werden nicht geschätzt, sondern als Warnung gezählt.
+ */
+function estateYearReport(PDO $pdo,int $year):array {
+ $from=$year.'-01-01';$to=$year.'-12-31';$out=[];
+ $inc=$pdo->prepare("SELECT u.building_id,a.component,SUM(a.amount_cents) cents FROM estate_allocations a JOIN estate_payments p ON p.id=a.payment_id JOIN estate_leases l ON l.id=a.lease_id JOIN estate_units u ON u.id=l.unit_id WHERE p.paid_on BETWEEN ? AND ? GROUP BY u.building_id,a.component");$inc->execute([$from,$to]);
+ $byInc=[];foreach($inc->fetchAll(PDO::FETCH_ASSOC) as $r)$byInc[(int)$r['building_id']][$r['component']]=(int)$r['cents'];
+ $open=$pdo->prepare("SELECT SUM(t.amount_cents>0) in_n,COALESCE(SUM(IF(t.amount_cents>0,t.amount_cents,0)),0) in_c,SUM(t.amount_cents<0) out_n,COALESCE(SUM(IF(t.amount_cents<0,-t.amount_cents,0)),0) out_c FROM estate_bank_transactions t JOIN estate_bank_accounts a ON a.id=t.account_id WHERE a.building_id=? AND t.booked_on BETWEEN ? AND ? AND NOT EXISTS(SELECT 1 FROM estate_payments p WHERE p.bank_transaction_id=t.id) AND NOT EXISTS(SELECT 1 FROM estate_expenses e WHERE e.transaction_id=t.id) AND NOT EXISTS(SELECT 1 FROM estate_transfers x WHERE x.outgoing_id=t.id OR x.incoming_id=t.id)");
+ foreach($pdo->query('SELECT id,name,address FROM estate_buildings ORDER BY name,id LIMIT 200')->fetchAll(PDO::FETCH_ASSOC) as $b){$id=(int)$b['id'];$i=$byInc[$id]??[];
+  $rent=$i['rent']??0;$op=$i['operating']??0;$heat=$i['heating']??0;$income=$rent+$op+$heat;
+  $cats=estateCostsByCategory($pdo,$id,$from,$to);$exp=array_sum(array_map(fn($c)=>(int)$c['cents'],$cats));
+  $open->execute([$id,$from,$to]);$o=$open->fetch(PDO::FETCH_ASSOC);
+  $out[]=['building'=>$b,'rent'=>$rent,'operating'=>$op,'heating'=>$heat,'income'=>$income,'deposit'=>$i['deposit']??0,'costs'=>$cats,'expense'=>$exp,'surplus'=>$income-$exp,
+   'open_in_n'=>(int)$o['in_n'],'open_in'=>(int)$o['in_c'],'open_out_n'=>(int)$o['out_n'],'open_out'=>(int)$o['out_c']];}
+ return $out;
+}

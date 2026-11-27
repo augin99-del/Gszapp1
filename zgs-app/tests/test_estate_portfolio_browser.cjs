@@ -36,11 +36,22 @@ try{const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:1440,heig
  await p.locator('#s-bank a',{hasText:'Übernehmen'}).first().click();const f=p.locator('form').filter({has:p.locator('[name=action][value=cost]')});
  ok((await f.locator('[name=title]').inputValue())==='Grundsteuer','title prefilled');ok((await f.locator('[name=amount]').inputValue())==='318,50','amount prefilled');ok(!(await f.locator('[name=approved]').isChecked()),'approval still manual');
  if(shots)await p.screenshot({path:shots+'/immo-nebenkosten.png',fullPage:true});
+ // Jahresübersicht für den Steuerberater (Punkt 7)
+ await p.goto(base+'/immobilien.php');await p.locator('summary',{hasText:'Export'}).click();await p.locator('a',{hasText:'Jahresübersicht für Steuerberater'}).click();await p.waitForURL(/jahresuebersicht\.php/);
+ ok((await p.textContent('main')).includes('Jahresübersicht '+(y-1)),'defaults to last year');
+ await p.goto(base+'/jahresuebersicht.php?jahr='+y);main=await p.textContent('main');
+ ok(main.includes('Haus Lindenweg')&&main.includes('Haus Bergstraße'),'all houses');ok(main.includes('Grundsteuer')&&main.includes('318,50'),'confirmed cost listed');ok(main.includes('Kaltmiete')&&main.includes('520 €'),'rent income (Anna, cold rent)');
+ ok(main.includes('noch nicht zugeordnet'),'unassigned bank items warned');ok(main.includes('keine fertige Anlage V'),'not tax advice');ok(await p.locator('.side-nav').count()===1,'inside frame');
+ ok((await p.goto(base+'/jahresuebersicht.php?jahr=2999')).status()===200&&(await p.textContent('main')).includes('Jahresübersicht '+y),'future year clamped');
+ const csv=await c.request.get(base+'/jahresuebersicht.php?jahr='+y+'&format=csv');const body=await csv.text();
+ ok(csv.status()===200&&/text\/csv/.test(csv.headers()['content-type']),'csv download');ok(body.includes('"Haus Lindenweg";"Ausgaben: Grundsteuer";"-318,50"')&&body.includes('Einnahmen: Kaltmiete')&&!body.includes('<html'),'csv content without frame');
+ if(shots)await p.goto(base+'/jahresuebersicht.php?jahr='+y),await p.screenshot({path:shots+'/immo-jahr.png',fullPage:true});
+ const anon=await b.newContext({ignoreHTTPSErrors:true});ok((await anon.request.get(base+'/jahresuebersicht.php?format=csv')).status()===403,'csv needs login');await anon.close();
  // Startseite Heute bleibt unverändert, Suche findet die Seite
  await p.goto(base+'/suche.php?q=Kontoauszug');ok((await p.textContent('main')).includes('Mieten & Kontoauszug'),'search finds inbox');
  // Handy: keine Überbreite
  const m=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:390,height:844},isMobile:true,hasTouch:true,storageState:await c.storageState()});const q=await m.newPage();q.on('pageerror',e=>errors.push(e.message));
- for(const path of ['/immobilien.php','/haus.php?id=1','/haus.php?id=1&tab=wohnungen','/haus.php?id=1&tab=mietkonto','/haus.php?id=1&tab=kosten','/haus.php?id=2&tab=nebenkosten','/haus.php?id=1&tab=dokumente','/haus.php?id=1&tab=projekte','/estate_bank.php','/estate_settlements.php?building=1']){const r=await q.goto(base+path);ok(r.status()===200,'200 '+path);ok(await q.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'390px '+path);}
+ for(const path of ['/immobilien.php','/haus.php?id=1','/haus.php?id=1&tab=wohnungen','/haus.php?id=1&tab=mietkonto','/haus.php?id=1&tab=kosten','/haus.php?id=2&tab=nebenkosten','/haus.php?id=1&tab=dokumente','/haus.php?id=1&tab=projekte','/jahresuebersicht.php','/estate_bank.php','/estate_settlements.php?building=1']){const r=await q.goto(base+path);ok(r.status()===200,'200 '+path);ok(await q.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'390px '+path);}
  if(shots){await q.goto(base+'/immobilien.php');await q.screenshot({path:shots+'/immo-portfolio-handy.png',fullPage:true});await q.goto(base+'/haus.php?id=1&tab=wohnungen');await q.screenshot({path:shots+'/immo-wohnungen-handy.png',fullPage:true});}
  ok((await q.goto(base+'/haus.php?id=999')).status()===404,'unknown house 404');
  ok(!errors.length,'no page errors '+errors.join('|'));console.log('estate portfolio browser checks passed: '+n);

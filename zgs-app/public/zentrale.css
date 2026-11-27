@@ -747,3 +747,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--c-accent);box-shadow:
 .period-form{display:flex;flex-wrap:wrap;align-items:flex-end;gap:var(--s-3)}.period-form h2{width:100%;margin:0}.period-form label{flex:1 1 160px}
 .bank-costs .list{margin:var(--s-3) 0 0}.bank-costs .li .btn{flex:none}
 .hc-facts dd span{white-space:nowrap}
+.year-house h2{margin-bottom:0}.year-house>.muted{margin-top:2px}
+.year-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:var(--fs-s)}
+.year-table td,.year-table th{padding:8px 4px;border-top:1px solid var(--c-line);text-align:left}
+.year-table td:last-child{text-align:right;white-space:nowrap}
+.year-table tr.grp th{border-top:0;padding-top:18px;font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.04em;color:var(--c-muted)}
+.year-table tr.sum td{font-weight:700}.year-table tr.total td{font-weight:800;font-size:var(--fs-m);border-top:2px solid var(--c-ink)}
+.year-table small{color:var(--c-muted)}
+@media print{.no-print,.deskbar,.fab,.cmdk,.back-link{display:none!important}.estate-kpis .dk{box-shadow:none}.year-house{break-inside:avoid}}
