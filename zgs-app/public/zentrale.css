@@ -778,3 +778,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--c-accent);box-shadow:
 .key-no{flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:34px;padding:0 8px;border-radius:8px;background:var(--c-dark);color:#fff;font-weight:700;font-size:var(--fs-xs);letter-spacing:.03em}
 .kc-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}.kc-actions form{margin:0}.kc-give{display:flex;gap:6px;flex:1 1 260px}.kc-give input{flex:1;min-width:0}
 .key-history{margin-top:8px;font-size:var(--fs-s)}.key-history summary{cursor:pointer;color:var(--c-muted);font-weight:600}
+/* Mail: Links im Text blau und anklickbar */
+.mail-body a{color:#1d4ed8;text-decoration:underline;text-decoration-color:rgba(29,78,216,.4);text-underline-offset:2px;word-break:break-all}
+.mail-body a:hover{text-decoration-color:#1d4ed8}.mail-body a:visited{color:#6d28d9}
+.mail-reload{margin:var(--s-3) 0 0}

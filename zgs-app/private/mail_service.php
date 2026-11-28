@@ -97,3 +97,11 @@ function gszMailResolveDraft(PDO $pdo,int $admin,int $id,string $decision,string
  $reason=trim($reason);if(!in_array($decision,['sent','not_sent'],true)||$reason===''||mb_strlen($reason)>120)throw new InvalidArgumentException('Manuelle Prüfentscheidung und Notiz erforderlich.');$pdo->beginTransaction();try{$q=$pdo->prepare('SELECT * FROM mail_drafts WHERE id=? FOR UPDATE');$q->execute([$id]);$d=$q->fetch();if(!$d||!in_array($d['status'],['sending','uncertain'],true))throw new RuntimeException('Nur unklare Versandstände manuell auflösen.');$pdo->prepare('UPDATE mail_drafts SET status=?,last_error=? WHERE id=?')->execute([$decision==='sent'?'manual_confirmed':'draft','Manuelle Postfachprüfung: '.$reason,$id]);if($decision==='sent'&&$d['reply_message_id'])$pdo->prepare('UPDATE mail_messages SET answered=1 WHERE id=?')->execute([$d['reply_message_id']]);gszAudit($pdo,$admin,'mail_manual_resolution',['draft_id'=>$id,'decision'=>$decision,'reason_hash'=>hash('sha256',$reason)]);$pdo->commit();}catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
  });
 }
+/** Liest eine einzelne Mail erneut vom Server und ersetzt nur den Text (z. B. damit Links aus HTML-Mails erhalten bleiben). */
+function gszMailReparse(PDO $pdo,GszMailRemote $remote,int $id):bool {
+ $q=$pdo->prepare('SELECT m.*,f.name folder_name FROM mail_messages m JOIN mail_folders f ON f.id=m.folder_id WHERE m.id=?');$q->execute([$id]);$m=$q->fetch(PDO::FETCH_ASSOC);if(!$m)throw new RuntimeException('Mail nicht gefunden.');
+ if($remote->validity((string)$m['folder_name'])!==(int)$m['uidvalidity'])return false;$uid=(int)$m['remote_uid'];
+ foreach($remote->fetchAfter((string)$m['folder_name'],$uid-1,1) as $item){if((int)$item['uid']!==$uid)continue;$p=gszMimeParse((string)$item['raw']);$pdo->prepare('UPDATE mail_messages SET body=? WHERE id=?')->execute([$p['body'],$id]);return true;}
+ return false;
+}
+

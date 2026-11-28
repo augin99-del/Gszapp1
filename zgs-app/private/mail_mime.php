@@ -13,6 +13,16 @@ function gszMimeParams(string $value):array {
 function gszMimeHeaders(string $s):array {
  $s=preg_replace('/\r?\n[ \t]+/',' ',$s)??$s;$h=[];foreach(preg_split('/\r?\n/',$s) as $line){if(!str_contains($line,':'))continue;[$k,$v]=explode(':',$line,2);$k=strtolower(trim($k));if(isset($h[$k]))$h[$k].=', '.trim($v);else $h[$k]=trim($v);}return $h;
 }
+/** HTML-Links als Text erhalten: <a href="https://x">Hier klicken</a> → „Hier klicken (https://x)“. Nur http(s) und mailto. */
+function gszMimeKeepLinks(string $html):string {
+ return preg_replace_callback('~<a\b[^>]*?\bhref\s*=\s*(["\'])(.*?)\1[^>]*>(.*?)</a\s*>~is',static function(array $m):string{
+  $url=trim(html_entity_decode($m[2],ENT_QUOTES|ENT_HTML5,'UTF-8'));$text=trim(preg_replace('/\s+/u',' ',html_entity_decode(strip_tags($m[3]),ENT_QUOTES|ENT_HTML5,'UTF-8'))??'');
+  if(!preg_match('~^(https?://|mailto:)[^\s<>"]+$~i',$url)||strlen($url)>2000)return $m[3];
+  if(stripos($url,'mailto:')===0){$addr=rawurldecode(strtok(substr($url,7),'?')?:'');return $text!==''&&$text!==$addr?htmlspecialchars($text.' ('.$addr.')',ENT_QUOTES):htmlspecialchars($addr,ENT_QUOTES);}
+  $bare=preg_replace('~^https?://~i','',rtrim($url,'/'));$t=preg_replace('~^https?://~i','',rtrim($text,'/'));
+  return htmlspecialchars($text===''||strcasecmp($t,$bare)===0?$url:$text.' ('.$url.')',ENT_QUOTES);
+ },$html)??$html;
+}
 function gszMimeParse(string $raw):array {
  if(strlen($raw)>15*1024*1024||str_contains($raw,"\0"))throw new InvalidArgumentException('MIME-Nachricht zu groß oder ungültig.');$root=preg_split('/\r?\n\r?\n/',$raw,2);$headers=gszMimeHeaders($root[0]);$plain=[];$html=[];$attachments=[];$count=0;
  $walk=function(string $part,int $depth)use(&$walk,&$plain,&$html,&$attachments,&$count):void{
@@ -26,7 +36,7 @@ function gszMimeParse(string $raw):array {
   $charset=$params['charset']??'UTF-8';if(strcasecmp($charset,'UTF-8')!==0){$converted=@iconv($charset,'UTF-8//IGNORE',$body);if($converted===false)throw new RuntimeException('Unbekannter Zeichensatz.');$body=$converted;}$body=mb_scrub($body,'UTF-8');
   if($type==='text/plain')$plain[]=$body;else $html[]=$body;
  };
- $walk($raw,0);$body=implode("\n",$plain);if($body==='')foreach($html as $s){$s=preg_replace('~<(script|style|iframe|object)\b[^>]*>.*?</\1>~is','',$s)??'';$s=preg_replace('~<(br|/p|/div|/tr)\b[^>]*>~i',"\n",$s)??$s;$body.=html_entity_decode(strip_tags($s),ENT_QUOTES|ENT_HTML5,'UTF-8');}
+ $walk($raw,0);$body=implode("\n",$plain);if($body==='')foreach($html as $s){$s=preg_replace('~<(script|style|iframe|object)\b[^>]*>.*?</\1>~is','',$s)??'';$s=gszMimeKeepLinks($s);$s=preg_replace('~<(br|/p|/div|/tr)\b[^>]*>~i',"\n",$s)??$s;$body.=html_entity_decode(strip_tags($s),ENT_QUOTES|ENT_HTML5,'UTF-8');}
  return ['headers'=>$headers,'subject'=>gszMailHeader($headers['subject']??'(ohne Betreff)'),'sender'=>gszMailHeader($headers['from']??''),'reply_to'=>gszMailHeader($headers['reply-to']??''),'recipients'=>gszMailHeader(($headers['to']??'').(isset($headers['cc'])?', '.$headers['cc']:'')),'message_id'=>mb_substr($headers['message-id']??'',0,255),'body'=>mb_substr($body,0,200000),'attachments'=>$attachments,'automatic'=>isset($headers['list-unsubscribe'])||strtolower($headers['auto-submitted']??'no')!=='no'||strtolower($headers['precedence']??'')==='bulk','sent_at'=>isset($headers['date'])&&strtotime($headers['date'])!==false?gmdate('Y-m-d H:i:s',strtotime($headers['date'])):null];
 }
 function gszBuildMail(array $draft,string $from,array $attachments=[]):array {

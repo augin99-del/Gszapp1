@@ -18,6 +18,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){checkCsrf();try{$action=(string)($_POST[
   $note=mb_substr('Aus Mail von '.gszMailName((string)$m['sender']).' ('.gszMailWhen($m['sent_at'],true).'): '.$m['subject'],0,5000);$task=opsSaveTask($pdo,$admin,[$title,$date?:null,$note,null,null,'normal',0,null,null],$property,0,false,null);
   $pdo->prepare('UPDATE mail_messages SET task_id=?,property_id=COALESCE(property_id,?) WHERE id=?')->execute([$task,$property?:null,$id]);gszAudit($pdo,$admin,'mail_assignment',['message_id'=>$id,'task_id'=>$task]);$_SESSION['app_notice']='Aufgabe angelegt'.($date?' für den '.(new DateTimeImmutable($date))->format('d.m.'):'').'.';}
  elseif($action==='rule'){$pattern=trim((string)($_POST['pattern']??''));if($pattern===''||mb_strlen($pattern)>190)throw new InvalidArgumentException('Absender: 1–190 Zeichen.');$pdo->prepare('INSERT INTO mail_rules(sender_pattern,important) VALUES(?,?)')->execute([$pattern,isset($_POST['important'])?1:0]);}
+ elseif($action==='reparse'){$r=gszMailReparse($pdo,gszMailRemote($config),$id);gszAudit($pdo,$admin,'mail_reparsed',['message_id'=>$id]);$_SESSION['app_notice']=$r?'Mail neu geladen – Links sind jetzt anklickbar.':'Die Mail liegt nicht mehr im Postfach auf dem Server.';}
  elseif($action==='rule_toggle')$pdo->prepare('UPDATE mail_rules SET active=1-active WHERE id=?')->execute([(int)($_POST['rule_id']??0)]);
  else throw new InvalidArgumentException('Mailaktion unbekannt.');
  }catch(Throwable $e){gszUiError($e);}redirect($back);}
@@ -64,7 +65,7 @@ if($blocked):?><a class="att" href="connections.php"><span>Das Postfach hat das 
   <div class="mail-actions"><a class="btn primary" href="compose.php?message=<?=$id?>&amp;mode=reply">Antworten</a><a class="btn" href="compose.php?message=<?=$id?>&amp;mode=forward">Weiterleiten</a>
    <?php if($archive&&$detail['folder_name']!==$archive&&$detail['active']):?><form method="post" action="<?=e($back)?>"><?php gszFields('archive');?><button>Archivieren</button></form><?php endif?>
    <?php if($trash&&$detail['folder_name']!==$trash&&$detail['active']):?><form method="post" action="<?=e($back)?>"><?php gszFields('trash');?><button>Löschen</button></form><?php endif?></div>
-  <div class="mail-body"><?=e($detail['body'])?></div>
+  <div class="mail-body"><?=gszMailLinkify((string)$detail['body'])?></div><?php if($connected&&!$blocked&&$detail['active']):?><form method="post" action="<?=e($back)?>" class="mail-reload"><?php gszFields('reparse');?><button class="small ghost">Links oder Text fehlen? Mail neu vom Server laden</button></form><?php endif?>
   <?php if($attachments):?><div class="mail-files"><?php foreach($attachments as $a):?><a class="file" href="mail_download.php?id=<?=(int)$a['id']?>"><span><?=e($a['original_name'])?></span><span class="muted"><?=(int)$a['size_bytes']>=1048576?number_format($a['size_bytes']/1048576,1,',','.').' MB':max(1,(int)round($a['size_bytes']/1024)).' KB'?></span></a><?php endforeach?></div><?php endif?>
  </article>
  <div class="mail-work">
