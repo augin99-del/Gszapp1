@@ -22,4 +22,6 @@ $p->exec("INSERT INTO automation_state(job_key,last_started,status) VALUES('mail
 $p->exec("UPDATE automation_state SET last_started=UTC_TIMESTAMP()-INTERVAL 6 MINUTE WHERE job_key='mail'");ao(gszAutomationDue($p,'mail',5),'after 5 minutes due again');
 $x=false;try{gszAutomationOnOpen($p,$cfg,'other');}catch(InvalidArgumentException $e){$x=true;}ao($x,'unknown trigger refused');
 foreach(['index.php'=>"'heute'",'mail.php'=>"'mail'"] as $f=>$k)ao(str_contains(file_get_contents(dirname(__DIR__).'/public/'.$f),"gszAutomationOnOpen(\$pdo,\$config,$k)"),$f.' triggers on open');
+$p->prepare("INSERT INTO automation_state(job_key,last_started,status,last_error_code,result_json) VALUES('waste',UTC_TIMESTAMP(),'BLOCKED','GSZ_WASTE_FAILED',?) ON DUPLICATE KEY UPDATE status='BLOCKED',last_error_code='GSZ_WASTE_FAILED',result_json=VALUES(result_json)")->execute([json_encode(['failed'=>[['property'=>'Synthetikweg 1','reason'=>'Provider nicht erreichbar.']]])]);
+$st=array_column(gszAutomationStatus($p,[]),null,'job_key');ao(($st['waste']['detail']??'')==='Synthetikweg 1: Provider nicht erreichbar.','failed calendar names object and reason');
 echo "Automation on open PASS ($n assertions; synthetic, no mailbox contacted).\n";

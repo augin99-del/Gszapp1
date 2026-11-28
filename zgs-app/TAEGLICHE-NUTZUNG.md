@@ -12,6 +12,36 @@ Die Startseite ist der heutige Tag: ein Block je Objekt und Tätigkeit, in der g
 - Darunter steht nur, was Aufmerksamkeit braucht: fehlende Miete, fehlender Kontoauszug, neue Mails, offene Aufgaben
   von Vortagen, neue Abfuhrtermine zum Bestätigen.
 
+## Merkliste: To-dos und „Rechnungen offen“
+
+- **„+ Notieren“** (Handy: oben, Computer: unten rechts) – kurz aufschreiben, z. B. „Loch Wand Fontänenstraße“.
+  Das Objekt erkennt die Zentrale aus dem Text und zeigt es nach dem Speichern an. Falsch oder nicht erkannt:
+  am Eintrag „Bearbeiten“ → Objekt wählen.
+- **Wann:** „Irgendwann“ (Standard), Heute, Morgen, Diese Woche oder ein Datum. Auf „Heute“ stehen überfällige,
+  heutige und undatierte To-dos; spätere erscheinen an ihrem Tag.
+- **Material** landet auf der Einkaufsliste (Merkliste → Einkauf). Abhaken dort heißt „besorgt“.
+- **Rechnung offen:** Umschalter auf „Rechnung offen“, z. B. „Fröbelstraße Beleuchtung“, Notiz „3 Std. + Material“.
+  Die Rechnung schreibst du wie immer in Lexware und hakst den Eintrag danach ab.
+- Nach dem Abhaken einer einmaligen Arbeit fragt die Zentrale „Rechnung nötig?“ – „Rechnung merken“ antippen.
+- **Mitnehmen:** Hat ein Objekt einen Einsatz im Plan, stehen seine offenen To-dos direkt in diesem Block unter
+  „Mitnehmen“. Oben auf „Heute“ steht, welches Material du dafür einpacken musst.
+- Erledigtes bleibt 30 Tage unter „Erledigt“ bzw. „Geschrieben“ sichtbar.
+
+## Ferienwohnung (Airbnb / Booking.com)
+
+- Einmalig: Objekt öffnen → „Ferienwohnung“ → „Als Ferienwohnung einrichten“ (10:00 / 15:00 / 60 Min.), dann je
+  Plattform den Link aus „Kalender exportieren“ einfügen → „Verbinden“.
+- Danach plant die Zentrale die Reinigung am Abreisetag um 10:00 selbst. „Neue Gäste 15:00“ heißt: Gästewechsel, bis
+  15 Uhr fertig sein. To-dos zur Wohnung stehen bei der Reinigung unter „Mitnehmen“.
+- Steht beim Kalender „Abruf fehlgeschlagen“, gilt weiter der letzte Stand. Bleibt der Fehler, Link neu kopieren.
+
+## Bauprojekte (Mehr → Bauprojekte)
+
+- Projekt anlegen, Haus wählen, Budget eintragen – typische Gewerke sind gleich drin.
+- Handwerker einmal anlegen (Tab „Handwerker“), dann bei Gewerk, Termin und Kosten auswählen.
+- Termine erscheinen automatisch in der Woche. Rechnungen mit PDF erfassen und „Bezahlt“ tippen.
+- Mängel je Wohnung mit Foto notieren und abhaken. „Gewährleistung bis“ beim Gewerk eintragen – „Heute“ erinnert 60 Tage vorher.
+
 ## Woche
 
 Sieben Tage auf einen Blick. Tag antippen = Tagesansicht. Unter „Planung“: Woche neu vorschlagen lassen
@@ -77,6 +107,14 @@ Das Postfach-Passwort wird nicht mehr abgefragt. Lehnt das Postfach das Passwort
 STRATO), erscheint eine klare Meldung mit dem Weg zum Neueintragen; bis dahin versucht die Zentrale keine weitere
 Anmeldung, damit das Postfach nicht gesperrt wird.
 
+## Google-Sichtbarkeit (Mehr → Online)
+
+Zeigt aus der Google Search Console, bei welchen Suchbegriffen die Website erscheint: durchschnittliche Position
+(1 = ganz oben), Klicks, wie oft angezeigt, Trend gegenüber den 28 Tagen davor, neue und nicht mehr gefundene Begriffe.
+Aktualisiert sich einmal am Tag beim Öffnen der Zentrale (Google liefert mit 2–3 Tagen Verzug). Einrichtung einmalig:
+Dienstkonto in der Google Cloud anlegen, Search-Console-API aktivieren, JSON-Schlüssel herunterladen, Dienstkonto in der
+Search Console mit Berechtigung „Eingeschränkt“ eintragen, Schlüssel in der Zentrale hochladen (Schritte stehen auf der Seite).
+
 ## Mehr
 
 Abfallkalender, Regelaufgaben, Termine, Route, Arbeitsnachweise, Helfer, Kunden, Dokumente, Häuser/Mieter/Verträge,
@@ -87,3 +125,21 @@ Nebenkostenabrechnung, SEO und **Einstellungen** (E-Mail einrichten, Sicherung u
 Mehr → Einstellungen → Sicherung und Update → „Sicherung jetzt erstellen“ → herunterladen. Empfehlung: einmal im Monat
 und vor jedem Update. Die Sicherung umfasst die Datenbank; hochgeladene Originale (`private/uploads/`) bei Bedarf
 zusätzlich per SFTP sichern.
+
+## Neu in 430 (11/2026)
+- **Alle Häuser auf einen Blick:** Objekte → „Häuser: QR-Meldung & Portal“ – je Haus einrichten, erneuern, abschalten; „Alle Aushänge drucken“ gibt ein PDF mit je einer Seite pro Haus.
+- **Mieter-Meldungen:** Objekt öffnen → „Mieter-Meldungen & Hausverwaltung“ → „QR-Meldung einrichten“ → Aushang drucken und ins Treppenhaus hängen. Neue Meldungen stehen auf „Heute“; „Als To-do übernehmen“ legt sie in die Merkliste. Abgehakt = für die Verwaltung „Erledigt“.
+- **Meldungs-Portal für Hausverwaltungen:** im selben Abschnitt „Portal einrichten“ → Link per Mail an die Verwaltung. Die Verwaltung sieht nur die Mieter-Meldungen ihres Hauses und hakt Erledigtes selbst ab. Den Monatsbericht (PDF) erstellst du bei Bedarf selbst auf der Objektseite.
+- **Meldungen abhaken/löschen:** Mehr → Mieter-Meldungen: „✓ Erledigt“, „Wieder öffnen“ (unter Erledigt), „Löschen“ mit Sicherheitsabfrage.
+- **Spam-Anfragen:** Anfragen → bei der Anfrage „Löschen / Spam“ → „Endgültig löschen“.
+- **Helfer-App:** Mehr → Helfer → Person öffnen → „Helfer-Zugang“. Der Helfer meldet sich unter gszintern.de/helfer.php an und sieht nur seine zugeteilten Aufgaben.
+- **Schlüsseldienst:** Mehr → „Schlüsseldienst: Einsätze und Umsatz“. Bei Zahlung „Rechnung“ entsteht automatisch eine Erinnerung „Rechnung offen“.
+- **Preisrechner:** Mehr → Website → „Preisrechner Treppenhausreinigung“: eigenen Stundensatz und Minutenwerte eintragen, einschalten.
+- **Bewertungskarten:** Mehr → „Bewertungen: per WhatsApp anfragen, Karten drucken“ (A4, 10 Karten).
+
+## Neu in 440 (11/2026)
+- **Push aufs Handy:** Zentrale am iPhone in Safari öffnen → Teilen → „Zum Home-Bildschirm“ → über das neue Symbol öffnen → Mehr → Benachrichtigungen → „Benachrichtigungen auf diesem Gerät aktivieren“ → „Test-Benachrichtigung senden“.
+- **Welche Nachrichten?** Mehr → Benachrichtigungen → „Wobei benachrichtigen?“: Winterdienst, Frost, Mein Tag (06:30), Tonnen (18:00), Termine, Anfragen, Mieter-Meldungen, Mieten, E-Mail, Systemüberwachung – je mit Schalter, Uhrzeiten einstellbar.
+- **Winterdienst-Objekte:** Mehr → Benachrichtigungen → „Winterdienst bei diesen Objekten“ – Schalter je Haus, Speichern.
+- **Glättewarnung:** erscheint auf Heute (❄️). „Winterdienst für N Objekte einplanen“ legt dringende Aufgaben am Warntag (06:00) an. Winterdienst-Objekte = Objekte mit Regelaufgabe „Winterdienst“.
+- **Wecker:** Mehr → Benachrichtigungen → „Wecker-Adresse erzeugen“ und bei cron-job.org alle 15 Minuten eintragen – sonst kommen Warnungen nur, wenn die Zentrale offen ist.

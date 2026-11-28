@@ -1,0 +1,76 @@
+/* Öffentliche Seiten (Mieter-Meldung, Portal, Helfer): schlicht, groß, ohne externe Schriften. */
+:root{--ink:#0d100e;--muted:#5f6a62;--line:#dfe3de;--bg:#f4f5f3;--card:#fff;--brand:#3f8f2f;--brand-d:#2b6a20;--brand-2:#edf5e9;--warn:#b3261e;--ok:#2b6a20;--r:16px}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+a{color:var(--brand)}h1{font-size:1.45rem;line-height:1.25;margin:0 0 .4rem}h2{font-size:1.1rem;margin:1.4rem 0 .5rem}
+.pub-head{background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;text-align:center}.pub-logo-img{height:38px;width:auto;display:inline-block;vertical-align:middle}.pub-logo{font-weight:700;color:var(--brand)}
+.pub{max-width:720px;margin:0 auto;padding:16px}.pub-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin:0 0 14px}
+.pub-sub{color:var(--muted);margin:0 0 1rem}.pub-foot{max-width:720px;margin:0 auto;padding:18px 16px 40px;color:var(--muted);font-size:.9rem}
+label{display:block;font-weight:600;margin:0 0 14px}label small{font-weight:400;color:var(--muted)}
+input,select,textarea{display:block;width:100%;margin-top:6px;font:inherit;padding:12px;border:1px solid #b9c6cf;border-radius:10px;background:#fff;color:var(--ink)}textarea{min-height:120px;resize:vertical}
+input[type=file]{padding:10px;background:var(--bg)}button,.pub-btn{display:inline-block;font:inherit;font-weight:700;border:0;border-radius:12px;padding:14px 20px;background:var(--brand);color:#fff;text-decoration:none;cursor:pointer;width:100%;text-align:center}
+.pub-btn.ghost,button.ghost{background:var(--brand-2);color:var(--brand)}button.warn{background:var(--warn)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}.pub-ok{border-color:#9fd3bf;background:var(--brand-2)}.pub-err{border-color:#f0b4ae;background:#fdecea;color:#7a1c15}
+.pub-note{font-size:.88rem;color:var(--muted)}.pub-list{list-style:none;margin:0;padding:0}.pub-list li{padding:10px 0;border-top:1px solid var(--line)}.pub-list li:first-child{border-top:0}
+.pub-row{display:flex;gap:10px;justify-content:space-between;align-items:baseline;flex-wrap:wrap}.pub-tag{display:inline-block;font-size:.8rem;font-weight:700;border-radius:99px;padding:2px 10px;background:var(--bg);color:var(--muted)}
+.pub-tag.neu{background:#fff4d6;color:#7a5a00}.pub-tag.uebernommen{background:#e3eefc;color:#1d4f91}.pub-tag.erledigt{background:var(--brand-2);color:var(--ok)}
+.pub-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.pub-kpis div{background:var(--bg);border-radius:12px;padding:10px;text-align:center}.pub-kpis strong{display:block;font-size:1.4rem}
+.pub-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.pub-photos figure{margin:0}.pub-photos img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;display:block;background:var(--bg)}.pub-photos figcaption{font-size:.8rem;color:var(--muted)}
+.pub-months{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}.pub-months a{padding:6px 12px;border-radius:99px;background:var(--card);border:1px solid var(--line);text-decoration:none;font-size:.9rem}.pub-months a[aria-current]{background:var(--brand);color:#fff;border-color:var(--brand)}
+.pub-actions{display:grid;gap:10px;margin-top:14px}.pub-task{border:1px solid var(--line);border-radius:var(--r);background:var(--card);padding:16px;margin:0 0 12px}.pub-task.done{opacity:.65}.pub-task h2{margin:0 0 4px}
+.pub-steps{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pub-steps form{margin:0}
+@media (prefers-color-scheme:dark){:root{--ink:#e7eef3;--muted:#9fb0bd;--line:#2c3a44;--bg:#0f171d;--card:#16222b;--brand:#3fbf8f;--brand-2:#173a2e}input,select,textarea{background:#0f171d;color:var(--ink);border-color:#3a4a55}button,.pub-btn{color:#08130e}}
+
+/* Meldeformular für Mieter (11/2026): große Kacheln, Foto-Knopf, klare Schritte */
+.pub-sos{display:block;margin:0 0 14px;padding:12px 14px;border-radius:14px;background:#fdecea;color:#7a1c15;text-decoration:none;font-size:.93rem;line-height:1.35}.pub-sos b{color:var(--warn)}.pub-sos span{display:block;font-weight:800;font-size:1.05rem;color:var(--warn);margin-top:2px}
+.pub-intro{margin:4px 0 14px}.pub-intro h1{font-size:1.75rem;margin:0 0 8px}
+.pub-house{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:0;padding:12px 14px;background:var(--brand-2);border-radius:14px;font-weight:700;color:var(--brand-d)}.pub-house small{display:block;width:100%;font-weight:500;color:var(--muted);padding-left:28px}
+.pub-step{border:0;margin:0 0 14px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+.pub-step legend,.pub-step summary{font-weight:800;font-size:1.12rem;padding:0;display:flex;align-items:center;gap:10px;float:left;width:100%;margin-bottom:12px}
+.pub-step summary{float:none;margin:0;cursor:pointer;list-style:none}.pub-step summary::-webkit-details-marker{display:none}.pub-more[open] summary{margin-bottom:12px}
+.pub-step legend small,.pub-step summary small{font-weight:500;color:var(--muted);font-size:.85rem}
+.pub-step .n{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--brand);color:#fff;font-size:.95rem;flex:none}
+.tiles{clear:both;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(min-width:560px){.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.tile{margin:0;font-weight:600;position:relative}.tile input{position:absolute;opacity:0;width:1px;height:1px}
+.tile span{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:84px;padding:10px 6px;border:2px solid var(--line);border-radius:14px;background:#fff;text-align:center;line-height:1.2;font-size:.95rem;cursor:pointer;transition:border-color .12s,background .12s}
+.tile i{font-style:normal;font-size:1.7rem;line-height:1}
+.tile input:checked+span{border-color:var(--brand);background:var(--brand-2);color:var(--brand-d);box-shadow:0 0 0 3px rgba(63,143,47,.18)}
+.tile input:focus-visible+span{outline:3px solid var(--brand);outline-offset:2px}
+.pub-label{display:block;font-weight:700;margin:14px 0 0}.pub-label small{font-weight:400;color:var(--muted)}
+.pub-photo{clear:both;display:block;margin:0;position:relative}.pub-photo input{position:absolute;opacity:0;width:1px;height:1px}
+.pub-photo span{display:flex;align-items:center;justify-content:center;gap:10px;min-height:64px;border:2px dashed #b9c4b8;border-radius:14px;background:var(--bg);font-weight:700;color:var(--brand-d);cursor:pointer}.pub-photo span i{font-style:normal;font-size:1.6rem}
+.pub-photo input:focus-visible+span{outline:3px solid var(--brand);outline-offset:2px}.pub-photo.has-photo span{border-style:solid;border-color:var(--brand)}
+.pub-photo img{display:block;width:100%;max-height:260px;object-fit:cover;border-radius:12px;margin-top:10px}
+.pub-send{margin:6px 0 12px;min-height:58px;font-size:1.15rem;border-radius:14px;box-shadow:0 10px 24px rgba(63,143,47,.25)}.pub-send:disabled{opacity:.7}
+.pub-done{text-align:center;padding:28px 18px}.pub-check{width:72px;height:72px;margin:0 auto 14px;border-radius:50%;background:var(--brand);color:#fff;font-size:2.4rem;line-height:72px;font-weight:800}
+.pub-ref{font-size:1.05rem;background:var(--bg);display:inline-block;padding:6px 14px;border-radius:99px;margin:4px 0 10px}.pub-done .pub-btn{margin-top:10px}
+.pub-lang{text-align:center;margin-top:4px}
+@media (prefers-color-scheme:dark){.tile span,.pub-step{background:var(--card)}.pub-house{background:#173a2e;color:#c9f0b8}.pub-sos{background:#3a1512;color:#f6c9c4}.pub-sos b,.pub-sos span{color:#ff8f84}.tile input:checked+span{background:#173a2e;color:#c9f0b8}.pub-photo span{background:#0f171d;color:#c9f0b8}.pub-head{background:#fff}}
+/* Meldungs-Portal der Hausverwaltung */
+.pub-kpis-2{grid-template-columns:1fr 1fr;margin:0 0 6px}
+.pub-defect .pub-msg{margin:8px 0 4px;font-size:1.02rem}.pub-defect.is-done{opacity:.8}
+.pub-defect-photo img{display:block;width:100%;max-height:300px;object-fit:cover;border-radius:12px;margin:10px 0 4px;background:var(--bg)}
+.pub-defect form{margin-top:12px}.pub-done-btn{min-height:52px}
+.pub-donelist{margin:16px 0}.pub-donelist summary{cursor:pointer;font-weight:800;font-size:1.05rem;padding:12px 0}
+/* Meldeformular 11/2026 – professionell: grüner Kopf, Linien-Symbole, fester Senden-Knopf */
+.pub-head{display:flex;justify-content:center;align-items:center;padding:12px 16px;box-shadow:0 1px 0 var(--line)}
+.pub-hero{margin:0 0 12px;padding:22px 20px 20px;border-radius:20px;color:#fff;background:linear-gradient(135deg,#3f8f2f 0%,#2b6a20 100%);box-shadow:0 12px 30px rgba(43,106,32,.25)}
+.pub-hero h1{color:#fff;font-size:1.6rem;margin:0 0 12px;letter-spacing:-.01em}
+.pub-hero-kicker{margin:0 0 4px;font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#d6f2c8}
+.pub-hero-house{display:flex;gap:10px;align-items:flex-start;margin:0;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.14);font-weight:700}
+.pub-hero-house svg{flex:none;margin-top:2px}.pub-hero-house small{display:block;font-weight:500;opacity:.85}
+.pub-hero-facts{display:flex;flex-wrap:wrap;gap:6px 14px;list-style:none;margin:12px 0 0;padding:0;font-size:.88rem;color:#e6f6dd}
+.pub-hero-facts li::before{content:"✓ ";font-weight:800}
+.pub-sos{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;font-size:.9rem}
+.pub-sos strong{flex:none;background:var(--warn);color:#fff;border-radius:99px;padding:8px 14px;font-size:.9rem}
+.pub-step{box-shadow:0 1px 2px rgba(15,20,17,.04),0 6px 18px rgba(15,20,17,.05);border-radius:18px}
+.tile span{min-height:92px;border-width:1.5px;border-radius:16px;font-size:.9rem;font-weight:650;color:var(--ink)}
+.tile i{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--brand-2);color:var(--brand-d);margin-bottom:2px}
+.tile input:checked+span{box-shadow:0 0 0 3px rgba(63,143,47,.2);position:relative}
+.tile input:checked+span i{background:var(--brand);color:#fff}
+.tile input:checked+span::after{content:"✓";position:absolute;top:6px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--brand);color:#fff;font-size:.75rem;line-height:20px;text-align:center;font-weight:800}
+.pub-photo span{min-height:72px;gap:10px;border-radius:16px;background:var(--brand-2);border-color:#a9d39a}
+.pub-send-bar{position:sticky;bottom:0;z-index:5;margin:0 -16px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(244,245,243,0),var(--bg) 35%)}
+.pub-send{margin:0}
+.pub-done{padding:34px 20px}.pub-check{display:flex;align-items:center;justify-content:center;line-height:1}
+@media (prefers-color-scheme:dark){.pub-send-bar{background:linear-gradient(180deg,rgba(15,23,29,0),var(--bg) 35%)}.tile i{background:#173a2e;color:#c9f0b8}}
+.pub-two{display:grid;gap:0 12px;clear:both}@media(min-width:560px){.pub-two{grid-template-columns:1fr 1fr}}.pub-two .pub-label{margin-top:0}

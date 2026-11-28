@@ -1,5 +1,114 @@
 # Changelog
 
+
+
+## 28.11.2026 – Datensicherung, Angebote, Schlüssel (Schema 460)
+- Datensicherung automatisch jede Nacht (Wecker, ab 2 Uhr), 14 Stück aufbewahrt, Seite „Datensicherung“ mit Download; Hinweis auf Heute/Push, wenn 3 Tage keine Sicherung oder 30 Tage nicht heruntergeladen.
+- Angebote: aus Anfrage oder Objekt, Positionen mit Abrechnungsart, PDF, „Per E-Mail senden“ (Mail-Entwurf mit Anhang), Nachfassen nach 3 und 7 Tagen, Annahme legt Kunde, Objekt und Vertragsentwurf mit Preis an.
+- Verträge: „Per E-Mail senden“ mit PDF im Anhang.
+- Schlüssel: Bestand je Objekt mit interner Nummer, Ausgabe/Rückgabe, Verlauf, verloren/gefunden, Quittungen (Kunde ↔ Büro, Büro → Mitarbeiter), Hinweise bei langer Ausgabe und bei Vertragsende.
+- Anfrage selbst erfassen: Feld „Firma / Hausverwaltung“.
+
+## 27.11.2026 – Verträge je Objekt (Schema 450), Immobilien-Jahresübersicht
+- Beim Anlegen eines Objekts erstellt die Zentrale automatisch einen Vertragsentwurf (Kunde, Objekt, Leistungen aus den regelmäßigen Arbeiten).
+- Vertragsseite: Unternehmer/Verbraucher (Verbraucher automatisch max. 24 Monate, 1 Monat Frist, Widerrufsbelehrung), Preis, Laufzeit, Besonderes, PDF.
+- Status Entwurf → versendet → aktiv → gekündigt/beendet; Erinnerung auf „Heute“ 60 Tage vor Kündigungsfrist und bei unbeantworteten Verträgen.
+- Übersicht „Verträge“ mit Firmendaten für den Vertragskopf und „Entwürfe für Objekte ohne Vertrag anlegen“.
+- Immobilien: Jahresübersicht für den Steuerberater (Drucken, CSV); CSV-Exporte lassen negative Zahlen als Zahl.
+
+## Gestaltung und Kunde beim Objekt (26.11.2026)
+- Zentrale im Markenauftritt der Website: grüner aktiver Menüpunkt, ruhigere Karten, Begrüßung und Kennzahlen auf Heute, farbige Kante je Arbeitsart (Reinigung, Tonnen, Außen, Winter, Termin)
+- Meldeformular: Name und Telefon sind Pflicht (auch serverseitig geprüft), keine Meldungsnummer mehr (Bestätigung und Portal)
+- Meldeformular für Mieter: grüner Kopfbereich mit Haus, Linien-Symbole statt Emojis, Notfall-Knopf, fester Senden-Knopf
+- Neues Objekt: Kunde (z. B. Hausverwaltung) gleich mit anlegen; Kontaktdaten auch als Ansprechpartner am Objekt
+
+## 440 – Push und Glättewarnung (26.11.2026)
+- Push-Benachrichtigungen (Web Push, eigene VAPID-Schlüssel, Verschlüsselung RFC 8291, kein Fremddienst): neue Anfragen, Mieter-Meldungen, Glätte-/Schneewarnungen; je Art abschaltbar; Geräteverwaltung und Testnachricht (Mehr → Benachrichtigungen)
+- Weitere Push-Arten mit Schaltern: Frost-Hinweis, „Mein Tag“ (morgens), Tonnen für morgen (abends), Termin-Erinnerungen, fehlende Mieten, neue Mails, Systemüberwachung (private/push_digest.php)
+- DWD-Warnungen über api.brightsky.dev (ohne Schlüssel, höchstens alle 15 Min.): Karte auf Heute; Glätte/Glatteis/Schnee → Push und Winterdienst-Aufgaben (nachfragen/automatisch/aus) für Objekte mit Regelaufgabe „Winterdienst“; Frost nur als Hinweis
+- „Wecker“ tick.php mit geheimem Schlüssel für externe Aufrufe (z. B. cron-job.org) – ersetzt den fehlenden STRATO-Cronjob: Wetter, Mailabruf, Anfragen, Regelaufgaben
+- App-Manifest und Service Worker (nur Push, kein Cache)
+- Migration 440 (push_subscriptions, push_events, weather_alerts; Marker 440_push), 83 Tabellen; Tests test_push.php, test_push_browser.cjs
+
+## 430 – Service-Stufe (25.11.2026)
+- Mieter-Meldungen per QR-Code: geheimer Link je Haus, Formular ohne Anmeldung/Cookies mit Foto (ohne Standortdaten neu gespeichert), Begrenzung je Haus, Aushang-PDF mit QR-Code; in der Zentrale „Mieter-Meldungen“, Übernahme als To-do, Hinweis auf Heute
+- Portal für Hausverwaltungen: geheimer Link je Objekt mit erledigten Arbeiten, Fotos, Meldungen, nächsten Terminen; Monatsbericht als PDF
+- Helfer-App (/helfer.php): eigener Zugang je Mitarbeiter, nur eigene Aufgaben, Start/Fertig, Vorher-/Nachher-Fotos, Sperre nach 5 Fehlversuchen, kein GPS
+- Schlüsseldienst-Einsätze: Erfassung in Sekunden, Umsatz je Monat/Ort/Kanal, 12-Monats-Balken, Rechnung → Erinnerung in der Merkliste, Bewertung per WhatsApp, aus Anfragen übernehmbar
+- Preisrechner Treppenhausreinigung: Sätze unter Website einstellbar, öffentlicher Endpunkt web_calc.php (aus, bis eingeschaltet)
+- Seite „Häuser: QR & Portal“ (haeuser.php): alle Häuser auf einen Blick, einrichten/erneuern/abschalten je Haus, „für alle einrichten“, alle Aushänge in einem PDF
+- Meldungs-Portal: die Hausverwaltung sieht nur noch Mieter-Meldungen ihres Hauses und hakt sie selbst ab (keine Arbeiten/Termine/Fotos von Arbeiten mehr im Portal)
+- Mieter-Meldungen in der Zentrale: abhaken, wieder öffnen, löschen; neues Meldeformular mit Kacheln und Foto-Vorschau, neuer Aushang
+- Anfragen löschen (Spam): Website-Anfragen kommen beim nächsten Mail-Abruf nicht wieder, Personendaten werden entfernt
+- Bewertungskarten 85 × 55 mm mit QR-Code als Druck-PDF; QR-Erzeuger ohne Fremdbibliothek (private/qr.php)
+- Migration 430 (additiv, Marker 430_service), 80 Tabellen; Tests test_service.php, test_service_browser.cjs
+
+## 420 – Anfragen, Notdienst-Status, Website-Zahlen (25.11.2026)
+
+- Migration 420 (`leads`, `web_events`, `app_settings`; additiv, Marker `420_anfragen`).
+- „Anfragen“ (Mail-Bereich / Mehr): Formular-Mails der Website („Neue Website-Anfrage …“) werden beim Öffnen von
+  Heute/Anfragen automatisch übernommen (einmalig je Mail); Status Neu → Kontaktiert → Angebot → Auftrag/Abgesagt,
+  Anrufen/WhatsApp/Mail mit einem Tipp, „Als Aufgabe für heute“, Notiz, Anfragen selbst erfassen.
+- Bewertung per WhatsApp: bei Aufträgen ein Tipp → WhatsApp mit fertigem Text und Google-Bewertungslink; auch ohne Anfrage.
+- Heute: „N neue Anfragen“ und Notdienst-Schalter (Jetzt frei / Im Einsatz mit Rückrufzeit, läuft nach 2 h ab).
+- Öffentlich für die Website: `web_status.php` (Status, CORS nur für die eigene Website) und `web_track.php`
+  (cookiefreie Tageszähler: Seite, Aufruf/Anrufen/WhatsApp/Formular – keine IP, keine Kennung).
+- „Website“ (Mehr → Online): Aufrufe, Kontakt-Tipps und Seiten, die Kontakte bringen (7/30/90 Tage).
+- Neue Mail aus einer Anfrage mit vorausgefülltem Empfänger.
+- Tests: `test_leads.php`, `test_leads_browser.cjs`.
+
+## 410 – Bauprojekte (24.11.2026)
+
+- Migration 410 (`projects`, `project_contractors`, `project_trades`, `project_files`, `project_events`, `project_costs`,
+  `project_items`; rein additiv, Marker `410_projekte`). Ein Update spielt fehlende Stufen 390/400 mit ein.
+- Mehr → „Bauprojekte“ (Navigation: Immobilien): Projekt je Haus mit Start, Fertigstellung, Budget; typische Gewerke einer
+  Sanierung per Klick. Je Projekt: Übersicht (Fortschritt, Kosten gegen Budget, offen zu zahlen, Mängel, Bauzeitenplan,
+  nächste Termine, Gewährleistung), Gewerke (Handwerker, Zeitraum, Budget, Status mit einem Tipp, Gewährleistung bis),
+  Termine (erscheinen automatisch in Woche/Heute; Löschen sagt den Termin ab), Kosten (Angebote/Rechnungen mit PDF,
+  bezahlt/angenommen – nur Übersicht, Buchhaltung bleibt in Lexware), Mängel & To-dos je Wohnung mit Foto (abhaken ohne
+  Neuladen), Fotos & Dokumente (vorher/während/nachher), Handwerker-Liste für alle Projekte.
+- „Heute“ erinnert an bald fällige Handwerkerrechnungen, überfällige Mängel und Gewährleistungen, die in 60 Tagen enden.
+- Woche/Tag: regelmäßige Arbeiten (z. B. Treppenhausreinigung) erscheinen vorab als „vorgesehen“.
+- Tests: `test_projects.php`, `test_projects_browser.cjs`, `test_recurring_preview.php`.
+
+## 400 – Ferienwohnung: Airbnb- und Booking-Kalender planen die Reinigung (23.11.2026)
+
+- Migration 400 (`stay_units`, `stay_calendars`, `stay_cleanings`; rein additiv, Marker `400_ferienwohnung`).
+  Ein Update spielt 390 und 400 zusammen ein, falls 390 noch fehlt.
+- Objektseite → „Ferienwohnung“: Check-out/Check-in/Dauer (Standard 10:00, 15:00, 60 Min.) und die iCal-Export-Links
+  von Airbnb und Booking.com eintragen. Links werden verschlüsselt gespeichert (Schlüssel in `private/secrets/stay.key`),
+  nur Host und letzte 4 Zeichen werden angezeigt. Abruf nur von exakt bekannten Airbnb-/Booking-Hosts per HTTPS.
+- Reinigung am Abreisetag um Check-out-Zeit, fest an diesem Tag (auch am Wochenende). Kommt am selben Tag ein neuer
+  Gast: dringend, „neue Gäste 15:00“. Dieselbe Buchung in beiden Kalendern zählt einmal. Airbnb: nur „Reserved“,
+  gesperrte Tage nicht. Booking.com: alle Einträge (der Export unterscheidet Buchung und Sperre nicht).
+- Storno/Verschiebung: offene künftige Reinigung wird entfernt bzw. angepasst; erledigte und von Hand gelöschte
+  bleiben, wie sie sind. Schlägt ein Abruf fehl, gilt der letzte bekannte Stand (es wird nichts gelöscht).
+- Abruf automatisch beim Öffnen von „Heute“ (höchstens stündlich) oder per „Jetzt abrufen“; Systemstatus-Zeile
+  „Ferienwohnung-Kalender“. Gespeichert werden nur An-/Abreisedaten, keine Gastnamen, Telefonnummern oder Codes.
+- Eigene Reinigungen fragen beim Abhaken nicht „Rechnung nötig?“.
+- Tests: `test_stays.php`, `test_stays_browser.cjs` (synthetische Kalender, kein Airbnb-/Booking-Kontakt).
+
+## 390 – Merkliste: To-dos und „Rechnungen offen“ (23.11.2026)
+
+- Neue Tabelle `quick_notes` (Migration 390, rein additiv, Marker `390_notizen`). Einspielen über „Sicherung und Update“
+  (Sicherung + Passwort, wie bei 380). Alle vorhandenen Daten bleiben unverändert.
+- „+ Notieren“ (Handy oben in der Kopfzeile, Computer unten rechts): To-do oder „Rechnung offen“ in einem Feld notieren.
+  Das Objekt wird aus dem Text erkannt (auch mit kleinen Tippfehlern und „Str.“); bei zwei Objekten in derselben
+  Straße entscheidet die Hausnummer, sonst wird nicht geraten. Wann: Irgendwann, Heute, Morgen, Diese Woche oder Datum.
+  Optional Material, Notiz-Zeile und Foto.
+- To-dos erscheinen auf „Heute“ (überfällig, heute, ohne Datum) und auf der Objektseite; Abhaken ohne Neuladen.
+- „Rechnungen offen“: reine Erinnerung, die Rechnung selbst entsteht weiter in Lexware. „Heute“ zeigt
+  „N Rechnungen noch schreiben“. Nach dem Abhaken einer einmaligen Arbeit (To-do oder Aufgabe im Tagesplan) fragt die
+  Zentrale „Rechnung nötig?“ – ein Tipp auf „Rechnung merken“ trägt sie ein (je Arbeit nur einmal). Regel- und
+  Abfallaufgaben fragen nicht.
+- Einkaufsliste: Material offener To-dos, abhaken = besorgt.
+- Erledigte Einträge bleiben 30 Tage sichtbar und werden danach nur ausgeblendet.
+- Behoben: Die Zahl ungelesener Mails im Menü wurde nie angezeigt (Seitenrahmen hatte keine Datenbankverbindung mehr).
+- Auf Tour mitnehmen: Offene To-dos stehen im Tagesblock des nächsten Einsatzes am selben Objekt („Mitnehmen“,
+  einzeln abhakbar). Oben auf dem Tag „Für heute mitnehmen“ mit dem nötigen Material. In der Woche steht jedes To-do
+  nur beim ersten passenden Einsatz („+ … mitnehmen“). To-dos mit Datum erst ab diesem Datum.
+- Tests: `test_notes.php` (Migration 380→390, Objekterkennung, Listen), `test_notes_browser.cjs`.
+
 ## 380 – Korrekturen nach der Umstellung auf STRATO (22.11.2026)
 
 - Update-Seite: genaue Strukturdiagnose; geschütztes „Angleichen“ für die Spalten, die STRATO im älteren Zeichensatz
@@ -28,6 +137,16 @@
   nur die jüngste offene Vorschau je Kalender wird angezeigt.
 - Objekte: „Regelmäßige Arbeiten“ direkt am Objekt (z. B. Treppenhausreinigung wöchentlich) – auch schon beim Anlegen
   eines neuen Objekts; Pausieren/Fortsetzen; nach dem Anlegen öffnet sich die Objektseite.
+- Objektseite neu gestaltet: Schnellzugriff (Route, Anrufen, Aufgabe, Arbeitsnachweise), Hinweise, „Anstehend“ als
+  Blöcke mit Tag (Abhaken bleibt auf der Seite), regelmäßige Arbeiten, nächste Abholung, Objektdaten eingeklappt,
+  „Zuletzt erledigt“ und Änderungen in Alltagssprache (deutsche Zeit statt UTC/Rohdaten).
+- Abhaken ohne Neuladen: Der Haken sitzt sofort, die Seite bleibt an ihrer Stelle, kurze Rückmeldung
+  „… erledigt – Rückgängig“ (6 Sekunden). Ohne JavaScript oder bei Unklarheit wird wie bisher normal gesendet; der
+  Server prüft unverändert Anmeldung, CSRF und Bearbeitungsstand. Systemstatus zeigt, ob alle Programmdateien da sind.
+- Google Search Console angebunden (kostenlos, nur lesen): Dienstkonto-Schlüssel verschlüsselt im Vault, täglicher
+  Abruf beim Öffnen; Seite „Google-Sichtbarkeit“ mit Klicks, Anzeigen, Suchbegriffen, Ø-Position und Trend, neuen und
+  verlorenen Begriffen. CSV-Rangmessungen bleiben eingeklappt erhalten. Systemstatus: „Google Search Console“ statt
+  „SEO-Onlineabruf“; fehlgeschlagene Abfallabrufe nennen Objekt und Grund.
 
 ## 380 – Zentrale verschlankt (20.11.2026)
 

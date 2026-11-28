@@ -1,0 +1,37 @@
+-- GSZ 450: Verträge je Objekt (Dienstleistungsvertrag Gebäudeservice). Entwurf entsteht automatisch beim Anlegen eines Objekts.
+-- Rein additiv, wiederholbar. Nur über gszMigrate450() ausführen.
+CREATE TABLE IF NOT EXISTS property_contracts (
+ id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ property_id INT UNSIGNED NULL,
+ customer_id INT UNSIGNED NULL,
+ status ENUM('entwurf','versendet','aktiv','gekuendigt','beendet') NOT NULL DEFAULT 'entwurf',
+ customer_kind ENUM('business','consumer') NOT NULL DEFAULT 'business',
+ client_name VARCHAR(190) NOT NULL DEFAULT '',
+ client_address VARCHAR(2000) NOT NULL DEFAULT '',
+ object_name VARCHAR(190) NOT NULL DEFAULT '',
+ object_address VARCHAR(255) NOT NULL DEFAULT '',
+ services TEXT NULL,
+ winter_service TINYINT(1) NOT NULL DEFAULT 0,
+ price_cents BIGINT NULL,
+ price_period ENUM('month','visit','year') NOT NULL DEFAULT 'month',
+ vat_mode ENUM('zzgl','inkl','none') NOT NULL DEFAULT 'zzgl',
+ starts_on DATE NULL,
+ term_months SMALLINT UNSIGNED NOT NULL DEFAULT 12,
+ renew_months SMALLINT UNSIGNED NOT NULL DEFAULT 12,
+ notice_months TINYINT UNSIGNED NOT NULL DEFAULT 3,
+ special_terms TEXT NULL,
+ notes TEXT NULL,
+ sent_on DATE NULL,
+ signed_on DATE NULL,
+ cancelled_on DATE NULL,
+ ends_on DATE NULL,
+ auto_created TINYINT(1) NOT NULL DEFAULT 0,
+ row_version INT UNSIGNED NOT NULL DEFAULT 0,
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ KEY idx_property_contracts_property(property_id),
+ KEY idx_property_contracts_status(status),
+ CONSTRAINT fk_property_contracts_property FOREIGN KEY(property_id) REFERENCES properties(id) ON DELETE SET NULL,
+ CONSTRAINT fk_property_contracts_customer FOREIGN KEY(customer_id) REFERENCES customers(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+INSERT IGNORE INTO app_migrations(version) VALUES('450_vertraege');

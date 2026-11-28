@@ -23,3 +23,5 @@ Diese Punkte konnten bei der Entwicklung nicht geprüft werden und werden hier n
    Anbieter dieselbe Termin-ID mit neuem Datum liefert. Ob der amtliche Kalender (Abfallnavi) das so tut, ist nicht
    real beobachtet. Sonst erscheint die Änderung wie bisher als „Neue Abfuhrtermine prüfen“.
 9. Historische Hinweise in `docs/archiv/` beschreiben ältere Stände und sind keine aktuelle Anleitung.
+10. **Google Search Console**: Anbindung nur mit nachgestellten Google-Antworten getestet. Erster echter Abruf mit dem
+    Dienstkonto des Inhabers steht aus (Schlüssel hochladen → Website wählen → Daten erscheinen).

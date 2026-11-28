@@ -49,6 +49,6 @@ function gszRepair380(PDO $pdo):array {
 }
 /** True if the only structural differences are the known, repairable 380 column charsets. */
 function gszRepairable380(array $inspection):bool {
- if(($inspection['version']??null)!==380||($inspection['code']??'')!=='GSZ_SCHEMA_STRUCTURE_MISMATCH'||empty($inspection['blockers']))return false;
+ if(!in_array($inspection['version']??null,[380,390,400,410,420,430,440,450,460],true)||($inspection['code']??'')!=='GSZ_SCHEMA_STRUCTURE_MISMATCH'||empty($inspection['blockers']))return false;
  $ok=array_map(fn($x)=>$x[0].'.'.$x[1].':shape',GSZ_REPAIR_COLUMNS_380);foreach($inspection['blockers'] as $b)if(!in_array($b,$ok,true))return false;return true;
 }

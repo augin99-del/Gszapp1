@@ -14,6 +14,7 @@
 | Programm | `public/` (Webroot), `private/` | `private/` außerhalb Webroot |
 | Datenbankzugang, Einstellungen | `private/server-config/` (`managed.json` + getrennter Schlüssel) | AES-256-GCM, Ordner 0700, Dateien 0600 |
 | **Postfachzugang** | `private/secrets/mail.vault` + `mail.key` | libsodium XChaCha20-Poly1305 (Secret-Vault-Format), Schlüssel getrennt, 0700/0600 |
+| **Google Search Console** (Dienstkonto-Schlüssel, nur lesen) | `private/secrets/gsc.vault` + `gsc.key`; Ergebnis-Zusammenfassung `gsc-data.json` ohne Zugangsdaten | wie Postfach; Hochladen/Löschen nur mit Zentrale-Passwort; Netzwerk nur zu oauth2.googleapis.com und www.googleapis.com, TLS geprüft |
 | Sicherungen | `private/backups/` | 0700/0600, Download nur angemeldet |
 | Uploads/Originale | `private/uploads/` | Download nur angemeldet, erzwungener Download, `nosniff` |
 

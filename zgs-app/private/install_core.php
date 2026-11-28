@@ -9,8 +9,8 @@ function gszInstallFresh(PDO $pdo):array {
  $lock='gsz_install_'.substr(hash('sha256',$database),0,32);$q=$pdo->prepare('SELECT GET_LOCK(?,0)');$q->execute([$lock]);if((int)$q->fetchColumn()!==1)throw new RuntimeException('GSZ_INSTALL_BUSY');
  try{
   if($pdo->query('SHOW FULL TABLES')->fetchAll())throw new RuntimeException('GSZ_INSTALL_DATABASE_NOT_EMPTY');
-  $files=['fresh_install_v192.sql','migration_v200.sql','migration_v210.sql','migration_v220.sql','migration_v230.sql','migration_v240.sql','migration_v250.sql','migration_v260.sql','migration_v270.sql','migration_v280.sql','migration_v290.sql','migration_v300.sql','migration_v310.sql','migration_v320.sql','migration_v330.sql','migration_v340.sql','migration_v350.sql','migration_v360.sql','migration_v370.sql','migration_v380.sql'];foreach($files as $f)if(!is_file(__DIR__.'/'.$f))throw new RuntimeException('GSZ_INSTALL_MISSING_FILE');
+  $files=['fresh_install_v192.sql','migration_v200.sql','migration_v210.sql','migration_v220.sql','migration_v230.sql','migration_v240.sql','migration_v250.sql','migration_v260.sql','migration_v270.sql','migration_v280.sql','migration_v290.sql','migration_v300.sql','migration_v310.sql','migration_v320.sql','migration_v330.sql','migration_v340.sql','migration_v350.sql','migration_v360.sql','migration_v370.sql','migration_v380.sql','migration_v390.sql','migration_v400.sql','migration_v410.sql','migration_v420.sql','migration_v430.sql','migration_v440.sql','migration_v450.sql','migration_v460.sql'];foreach($files as $f)if(!is_file(__DIR__.'/'.$f))throw new RuntimeException('GSZ_INSTALL_MISSING_FILE');
   $pdo->exec(file_get_contents(__DIR__.'/fresh_install_v192.sql'));$pdo->exec(file_get_contents(__DIR__.'/migration_v200.sql'));gszMigratePhase2($pdo);gszMigratePhase3($pdo);gszMigrateGesamt($pdo);
-  return ['tables'=>count($pdo->query('SHOW TABLES')->fetchAll()),'schema'=>'380','admin_created'=>false,'objects_seeded'=>false];
+  return ['tables'=>count($pdo->query('SHOW TABLES')->fetchAll()),'schema'=>'460','admin_created'=>false,'objects_seeded'=>false];
  }finally{$q=$pdo->prepare('SELECT RELEASE_LOCK(?)');$q->execute([$lock]);}
 }
