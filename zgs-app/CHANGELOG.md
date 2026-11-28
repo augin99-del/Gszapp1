@@ -1,6 +1,14 @@
 # Changelog
 
 
+
+## 28.11.2026 – Datensicherung, Angebote, Schlüssel (Schema 460)
+- Datensicherung automatisch jede Nacht (Wecker, ab 2 Uhr), 14 Stück aufbewahrt, Seite „Datensicherung“ mit Download; Hinweis auf Heute/Push, wenn 3 Tage keine Sicherung oder 30 Tage nicht heruntergeladen.
+- Angebote: aus Anfrage oder Objekt, Positionen mit Abrechnungsart, PDF, „Per E-Mail senden“ (Mail-Entwurf mit Anhang), Nachfassen nach 3 und 7 Tagen, Annahme legt Kunde, Objekt und Vertragsentwurf mit Preis an.
+- Verträge: „Per E-Mail senden“ mit PDF im Anhang.
+- Schlüssel: Bestand je Objekt mit interner Nummer, Ausgabe/Rückgabe, Verlauf, verloren/gefunden, Quittungen (Kunde ↔ Büro, Büro → Mitarbeiter), Hinweise bei langer Ausgabe und bei Vertragsende.
+- Anfrage selbst erfassen: Feld „Firma / Hausverwaltung“.
+
 ## 27.11.2026 – Verträge je Objekt (Schema 450), Immobilien-Jahresübersicht
 - Beim Anlegen eines Objekts erstellt die Zentrale automatisch einen Vertragsentwurf (Kunde, Objekt, Leistungen aus den regelmäßigen Arbeiten).
 - Vertragsseite: Unternehmer/Verbraucher (Verbraucher automatisch max. 24 Monate, 1 Monat Frist, Widerrufsbelehrung), Preis, Laufzeit, Besonderes, PDF.

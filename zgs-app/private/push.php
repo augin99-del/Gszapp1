@@ -18,6 +18,7 @@ const GSZ_PUSH_KINDS=[
  'reports'=>['Mieter-Meldungen','Neue Meldung per QR-Code aus einem Haus','🛠'],
  'rent'=>['Mieten','Ab dem 6.: Mieten fehlen oder sind unvollständig','🏠'],
  'mail'=>['E-Mail','Neue Mails im Posteingang','✉️'],
+ 'offers'=>['Angebote & Verträge','Angebot nachfassen, Kündigungsfrist naht, Schlüssel zu lange unterwegs','📨'],
  'system'=>['Systemüberwachung','Mail-Passwort abgelehnt oder Hintergrundaufgabe gestoppt','⚠️'],
  'test'=>['Test','Testnachricht','✅']];
 

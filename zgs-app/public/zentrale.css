@@ -767,3 +767,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--c-accent);box-shadow:
 .inline-form{margin:0 0 var(--s-4)}
 .contract-preview h3{margin:var(--s-4) 0 4px;font-size:var(--fs-m);color:#1f5e1c}.contract-preview p{margin:0 0 6px;font-size:var(--fs-s);line-height:1.55}
 .contract-card .section-head{display:flex;align-items:center;justify-content:space-between;gap:var(--s-2)}.contract-card .section-head h2{margin:0}
+/* ── Angebote & Schlüssel (460) ── */
+.offer-items{display:flex;flex-direction:column;gap:8px;margin:0 0 var(--s-2)}
+.oi-head{display:none}.oi-row{display:grid;grid-template-columns:1fr;gap:6px;padding:10px;border:1px solid var(--c-line);border-radius:var(--r-m);background:#fafaf8}
+.oi-row label{margin:0}
+@media(min-width:760px){.oi-head{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr) minmax(0,1fr);gap:8px;font-size:var(--fs-xs);font-weight:700;color:var(--c-muted);text-transform:uppercase;letter-spacing:.04em;padding:0 10px}.oi-row{grid-template-columns:minmax(0,3fr) minmax(0,1fr) minmax(0,1fr);gap:8px;padding:0;border:0;background:none}}
+.contract-none form.inline{display:inline-block;margin:6px 0 0}
+.key-search{display:flex;gap:var(--s-2);margin:0 0 var(--s-3)}.key-search input{flex:1}
+.key-card{padding:var(--s-3) var(--s-4)}.kc-head{display:flex;align-items:center;gap:var(--s-3)}.kc-head>div{flex:1;min-width:0}.kc-head strong{display:block}.kc-head small{display:block;color:var(--c-muted);font-size:var(--fs-xs)}
+.key-no{flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:34px;padding:0 8px;border-radius:8px;background:var(--c-dark);color:#fff;font-weight:700;font-size:var(--fs-xs);letter-spacing:.03em}
+.kc-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}.kc-actions form{margin:0}.kc-give{display:flex;gap:6px;flex:1 1 260px}.kc-give input{flex:1;min-width:0}
+.key-history{margin-top:8px;font-size:var(--fs-s)}.key-history summary{cursor:pointer;color:var(--c-muted);font-weight:600}

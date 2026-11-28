@@ -1,0 +1,67 @@
+-- GSZ 460: Angebote (aus Anfragen, mit Nachfassen; Annahme → Kunde, Objekt, Vertragsentwurf) und Schlüsselverwaltung.
+-- Rein additiv, wiederholbar. Nur über gszMigrate460() ausführen.
+CREATE TABLE IF NOT EXISTS offers (
+ id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ lead_id INT UNSIGNED NULL,
+ customer_id INT UNSIGNED NULL,
+ property_id INT UNSIGNED NULL,
+ contract_id INT UNSIGNED NULL,
+ status ENUM('entwurf','versendet','angenommen','abgelehnt') NOT NULL DEFAULT 'entwurf',
+ customer_kind ENUM('business','consumer') NOT NULL DEFAULT 'business',
+ client_name VARCHAR(190) NOT NULL DEFAULT '',
+ client_address VARCHAR(2000) NOT NULL DEFAULT '',
+ client_email VARCHAR(190) NOT NULL DEFAULT '',
+ client_phone VARCHAR(80) NOT NULL DEFAULT '',
+ object_name VARCHAR(190) NOT NULL DEFAULT '',
+ object_address VARCHAR(255) NOT NULL DEFAULT '',
+ intro TEXT NULL,
+ items_json TEXT NULL,
+ vat_mode ENUM('zzgl','inkl','none') NOT NULL DEFAULT 'zzgl',
+ valid_until DATE NULL,
+ starts_on DATE NULL,
+ sent_on DATE NULL,
+ followup_on DATE NULL,
+ followups TINYINT UNSIGNED NOT NULL DEFAULT 0,
+ decided_on DATE NULL,
+ decision_note VARCHAR(500) NOT NULL DEFAULT '',
+ notes TEXT NULL,
+ row_version INT UNSIGNED NOT NULL DEFAULT 0,
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ KEY idx_offers_status(status,followup_on),
+ KEY idx_offers_lead(lead_id),
+ CONSTRAINT fk_offers_lead FOREIGN KEY(lead_id) REFERENCES leads(id) ON DELETE SET NULL,
+ CONSTRAINT fk_offers_customer FOREIGN KEY(customer_id) REFERENCES customers(id) ON DELETE SET NULL,
+ CONSTRAINT fk_offers_property FOREIGN KEY(property_id) REFERENCES properties(id) ON DELETE SET NULL,
+ CONSTRAINT fk_offers_contract FOREIGN KEY(contract_id) REFERENCES property_contracts(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS key_items (
+ id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ property_id INT UNSIGNED NULL,
+ label VARCHAR(190) NOT NULL,
+ key_no VARCHAR(60) NOT NULL DEFAULT '',
+ copies TINYINT UNSIGNED NOT NULL DEFAULT 1,
+ storage VARCHAR(190) NOT NULL DEFAULT '',
+ holder VARCHAR(190) NOT NULL DEFAULT '',
+ holder_since DATETIME NULL,
+ state ENUM('da','ausgegeben','zurueckgegeben','verloren') NOT NULL DEFAULT 'da',
+ received_on DATE NULL,
+ notes VARCHAR(1000) NOT NULL DEFAULT '',
+ row_version INT UNSIGNED NOT NULL DEFAULT 0,
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ KEY idx_key_items_property(property_id),
+ KEY idx_key_items_state(state),
+ CONSTRAINT fk_key_items_property FOREIGN KEY(property_id) REFERENCES properties(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS key_moves (
+ id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ key_id INT UNSIGNED NOT NULL,
+ action ENUM('erhalten','ausgegeben','zurueck','an_kunden','verloren','gefunden') NOT NULL,
+ person VARCHAR(190) NOT NULL DEFAULT '',
+ note VARCHAR(500) NOT NULL DEFAULT '',
+ admin_id INT UNSIGNED NULL,
+ moved_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ KEY idx_key_moves_key(key_id,moved_at),
+ CONSTRAINT fk_key_moves_key FOREIGN KEY(key_id) REFERENCES key_items(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+INSERT IGNORE INTO app_migrations(version) VALUES('460_angebote');

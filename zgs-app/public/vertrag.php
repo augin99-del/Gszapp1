@@ -11,6 +11,19 @@ if($_SERVER['REQUEST_METHOD']==='POST'){checkCsrf();$action=(string)($_POST['act
   elseif($action==='save'){gszContractSave($pdo,$admin,$id,$_POST);$_SESSION['app_notice']='Vertrag gespeichert.';}
   elseif($action==='refresh'){gszContractRefresh($pdo,$admin,$id);$_SESSION['app_notice']='Daten aus Objekt, Kunde und regelmäßigen Arbeiten übernommen.';}
   elseif($action==='status'){gszContractStatus($pdo,$admin,$id,(string)($_POST['to']??''),$_POST);$_SESSION['app_notice']=['versendet'=>'Als versendet markiert.','aktiv'=>'Vertrag ist aktiv – Fristen behält die Zentrale im Blick.','gekuendigt'=>'Kündigung eingetragen.','beendet'=>'Vertrag beendet.','entwurf'=>'Zurück im Entwurf.'][(string)$_POST['to']]??'Gespeichert.';}
+  elseif($action==='mail'){require_once dirname(__DIR__).'/private/offers.php';$c=gszContractGet($pdo,$id)?:throw new RuntimeException('Vertrag nicht gefunden.');if($m=gszContractProblems($c))throw new RuntimeException('Es fehlt noch: '.implode(', ',$m).'.');
+   $to='';if($c['customer_id']){$q=$pdo->prepare('SELECT email FROM customers WHERE id=?');$q->execute([(int)$c['customer_id']]);$to=(string)$q->fetchColumn();}if($to===''&&$c['property_id']){$q=$pdo->prepare('SELECT contact_email FROM properties WHERE id=?');$q->execute([(int)$c['property_id']]);$to=(string)$q->fetchColumn();}
+   $hello=$c['customer_kind']==='consumer'?'Guten Tag '.$c['client_name'].',':'Sehr geehrte Damen und Herren,';
+   $d=gszDocMailDraft($pdo,filter_var($to,FILTER_VALIDATE_EMAIL)?$to:'','Dienstleistungsvertrag '.gszContractNo($c).' – '.$c['object_name'],$hello."
+
+im Anhang erhalten Sie den Dienstleistungsvertrag für das Objekt ".$c['object_name'].'. Bitte prüfen Sie ihn und senden Sie uns ein unterschriebenes Exemplar zurück (gern eingescannt per Mail).'."
+
+Bei Fragen bin ich gern für Sie da: ".gszSetting($pdo,'company_phone').".
+
+Mit freundlichen Grüßen
+".gszSetting($pdo,'owner_name')."
+".gszSetting($pdo,'company'),'Vertrag-'.gszContractNo($c).'.pdf',gszContractPdf($pdo,$c));
+   gszAudit($pdo,$admin,'contract_mail_draft',['contract'=>$id,'draft'=>$d]);$_SESSION['app_notice']='Mail mit Vertrag im Anhang vorbereitet. Prüfen und senden – danach im Vertrag „Als versendet markieren“.';$go='compose.php?draft='.$d;}
   elseif($action==='delete'){$c=gszContractGet($pdo,$id);gszContractDelete($pdo,$admin,$id);$_SESSION['app_notice']='Entwurf gelöscht.';$go=$c&&$c['property_id']?'property.php?id='.(int)$c['property_id'].'#vertrag':'vertraege.php';}
   else throw new RuntimeException('Aktion unbekannt.');
  }catch(Throwable $e){$_SESSION['app_error']=$e instanceof InvalidArgumentException||$e instanceof RuntimeException?$e->getMessage():'Speichern fehlgeschlagen.';if($e instanceof PDOException)error_log('GSZ contract: '.$e->getMessage());}
@@ -23,7 +36,7 @@ gszPageStart('Vertrag '.gszContractNo($c),trim($c['object_name'].($c['client_nam
 foreach(['app_error'=>'error','app_notice'=>'notice'] as $k=>$cls)if(isset($_SESSION[$k])){echo '<p class="'.$cls.' flash" role="'.($cls==='error'?'alert':'status').'">'.e($_SESSION[$k]).'</p>';unset($_SESSION[$k]);}?>
 <a class="back-link" href="<?=$c['property_id']?'property.php?id='.(int)$c['property_id'].'#vertrag':'vertraege.php'?>">‹ <?=$c['property_id']?'Zum Objekt':'Alle Verträge'?></a>
 <div class="contract-head"><span class="pill <?=e($sc)?>"><?=e($sl)?></span><?php if((int)$c['auto_created']&&$draft):?><span class="muted">automatisch beim Anlegen des Objekts erstellt</span><?php endif?>
- <div class="estate-actions"><a class="btn primary" href="vertrag_pdf.php?id=<?=$id?>" target="_blank" rel="noopener">PDF ansehen</a><a class="btn" href="vertrag_pdf.php?id=<?=$id?>&amp;download=1">PDF herunterladen</a></div></div>
+ <div class="estate-actions"><a class="btn primary" href="vertrag_pdf.php?id=<?=$id?>" target="_blank" rel="noopener">PDF ansehen</a><a class="btn" href="vertrag_pdf.php?id=<?=$id?>&amp;download=1">PDF herunterladen</a><?php if($draft):?><form method="post"><?=$f('mail')?><button class="btn"<?=$miss?' disabled':''?>>Per E-Mail senden</button></form><?php endif?></div></div>
 <ol class="steps contract-steps" aria-label="Ablauf"><?php $order=['entwurf'=>1,'versendet'=>2,'aktiv'=>3,'gekuendigt'=>4,'beendet'=>4];$now=$order[$c['status']];foreach([1=>'Entwurf prüfen',2=>'Versendet',3=>'Unterschrieben',4=>'Gekündigt / beendet'] as $n=>$l):?><li class="<?=$n<$now?'done':($n===$now?'now':'')?>"><a href="#status"><b><?=$n?></b><?=e($l)?></a></li><?php endforeach?></ol>
 <?php if($draft&&$miss):?><p class="error">Bevor der Vertrag raus kann, fehlt noch: <strong><?=e(implode(', ',$miss))?></strong>.</p><?php endif?>
 <?php if($c['status']==='aktiv'&&$per['period_end']):?><p class="notice">Aktiv seit <?=e($d($c['signed_on']))?> · aktuelle Laufzeit bis <strong><?=e($d($per['period_end']))?></strong> · Kündigung möglich bis <strong><?=e($d($per['notice_by']))?></strong>. Die Zentrale erinnert dich 60 Tage vorher auf „Heute“.</p><?php elseif($c['status']==='aktiv'&&$per['open_ended']):?><p class="notice">Aktiv, unbefristet – kündbar mit 1 Monat Frist.</p><?php elseif($c['status']==='gekuendigt'):?><p class="notice">Gekündigt am <?=e($d($c['cancelled_on']))?> – endet am <strong><?=e($d($c['ends_on']))?></strong>.</p><?php endif?>

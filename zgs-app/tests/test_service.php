@@ -8,7 +8,7 @@ $dsn=getenv('GSZ_TEST_DSN')?:'';if(!preg_match('/^mysql:unix_socket=[^;]+;dbname
 $p=new PDO($dsn,'root','',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,PDO::ATTR_EMULATE_PREPARES=>false]);if($p->query('SHOW TABLES')->fetchAll())throw new RuntimeException('Empty DB required.');
 $n=0;function sv(bool $v,string $s):void{global $n;$n++;if(!$v)throw new RuntimeException($s);}
 function svThrows(callable $f,string $s,string $cls=RuntimeException::class):void{try{$f();sv(false,$s);}catch(Throwable $e){sv($e instanceof $cls,$s.' ('.get_class($e).')');}}
-$r=gszInstallFresh($p);sv($r['schema']==='450'&&$r['tables']===84&&gszSchemaCurrent($p)&&gszServiceReady($p),'fresh install has 430 with 80 tables');
+$r=gszInstallFresh($p);sv($r['schema']==='460'&&$r['tables']===87&&gszSchemaCurrent($p)&&gszServiceReady($p),'fresh install has 430 with 80 tables');
 $p->exec("INSERT INTO admins(email,password_hash) VALUES('owner@example.invalid','x')");$p->exec("INSERT INTO properties(name,address,contact_email) VALUES('Musterweg 1','Musterweg 1, 00000 Musterstadt','hv@example.invalid'),('Beispielstraße 2','Beispielstraße 2','')");
 $today=(new DateTimeImmutable('today',new DateTimeZone('Europe/Berlin')))->format('Y-m-d');
 // QR-Code: Struktur (Größe, Suchmuster) – die Lesbarkeit prüft der Browsertest mit einem echten Leser

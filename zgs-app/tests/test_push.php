@@ -7,7 +7,7 @@ $dsn=getenv('GSZ_TEST_DSN')?:'';if(!preg_match('/^mysql:unix_socket=[^;]+;dbname
 $p=new PDO($dsn,'root','',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,PDO::ATTR_EMULATE_PREPARES=>false]);if($p->query('SHOW TABLES')->fetchAll())throw new RuntimeException('Empty DB required.');
 $n=0;function pu(bool $v,string $s):void{global $n;$n++;if(!$v)throw new RuntimeException($s);}
 function puThrows(callable $f,string $s):void{try{$f();pu(false,$s);}catch(RuntimeException $e){pu(true,$s);}}
-$r=gszInstallFresh($p);pu($r['schema']==='450'&&$r['tables']===84&&gszPushReady($p)&&gszSchemaCurrent($p),'fresh install 440, 83 tables');
+$r=gszInstallFresh($p);pu($r['schema']==='460'&&$r['tables']===87&&gszPushReady($p)&&gszSchemaCurrent($p),'fresh install 440, 83 tables');
 $p->exec("INSERT INTO admins(email,password_hash) VALUES('owner@example.invalid','x')");
 // Simuliertes Handy: eigener Schlüssel + Entschlüsselung wie ein Browser (RFC 8291)
 $ua=openssl_pkey_new(['curve_name'=>'prime256v1','private_key_type'=>OPENSSL_KEYTYPE_EC]);$uaPub=gszEcRawPublic($ua);$auth=random_bytes(16);

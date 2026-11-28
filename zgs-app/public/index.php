@@ -45,6 +45,9 @@ try{require_once dirname(__DIR__).'/private/estate_rent_match.php';$estate=estat
  foreach($estate['charges_missing'] as $h)$attention[]=['estate_bank.php','Sollmieten für '.GSZ_MONTHS[(int)date('n')].' anlegen: '.$h];
  if((int)date('n')>=10&&(int)$pdo->query("SELECT COUNT(*) FROM app_migrations WHERE version='320_estate_settlements'")->fetchColumn()){$py=(int)date('Y')-1;$q=$pdo->prepare('SELECT b.id,b.name FROM estate_buildings b WHERE EXISTS(SELECT 1 FROM estate_units u WHERE u.building_id=b.id) AND NOT EXISTS(SELECT 1 FROM estate_settlements s WHERE s.building_id=b.id AND s.period_from<=? AND s.period_to>=?) ORDER BY b.name LIMIT 5');$q->execute([$py.'-01-01',$py.'-12-31']);foreach($q->fetchAll() as $h)$attention[]=['estate_settlements.php?building='.(int)$h['id'].'&from='.$py.'-01-01&to='.$py.'-12-31','Nebenkostenabrechnung '.$py.' für '.$h['name'].' – Frist 31.12.'];}
 }catch(Throwable $e){}
+try{require_once dirname(__DIR__).'/private/backup_auto.php';foreach(gszBackupAttention($pdo) as $x)$attention[]=$x;}catch(Throwable $e){}
+try{require_once dirname(__DIR__).'/private/offers.php';foreach(gszOfferAttention($pdo) as $x)$attention[]=$x;}catch(Throwable $e){}
+try{require_once dirname(__DIR__).'/private/keys.php';foreach(gszKeyAttention($pdo) as $x)$attention[]=$x;}catch(Throwable $e){}
 try{require_once dirname(__DIR__).'/private/contracts.php';foreach(gszContractAttention($pdo) as $x)$attention[]=$x;}catch(Throwable $e){}
 try{require_once dirname(__DIR__).'/private/mail_credentials.php';if(gszMailAuthBlockedNow())$attention[]=['connections.php','Mail-Passwort stimmt nicht mehr – neu eintragen'];
  $unread=(int)$pdo->query("SELECT COUNT(*) FROM mail_messages m JOIN mail_folders f ON f.id=m.folder_id WHERE m.active=1 AND m.seen=0 AND f.name='INBOX'")->fetchColumn();if($unread)$attention[]=['mail.php',$unread===1?'1 neue Mail':$unread.' neue Mails'];}catch(Throwable $e){}

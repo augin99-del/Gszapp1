@@ -7,7 +7,7 @@ $dsn=getenv('GSZ_TEST_DSN')?:'';if(!preg_match('/^mysql:unix_socket=[^;]+;dbname
 $p=new PDO($dsn,'root','',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,PDO::ATTR_EMULATE_PREPARES=>false]);if($p->query('SHOW TABLES')->fetchAll())throw new RuntimeException('Empty DB required.');
 $n=0;function ct(bool $v,string $s):void{global $n;$n++;if(!$v)throw new RuntimeException($s);}
 function ctThrows(callable $f,string $s):void{try{$f();ct(false,$s);}catch(RuntimeException|InvalidArgumentException $e){ct(true,$s);}}
-$r=gszInstallFresh($p);ct($r['schema']==='450'&&$r['tables']===84&&gszContractsReady($p)&&gszSchemaCurrent($p),'fresh install 450, 84 tables');
+$r=gszInstallFresh($p);ct($r['schema']==='460'&&$r['tables']===87&&gszContractsReady($p)&&gszSchemaCurrent($p),'fresh install 450, 84 tables');
 $p->exec("INSERT INTO admins(email,password_hash) VALUES('owner@example.invalid','x')");$a=(int)$p->lastInsertId();
 $p->exec("INSERT INTO customers(name,email,billing_address) VALUES('Hausverwaltung Beispiel GmbH','hv@example.invalid','Musterweg 1\n33330 Gütersloh'),('Erika Probe','',''),('Max Muster','','')");
 $p->exec("INSERT INTO properties(customer_id,name,address) VALUES(1,'Lindenweg 7','Lindenweg 7, 33330 Gütersloh'),(2,'Bergstraße 12','Bergstraße 12, 33378 Rheda-Wiedenbrück'),(NULL,'Ohne Kunde','')");

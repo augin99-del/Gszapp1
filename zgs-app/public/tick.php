@@ -13,6 +13,7 @@ try{$w=gszWeatherTick($pdo);$out['weather']=$w['checked']?'geprüft':'aktuell';}
 try{require_once dirname(__DIR__).'/private/automation.php';$config=gszLoadConfig();$m=gszAutomationOnOpen($pdo,$config,'mail');$out['mail']=$m===null?'übersprungen':($m['status']??'');}catch(Throwable $e){$out['mail']='fehler';}
 try{$out['leads']=gszLeadsFromMail($pdo);}catch(Throwable $e){$out['leads']='fehler';}
 try{$r=gszAutomationOnOpen($pdo,gszLoadConfig(),'heute');$out['tasks']=$r===null?'übersprungen':($r['status']??'');}catch(Throwable $e){$out['tasks']='fehler';}
+try{require_once dirname(__DIR__).'/private/backup_auto.php';$b=gszBackupAutoRun($pdo);$out['backup']=$b?'erstellt':'aktuell';}catch(Throwable $e){$out['backup']='fehler';error_log('GSZ auto backup: '.$e->getMessage());}
 try{require_once dirname(__DIR__).'/private/push_digest.php';$out['push']=count(gszPushDigests($pdo));}catch(Throwable $e){$out['push']='fehler';}
 try{gszSettingSet($pdo,'tick_last',gmdate('Y-m-d H:i:s'));}catch(Throwable $e){}
 echo json_encode($out,JSON_UNESCAPED_UNICODE);

@@ -1,0 +1,27 @@
+<?php
+declare(strict_types=1);
+// Datensicherung: Stand, automatische nächtliche Sicherung, Liste zum Herunterladen, „Jetzt sichern“, Anleitung zum Wiederherstellen.
+require __DIR__.'/bootstrap.php';if(empty($_SESSION['admin_id']))redirect('index.php');
+require_once dirname(__DIR__).'/private/ui.php';require_once dirname(__DIR__).'/private/backup_auto.php';$admin=(int)$_SESSION['admin_id'];
+if($_SERVER['REQUEST_METHOD']==='POST'){checkCsrf();try{$a=(string)($_POST['action']??'');
+ if($a==='now'){$m=gszDatabaseBackup($pdo,'manuell');gszAudit($pdo,$admin,'backup_created',['file'=>$m['file'],'sha256'=>$m['sha256']]);gszBackupPrune($pdo);$_SESSION['app_notice']='Sicherung erstellt – jetzt herunterladen.';}
+ elseif($a==='keep'){gszSettingSet($pdo,'backup_keep',(string)max(3,min(60,(int)($_POST['keep']??14))));gszBackupPrune($pdo);$_SESSION['app_notice']='Gespeichert.';}
+ else throw new RuntimeException('Aktion unbekannt.');}catch(Throwable $e){$_SESSION['app_error']=$e instanceof RuntimeException||$e instanceof InvalidArgumentException?'Sicherung fehlgeschlagen ('.$e->getMessage().').':'Sicherung fehlgeschlagen.';error_log('GSZ backup page: '.$e->getMessage());}redirect('sicherung.php');}
+$s=gszBackupStatus($pdo);$tz=gszBackupTz();$fmt=fn(string $iso)=>(new DateTimeImmutable($iso))->setTimezone($tz)->format('d.m.Y, H:i');$mb=fn(int $b)=>number_format($b/1048576,$b<1048576*10?1:0,',','.').' MB';
+$wecker=$s['wecker']!==''&&strtotime($s['wecker'].' UTC')>time()-3*3600;$ok=$s['age_h']!==null&&$s['age_h']<=30;
+gszPageStart('Datensicherung','Automatisch jede Nacht – zum Aufbewahren auf Mac oder iPhone herunterladen.');
+foreach(['app_error'=>'error','app_notice'=>'notice'] as $k=>$cls)if(isset($_SESSION[$k])){echo '<p class="'.$cls.' flash" role="'.($cls==='error'?'alert':'status').'">'.e($_SESSION[$k]).'</p>';unset($_SESSION[$k]);}?>
+<nav class="day-kpis" aria-label="Stand"><div class="dk<?=$ok?'':' is-warn'?>"><strong><?=$s['last']?e((new DateTimeImmutable($s['last']['created_at']))->setTimezone($tz)->format('d.m.')):'–'?></strong><span>letzte Sicherung</span><?php if($s['last']):?><small><?=e((new DateTimeImmutable($s['last']['created_at']))->setTimezone($tz)->format('H:i'))?> Uhr · <?=e(gszBackupLabel($s['last']))?></small><?php endif?></div>
+ <div class="dk<?=$s['download_age_d']===null||$s['download_age_d']>=30?' is-warn':''?>"><strong><?=$s['download_age_d']===null?'nie':($s['download_age_d']===0?'heute':$s['download_age_d'].' T.')?></strong><span>zuletzt heruntergeladen</span></div>
+ <div class="dk"><strong><?=count($s['list'])?></strong><span>Sicherungen auf dem Server</span><small><?=e($mb($s['bytes']))?></small></div>
+ <div class="dk<?=$wecker?'':' is-warn'?>"><strong><?=$wecker?'läuft':'aus'?></strong><span>Wecker (nächtliche Sicherung)</span></div></nav>
+<?php if(!$wecker):?><p class="error">Der Wecker hat sich seit über 3 Stunden nicht gemeldet. Ohne Wecker gibt es keine automatische Sicherung. Einrichtung unter <a href="benachrichtigungen.php#wecker">Benachrichtigungen → Wecker</a>.</p><?php endif?>
+<div class="estate-actions"><form method="post"><input type="hidden" name="csrf" value="<?=e(csrf())?>"><input type="hidden" name="action" value="now"><button class="primary">Jetzt sichern</button></form><?php if($s['last']):?><a class="btn" href="backup_download.php?file=<?=e(rawurlencode($s['last']['file']))?>">Neueste herunterladen</a><?php endif?></div>
+<h2 class="section-title">Sicherungen</h2>
+<?php if(!$s['list']):?><div class="empty"><strong>Noch keine Sicherung.</strong>Die erste entsteht heute Nacht automatisch – oder jetzt mit „Jetzt sichern“.</div><?php else:?><div class="list"><?php foreach($s['list'] as $m):?><a href="backup_download.php?file=<?=e(rawurlencode($m['file']))?>"><span class="name"><?=e($fmt($m['created_at']))?> Uhr<span class="sub"><?=e(gszBackupLabel($m))?> · <?=e($mb((int)$m['bytes']))?> · <?=(int)$m['tables']?> Tabellen · Prüfsumme <?=e(substr($m['sha256'],0,12))?>…</span></span></a><?php endforeach?></div><?php endif?>
+<details class="card"><summary>Aufbewahrung</summary><form method="post" class="status-form"><input type="hidden" name="csrf" value="<?=e(csrf())?>"><input type="hidden" name="action" value="keep"><label>Automatische Sicherungen aufbewahren<input type="number" name="keep" min="3" max="60" value="<?=e(gszSetting($pdo,'backup_keep'))?>"></label><button>Speichern</button></form><p class="hint">Ältere automatische Sicherungen löscht die Zentrale selbst. Sicherungen von Hand und vor Updates bleiben 90 Tage (höchstens 10).</p></details>
+<details class="card"><summary>Was ist gesichert – und wie stelle ich wieder her?</summary>
+<p><strong>Gesichert:</strong> die komplette Datenbank – Objekte, Kunden, Aufgaben, Verträge, Immobilien, Mails, Einstellungen. <strong>Nicht enthalten:</strong> hochgeladene Dateien (Fotos, PDF-Belege). Die liegen im Ordner <code>private/uploads</code> – den kannst du mit Cyberduck ab und zu auf den Mac ziehen.</p>
+<p>Die Sicherungen liegen im geschützten Ordner <code>private/backups</code> (nicht aus dem Internet erreichbar). STRATO sichert den Webspace zusätzlich selbst.</p>
+<p><strong>Wiederherstellen</strong> (nur im Notfall): STRATO-Kundenlogin → Datenbanken → phpMyAdmin → Datenbank wählen → „Importieren“ → die heruntergeladene <code>.sql.gz</code>-Datei auswählen → OK. Dabei wird der aktuelle Stand vollständig durch die Sicherung ersetzt.</p></details>
+<?php gszPageEnd();

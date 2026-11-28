@@ -45,6 +45,10 @@ function gszPushDigests(PDO $pdo,?DateTimeImmutable $now=null,?callable $sender=
  // ⚠️ Systemüberwachung
  try{require_once __DIR__.'/mail_credentials.php';if(gszMailAuthBlockedNow())$send('system','mailauth:'.$today,'⚠️ Mail-Passwort abgelehnt','Bitte in der Zentrale neu eintragen – bis dahin kommen keine Mails und Anfragen an.','connections.php');}catch(Throwable $e){}
  try{foreach($pdo->query("SELECT job_key,last_error_code FROM automation_state WHERE status='BLOCKED' AND last_finished>=UTC_TIMESTAMP()-INTERVAL 1 DAY")->fetchAll(PDO::FETCH_ASSOC) as $j)$send('system','job:'.$j['job_key'].':'.$today,'⚠️ Hintergrundaufgabe gestoppt',(string)$j['job_key'].': '.(string)$j['last_error_code'],'system_check.php');}catch(Throwable $e){}
+ // 📨 Angebote nachfassen, Vertragsfristen, Schlüssel – einmal täglich ab 9 Uhr (je Hinweis nur einmal am Tag)
+ if($hm>='09:00'){try{require_once __DIR__.'/offers.php';require_once __DIR__.'/keys.php';$hints=array_merge(gszOfferAttention($pdo),gszContractAttention($pdo),gszKeyAttention($pdo));if($hints)$send('offers',$today.':'.count($hints),'📨 '.(count($hints)===1?'1 Sache zum Nachfassen':count($hints).' Sachen zum Nachfassen'),implode(' · ',array_map(fn($h)=>$h[1],array_slice($hints,0,3))),$hints[0][0]);}catch(Throwable $e){}}
+ // 💾 Datensicherung: fehlt seit 3 Tagen oder 30 Tage nicht heruntergeladen (einmal je Woche)
+ if($hm>='10:00'){try{require_once __DIR__.'/backup_auto.php';foreach(gszBackupAttention($pdo) as [$u,$t])$send('system','backup:'.$now->format('o-W'),'💾 Datensicherung',$t,$u);}catch(Throwable $e){}}
  // 🌡️ Frost-Hinweis (nur wenn eingeschaltet)
  try{foreach($pdo->query("SELECT * FROM weather_alerts WHERE winter=1 AND (expires IS NULL OR expires>UTC_TIMESTAMP())")->fetchAll(PDO::FETCH_ASSOC) as $a){require_once __DIR__.'/weather.php';$send('frost',(string)$a['alert_id'],'🌡️ Frost – '.$a['area'],gszWeatherWhen($a).'. Auf Glätte achten.','index.php#wetter');}}catch(Throwable $e){}
  return $sent;
